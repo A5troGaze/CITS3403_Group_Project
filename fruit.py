@@ -1,2 +1,1 @@
-return ("apple", "orange",  "banana")
-return ("grapes")
+return ("grapes", "mango",  "strawberry" "apple", "orange",  "banana")
