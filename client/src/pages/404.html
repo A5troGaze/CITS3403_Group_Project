@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang=""en">
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,11 +7,20 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
   </head>
   
+  <style>
+    .image-section img {
+      max-width: 100%; /* won-t exeed container width */
+      max-height: 70vh; /* won't exeed 70% of viewport height */
+      object-fit: contain; /* maintain aspect ratio */
+      border-radius: 10px; /* rounded corners */
+    }
+  </style>
 
   <body>
     <div class="container mt-5">
       <div class="row">
-        <div class="col-md-6">
+        <!--left side-->
+        <div class="col-md-6 ps-5">
           <!--404-->
           <h1 class="display-1 fw-bold">404</h1>
 
@@ -21,9 +30,29 @@
           <!--button-->
           <a href="landing.html" class="btn btn-dark btn-lg text-white">Go to Home</a>
         </div>
+        <!--right side (image)-->
+        <div class="col-md-6 d-flex justify-content-center align-items-center image-section">
+          <img id="meme_image" src="" alt="404 Meme">
+        </div>
       </div>
       
   </body>
+
+  <script>
+    //array with meme images in
+    const cat_memes = [
+      '../components/cat_meme_images/meme_01.png',
+      '../components/cat_meme_images/meme_02.jpg',
+      '../components/cat_meme_images/meme_03.jpg',
+      '../components/cat_meme_images/meme_04.png',
+      '../components/cat_meme_images/meme_05.jpg'
+    ]
+
+    //random function to pick image
+    const random_index = Math.floor(Math.random() * cat_memes.length);
+    document.getElementById("meme_image").src = cat_memes[random_index];
+
+  </script>
 
 
 
