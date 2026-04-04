@@ -7,6 +7,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 in the terminal
 and then install all dependencies
+make sure all dependencies are updated in requirements.txt so venv can be initialised properly
 
 To exit VENV:
 deactivate

@@ -1,3 +1,29 @@
+"""
+NOTE: you need to make migrations every time you make a change to database models
+(e.g. modify columns, add new models etc.)
+
+HOW TO MAKE MIGRATIONS USING FLASK MIGRATE:
+
+Make sure you are in the virtual environment
+HOW TO GET INTO VIRTUAL ENVIRONMENT (VENV): check the README file
+.venv should be in server directory
+
+
+IN TERMINAL:
+export FLASK_APP=app.py
+flask db migrate -m "[message describing the migration a.k.a. the change you made to the database models]"
+flask db upgrade
+
+
+HOW TO VERIFY MIGRATION WORKED:
+
+IN TERMINAL:
+flask db current
+"""
+
+
+
+
 from flask_sqlalchemy import SQLAlchemy
 import datetime
 
