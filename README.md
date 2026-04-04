@@ -5,3 +5,7 @@ To set up virtual environment:
 Make sure you are in the root directory, then
 source .venv/bin/activate
 in the terminal
+
+To exit VENV:
+deactivate
+in the terminal
