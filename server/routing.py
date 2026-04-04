@@ -1,12 +1,9 @@
 from flask import Flask, render_template
+from flask_cors import CORS
 
-app = Flask(__name__, template_folder='../client/src/pages')
+app = Flask(__name__)
 
-@app.route('/')
-def landing():
-    return render_template('landing.html')
-
-
+CORS(app)
 
 if __name__ == '__main__':
     app.run(debug=True)
