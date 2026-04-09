@@ -28,7 +28,7 @@
     }
   </style>
 
-   
+
 
 
 
@@ -36,9 +36,10 @@
     <div id="navbar"></div>
 
     <div class="container mt-5">
-      <div class="row">
+      <div class="row align-items-center text-center text-md-start">
+        
         <!--left side-->
-        <div class="col-md-6 ps-5">
+        <div class="col-12 col-md-6 ps-md-5 mb-4 mb-md-0">
           <!--404-->
           <h1 class="display-1 fw-bold">404</h1>
 
@@ -48,9 +49,14 @@
           <!--button-->
           <a href="landing.html" class="btn btn-dark btn-lg text-white">Go to Home</a>
         </div>
+
         <!--right side (image)-->
-        <div class="col-md-6 d-flex justify-content-center align-items-center image-section">
-          <img id="meme_image" src="" alt="404 Meme">
+        <div class="col-12 col-md-6 d-flex justify-content-center align-items-center image-section">
+          <img id="meme_image" src="" alt="404 Meme" class="img-fluid">
+          <br>
+          <p1>
+            <!-- empty paragraph-->
+          </p1>
         </div>
       </div>
 
@@ -59,17 +65,19 @@
 
   <script>
     //array with meme images in
-    const cat_memes = [
+    /*const cat_memes = [
       '../components/cat_meme_images/meme_01.png',
       '../components/cat_meme_images/meme_02.jpg',
       '../components/cat_meme_images/meme_03.jpg',
       '../components/cat_meme_images/meme_04.png',
       '../components/cat_meme_images/meme_05.jpg'
-    ]
+    ]*/
+
+    const images = Object.values(import.meta.glob('../components/cat_meme_images/*.{png,jpg,jpeg}', { eager: true })).map(img => img.default);
 
     //random function to pick image
-    const random_index = Math.floor(Math.random() * cat_memes.length);
-    document.getElementById("meme_image").src = cat_memes[random_index];
+    const random_index = Math.floor(Math.random() * images.length);
+    document.getElementById("meme_image").src = images[random_index];
 
   </script>
 
