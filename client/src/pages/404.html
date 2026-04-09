@@ -32,8 +32,10 @@
 
 
 
-  <body>
+  <body class="d-flex flex-column min-vh-100">
     <div id="navbar"></div>
+
+    <main class="flex-grow-1">
 
     <div class="container mt-5">
       <div class="row align-items-center text-center text-md-start">
@@ -60,24 +62,24 @@
         </div>
       </div>
 
+    </main>
+
     <div id="footer"></div>
   </body>
 
   <script>
     //array with meme images in
-    /*const cat_memes = [
+    const cat_memes = [
       '../components/cat_meme_images/meme_01.png',
       '../components/cat_meme_images/meme_02.jpg',
       '../components/cat_meme_images/meme_03.jpg',
       '../components/cat_meme_images/meme_04.png',
       '../components/cat_meme_images/meme_05.jpg'
-    ]*/
-
-    const images = Object.values(import.meta.glob('../components/cat_meme_images/*.{png,jpg,jpeg}', { eager: true })).map(img => img.default);
+    ]
 
     //random function to pick image
-    const random_index = Math.floor(Math.random() * images.length);
-    document.getElementById("meme_image").src = images[random_index];
+    const random_index = Math.floor(Math.random() * cat_memes.length);
+    document.getElementById("meme_image").src = cat_memes[random_index];
 
   </script>
 
