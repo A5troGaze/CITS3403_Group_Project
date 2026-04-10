@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>404 Page</title>
+    <title>Pop-ups</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 
@@ -19,5 +19,135 @@
     </script>
   </head>
 
+
+
+  <body>
+    <div id="navbar"></div>
+
+    <div class="start-box">
+      <h2>Do you want to go to the next level?</h2>
+      <button class="btn btn-success m-2" onclick="next('start','yes')">Yes</button>
+      <button class="btn btn-danger m-2" onclick="next('start','no')">No</button>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="questionModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-dark">
+          <div class="modal-header">
+            <h5 class="modal-title">Question</h5>
+          </div>
+
+          <div class="modal-body">
+            <p id="questionText"></p>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn btn-success" onclick="answer('yes')">Yes</button>
+            <button class="btn btn-danger" onclick="answer('no')">No</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    // ----------------------------
+    // NAVIGATION GRAPH
+    // ----------------------------
+    const nodes = {
+      start: {
+        text: "Don't be so hasty... I have questions first. Are you enjoying yourself?",
+        yes: "node2",
+        no: "node3"
+      },
+
+      node2: {
+        text: "Good. Are you ready for randomness?",
+        yes: "node4",
+        no: "node5"
+      },
+
+      node3: {
+        text: "I see... have you been on a date within the last year?",
+        yes: "node6",
+        no: "node7"
+      },
+
+      node4: {
+        text: "Do you like surprises?",
+        yes: "SECRET",
+        no: "node8"
+      },
+
+      node5: {
+        text: "Haha... there is no escape. Continue?",
+        yes: "node8",
+        no: "node3"
+      },
+
+      node6: {
+        text: "Would you like to go on one?",
+        yes: "node7",
+        no: "node8"
+      },
+
+      node7: {
+        text: "Talk to someone genius, duh. Proceed?",
+        yes: "NEXT_LEVEL",
+        no: "node5"
+      },
+
+      node8: {
+        text: "Rude! Click YES to continue.",
+        yes: "node7",
+        no: "node4"
+      }
+    };
+
+    // ----------------------------
+    // STATE
+    // ----------------------------
+    let currentNode = null;
+    const modal = new bootstrap.Modal(document.getElementById('questionModal'));
+
+    // ----------------------------
+    // FLOW CONTROL
+    // ----------------------------
+    function next(nodeId, choice) {
+      currentNode = nodes[nodeId][choice];
+      handleNode(currentNode);
+    }
+
+    function answer(choice) {
+      const nextId = nodes[currentNode][choice];
+      handleNode(nextId);
+    }
+
+    // ----------------------------
+    // NODE HANDLER
+    // ----------------------------
+    function handleNode(id) {
+
+      if (id === "NEXT_LEVEL") {
+        window.location.href = "next_level.html";
+        return;
+      }
+
+      if (id === "SECRET") {
+        window.location.href = "secret.html";
+        return;
+      }
+
+      currentNode = id;
+      document.getElementById("questionText").innerText = nodes[id].text;
+      modal.show();
+    }
+    </script>
+
+    <div id="footer"></div>
+
+  </body>
 
 </html>
