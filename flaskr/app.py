@@ -1,6 +1,6 @@
 import os
-from flask import Flask
-from models import db, User 
+from flask import Flask, render_template
+from db import db, User 
 from flask_migrate import Migrate
 
 app = Flask(__name__)
@@ -16,6 +16,9 @@ except OSError:
 db.init_app(app)
 migrate = Migrate(app, db)
 
+@app.route('/')
+def home():
+    return render_template('landing.html')
 
 @app.route('/api/test')
 def test_route():
