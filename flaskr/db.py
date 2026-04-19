@@ -6,7 +6,7 @@ HOW TO MAKE MIGRATIONS USING FLASK MIGRATE:
 
 Make sure you are in the virtual environment
 HOW TO GET INTO VIRTUAL ENVIRONMENT (VENV): check the README file
-.venv should be in server directory
+.venv should be in flaskr directory 
 
 
 IN TERMINAL:
