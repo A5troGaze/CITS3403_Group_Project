@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Landing</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='global.css') }}">
     <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
   </head>
 
@@ -17,8 +18,10 @@
         <div class="text-center">
             <h1 class="fw-bold">WELCOME</h1>
             
-            <h2 class="fw-medium mb-4">to the annoying website</h2>
-            
+            <div class = "text-animation">
+                <h2 class="fw-medium mb-4 typed-out">to the annoying website</h2>
+            </div>  
+
             <div class="d-flex justify-content-center gap-3">
                 <button type="button" class="btn btn-light btn-lg">Play</button>
                 <button type="button" class="btn btn-dark btn-lg">Play as Guest</button>

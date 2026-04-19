@@ -1,0 +1,22 @@
+/* below is the CSS for typed-out animation */
+
+.typed-out{
+    overflow: hidden;
+    border-right: .15em solid var(--main-color);
+    font-size: 1.6rem;
+    width: 0;
+    animation: 
+        typing 5s forwards infinite;
+}
+
+.text-animation {
+    display: inline-flex;
+    white-space: nowrap;
+}
+
+@keyframes typing {
+    0% {width: 0;}
+    35% {width: 100%;}
+    60% {width: 100%;}
+    100% {width: 0;}
+}
