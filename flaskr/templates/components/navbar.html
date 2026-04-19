@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">
+        <a class="navbar-brand" href="{{ url_for('home') }}">
             Annoying Website
             <!-- we can put the logo here -->
             <!-- <img src="path/to/" alt="by Juvincia !" width="30" height="24"> -->
@@ -10,11 +10,11 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
         <div class="navbar-nav">
-            <a class="nav-link active" aria-current="page" href="profile.html">Profile</a>
-            <a class="nav-link active" aria-current="page" href="landing.html">Home</a>
-            <a class="nav-link" href="leaderboard.html">Leaderboard</a>
-            <a class="nav-link" href="comments.html">Comments</a>
-            <a class="nav-link" href="FAQ.html">FAQ</a>
+            <a class="nav-link active" aria-current="page" href="{{ url_for('profile') }}">Profile</a>
+            <a class="nav-link active" aria-current="page" href="{{ url_for('home') }}">Home</a>
+            <a class="nav-link" href="{{ url_for('leaderboard') }}">Leaderboard</a>
+            <a class="nav-link" href="{{ url_for('comments') }}">Comments</a>
+            <a class="nav-link" href="{{ url_for('faq') }}">FAQ</a>
         </div>
         </div>
     </div>

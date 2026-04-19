@@ -20,6 +20,26 @@ migrate = Migrate(app, db)
 def home():
     return render_template('landing.html')
 
+@app.route('/sign_in')
+def signin():
+    return render_template('sign_in.html')
+
+@app.route('/profile')
+def profile():
+    return render_template('profile.html')
+
+@app.route('/leaderboard')
+def leaderboard():
+    return render_template('leaderboard.html')
+
+@app.route('/comments')
+def comments():
+    return render_template('comments.html')
+
+@app.route('/faq')
+def faq():
+    return render_template('FAQ.html')
+
 @app.route('/api/test')
 def test_route():
     return {"message": "Server and DB are connected!"}, 200
