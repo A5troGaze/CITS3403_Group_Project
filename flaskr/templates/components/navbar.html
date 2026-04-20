@@ -10,14 +10,46 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
         <div class="navbar-nav">
-            <a class="nav-link active" aria-current="page" href="{{ url_for('profile') }}">Profile</a>
-            <a class="nav-link active" aria-current="page" href="{{ url_for('home') }}">Home</a>
+            <a class="nav-link active" href="{{ url_for('home') }}">Home</a>
             <a class="nav-link" href="{{ url_for('leaderboard') }}">Leaderboard</a>
-            <a class="nav-link" href="{{ url_for('comments') }}">Comments</a>
             <a class="nav-link" href="{{ url_for('faq') }}">FAQ</a>
+
+            {% if session.get('user_id') %}
+                
+                <a class="nav-link" href="{{ url_for('profile') }}">Profile</a>
+                <a class="nav-link" href="{{ url_for('comments') }}">Comments</a>
+                <a class="nav-link text-danger" href="#" id="logoutBtn">Logout</a>
+
+            {% else %}
+                
+                <a class="nav-link text-primary" href="{{ url_for('signin_page') }}">Sign In</a>
+                <a class="nav-link text-success" href="{{ url_for('signup_page') }}">Sign Up</a>
+
+            {% endif %}
         </div>
         </div>
     </div>
+    <script>
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault(); 
+
+                fetch('/logout', {
+                    method: 'DELETE'
+                })
+                .then(res => {
+                    if (res.ok) {
+                        window.location.href = '/';
+                    } else {
+                        console.error("Logout failed");
+                    }
+                })
+                .catch(err => console.error("Error during logout:", err));
+            });
+        }
+    </script>
 </nav>
 	
 	

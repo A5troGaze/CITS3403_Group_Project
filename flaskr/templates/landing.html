@@ -16,16 +16,23 @@
     <div class="container-fluid min-vh-100 d-flex flex-column justify-content-center align-items-center">
     
         <div class="text-center">
+            {% if session.get('user_id') %}
+            <h1 class="fw-bold">WELCOME BACK, {{ session.get('username') }}</h1>
+            {% else %}
             <h1 class="fw-bold">WELCOME</h1>
+            {% endif %}
             
             <div class = "text-animation">
                 <h2 class="fw-medium mb-4 typed-out">to the annoying website</h2>
             </div>  
 
             <div class="d-flex justify-content-center gap-3">
-                <a type="button" class="btn btn-light btn-lg" href="{{ url_for('signin_page') }}">Play</a>
-                <a type="button" class="btn btn-dark btn-lg">Play as Guest</a>
-                <!-- havent got pages for games get so no link for second button-->
+              <!-- havent got pages for games-->
+                {% if session.get('user_id') %}
+                <a type="button" class="btn btn-dark btn-lg" href=#>Play</a>
+                {% else %}
+                <a type="button" class="btn btn-dark btn-lg" href="#">Play as Guest</a>
+                {% endif %}
             </div>
         </div>
 

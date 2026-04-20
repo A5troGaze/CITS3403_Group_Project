@@ -29,6 +29,7 @@ class Signup(Resource):
             db.session.add(user)
             db.session.commit()
             session['user_id'] = user.id
+            session['username'] = user.username
 
             return make_response(user.to_dict(), 201)
 
@@ -50,6 +51,7 @@ class Login(Resource):
         else:
             if user.authenticate(password):
                 session['user_id'] = user.id
+                session['username'] = user.username
                 response_body = user.to_dict()
                 status = 200
             else:
@@ -63,6 +65,7 @@ class Logout(Resource):
     
     def delete(self):
         session['user_id'] = None
+        session['username'] = None
         return {}, 204
     
 api.add_resource(Logout, '/logout', endpoint='logout')
@@ -83,6 +86,8 @@ def signup_page():
 
 @app.route('/profile')
 def profile():
+    if not session.get('user_id'):
+        return redirect(url_for('signin_page'))
     return render_template('profile.html')
 
 @app.route('/leaderboard')
