@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 import os
 from dotenv import load_dotenv
-
+from db import db, bcrypt
 
 load_dotenv()
 app = Flask(__name__)
@@ -21,8 +21,8 @@ try:
 except OSError:
     pass
 
-db = SQLAlchemy()
 db.init_app(app)
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 api = Api(app)
+bcrypt.init_app(app)

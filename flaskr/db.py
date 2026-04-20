@@ -26,14 +26,17 @@ flask db current
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.ext.hybrid import hybrid_property
 from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
 import datetime
 
 db = SQLAlchemy()
+bcrypt = Bcrypt()
 
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False)
     username = db.Column(db.String(80), unique=True, nullable=False)
     _password_hash = db.Column(db.String)
 

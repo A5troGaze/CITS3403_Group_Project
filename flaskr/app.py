@@ -1,7 +1,8 @@
 # all imports
-from flask import request, make_response, session
+from flask import request, make_response, session, render_template
 from flask_restful import Resource
-from db import *
+from flask_migrate import Migrate
+from db import db, User
 from config import *
 
 
@@ -72,19 +73,13 @@ api.add_resource(Logout, '/logout', endpoint='logout')
 def home():
     return render_template('landing.html')
 
-@app.route('/sign_in', methods=['GET','POST'])
-def signin():
-    if request.method == 'POST':
-        captured_username = request.form.get('username')
-        captured_password = request.form.get('password')
+@app.route('/sign_in')
+def signin_page():
+    return render_template('sign_in.html')
 
-        print("-------------------------")
-        print(f"USER ATTEMPTED TO SIGN IN")
-        print(f"Username: {captured_username}")
-        print(f"Password: {captured_password}")
-        print("-------------------------")
-
-    return render_template('sign_in.html', name=captured_username, pw=captured_password)
+@app.route('/sign_up')
+def signup_page():
+    return render_template('sign_up.html')
 
 @app.route('/profile')
 def profile():
