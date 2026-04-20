@@ -19,18 +19,18 @@
       <h1 class="fw-bold">Sign In</h1>
       <br>
 
-      <form>
+      <form method="POST" action="{{ url_for('signin') }}">
 
         <div class="form-group">
-          <label for="exampleInputUsername1">Username</label>
-          <input type="text" class="form-control" id="username" aria-describedby="usernameHelp" placeholder="Enter username">
-          <small id="usernameHelp" class="form-text text-muted">Other people will be able to see your username.</small>
+          <label for="username">Username</label>
+          <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" required>
+          <small class="form-text text-muted">Other people will be able to see your username.</small>
         </div>
         <br>
 
         <div class="form-group">
-          <label for="exampleInputPassword1">Password</label>
-          <input type="password" class="form-control" id="exampleInputPassword1">
+          <label for="password">Password</label>
+          <input type="password" class="form-control" id="password" name="password" required>
         </div>
         <br>
 
@@ -38,6 +38,7 @@
           <input type="checkbox" class="form-check-input" id="exampleCheck1">
           <label class="form-check-label" for="exampleCheck1">Check me out</label>
         </div>
+        
         <button type="submit" class="btn btn-primary">Submit</button>
 
       </form>
