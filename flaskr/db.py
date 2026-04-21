@@ -2,6 +2,11 @@
 NOTE: you need to make migrations every time you make a change to database models
 (e.g. modify columns, add new models etc.)
 
+Migrations are for saving any changes you may have made to the database, to ensure the rest of the code can work with the database without any issues. 
+If you don't make migrations, you may encounter errors when you try to run the app, because the database schema won't match the models defined in the code.
+If any migrations are faulty, delete the migration file in the migrations/versions directory, and then make a new migration with the correct changes.
+If you aren't sure which file to delete, you can delete the entire migrations folder and then run the following commands again.
+
 HOW TO MAKE MIGRATIONS USING FLASK MIGRATE:
 
 Make sure you are in the virtual environment
