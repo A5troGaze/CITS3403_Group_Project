@@ -21,12 +21,12 @@
 }
 
 
-/* below is the CSS for the runaway button animations */
-.runaway-btn {
+/* below is the CSS for the button animations */
+.hover-btn {
     transition: transform 0.2s ease-in-out;
 }
 
-.runaway-btn:hover {
-    transform: translate(0px,-5px);
+.hover-btn:hover {
+    transform: translate(0px,-3px);
     font-weight: bold;
 }

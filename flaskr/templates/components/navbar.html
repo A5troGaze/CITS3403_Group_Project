@@ -8,20 +8,20 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
         <div class="navbar-nav">
-            <a class="nav-link active runaway-btn" href="{{ url_for('home') }}">Home</a>
-            <a class="nav-link runaway-btn" href="{{ url_for('leaderboard') }}">Leaderboard</a>
-            <a class="nav-link runaway-btn" href="{{ url_for('faq') }}">FAQ</a>
+            <a class="nav-link active hover-btn" href="{{ url_for('home') }}">Home</a>
+            <a class="nav-link hover-btn" href="{{ url_for('leaderboard') }}">Leaderboard</a>
+            <a class="nav-link hover-btn" href="{{ url_for('faq') }}">FAQ</a>
 
             {% if session.get('user_id') %}
                 
-                <a class="nav-link runaway-btn" href="{{ url_for('profile') }}">Profile</a>
-                <a class="nav-link runaway-btn" href="{{ url_for('comments') }}">Comments</a>
-                <a class="nav-link text-danger runaway-btn" href="#" id="logoutBtn">Logout</a>
+                <a class="nav-link hover-btn" href="{{ url_for('profile') }}">Profile</a>
+                <a class="nav-link hover-btn" href="{{ url_for('comments') }}">Comments</a>
+                <a class="nav-link text-danger hover-btn" href="#" id="logoutBtn">Logout</a>
 
             {% else %}
                 
-                <a class="nav-link text-primary runaway-btn" href="{{ url_for('signin_page') }}">Sign In</a>
-                <a class="nav-link text-success runaway-btn" href="{{ url_for('signup_page') }}">Sign Up</a>
+                <a class="nav-link text-primary hover-btn" href="{{ url_for('signin_page') }}">Sign In</a>
+                <a class="nav-link text-success hover-btn" href="{{ url_for('signup_page') }}">Sign Up</a>
 
             {% endif %}
         </div>
