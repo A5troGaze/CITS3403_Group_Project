@@ -136,5 +136,47 @@ def upload_photo():
         db.session.commit()
     return redirect(url_for('profile'))
 
+@app.route('/update_username', methods=['POST'])
+def update_username():
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('signin_page'))
+
+    new_username = request.form.get('username')
+    user = User.query.get(user_id)
+
+    if new_username and new_username != user.username:
+        try:
+            user.username = new_username
+            db.session.commit()
+            session['username'] = new_username
+            
+        except Exception as e:
+            db.session.rollback()
+            print("Error: Don't steal other people's usernames! Try another one.", e)
+
+    return redirect(url_for('profile'))
+
+@app.route('/update_name', methods=['POST'])
+def update_name():
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('signin_page'))
+
+    new_name = request.form.get('name')
+    user = User.query.get(user_id)
+
+    if new_name and new_name != user.name:
+        try:
+            user.name = new_name
+            db.session.commit()
+            session['name'] = new_name
+            
+        except Exception as e:
+            db.session.rollback()
+            print("Error: Could not update your name in the database, maybe it's just a bad name.", e)
+
+    return redirect(url_for('profile'))
+
 if __name__ == '__main__':
     app.run(debug=True)
