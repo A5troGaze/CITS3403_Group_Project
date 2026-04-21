@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="en">
-  <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,11 +14,15 @@
     {% include 'components/navbar.html' %}
 
     <div class="card mx-auto p-2 w-50 mt-5">
-        <img src="..." class="card-img-top" alt="...">
+        <img src="{{ url_for('static', filename='images/' + user.profile_image) }}"class="card-img-top rounded-circle mx-auto mt-3" alt="default profile picture" style="width: 150px; height: 150px; object-fit: cover;">
         <div class="card-body">
             <h5 class="card-title">Profile Photo</h5>
             <p class="card-text">Modify your profile photo. Duh.</p>
-            <a href="#" class="btn btn-dark w-100">Upload</a>
+            <form action="/upload_photo" method="POST" enctype="multipart/form-data" class="mt-3">
+                <input class="form-control mb-2" type="file" name="profile_pic" accept="image/png, image/jpeg" required>
+                
+                <button type="submit" class="btn btn-dark w-100 hover-btn">Save New Photo</button>
+            </form>
         </div>
     </div>
     <br>

@@ -1,9 +1,11 @@
 # all imports
-from flask import request, make_response, session, render_template
+from flask import request, make_response, session, render_template, redirect, url_for
 from flask_restful import Resource
 from flask_migrate import Migrate
 from db import db, User
 from config import *
+import os
+from werkzeug.utils import secure_filename
 
 
 # sign in logic
@@ -71,6 +73,7 @@ class Logout(Resource):
 api.add_resource(Logout, '/logout', endpoint='logout')
 
 
+
 # app routing
 @app.route('/')
 def home():
@@ -78,17 +81,22 @@ def home():
 
 @app.route('/sign_in')
 def signin_page():
+    if session.get('user_id'):
+        return redirect(url_for('home'))
     return render_template('sign_in.html')
 
 @app.route('/sign_up')
 def signup_page():
+    if session.get('user_id'):
+        return redirect(url_for('home'))
     return render_template('sign_up.html')
 
 @app.route('/profile')
 def profile():
     if not session.get('user_id'):
         return redirect(url_for('signin_page'))
-    return render_template('profile.html')
+    current_user = User.query.get(session.get('user_id'))
+    return render_template('profile.html', user=current_user)
 
 @app.route('/leaderboard')
 def leaderboard():
@@ -105,6 +113,28 @@ def faq():
 @app.route('/api/test')
 def test_route():
     return {"message": "Server and DB are connected!"}, 200
+
+@app.route('/upload_photo', methods=['POST'])
+def upload_photo():
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('signin_page'))
+
+    if 'profile_pic' not in request.files:
+        return redirect(url_for('profile'))
+        
+    file = request.files['profile_pic']
+
+    if file.filename != '':
+        filename = secure_filename(file.filename)
+        unique_filename = f"user_{user_id}_{filename}"
+        save_path = os.path.join(app.root_path, 'static', 'images', unique_filename)
+        file.save(save_path)
+
+        user = User.query.get(user_id)
+        user.profile_image = unique_filename
+        db.session.commit()
+    return redirect(url_for('profile'))
 
 if __name__ == '__main__':
     app.run(debug=True)
