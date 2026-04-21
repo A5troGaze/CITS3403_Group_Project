@@ -1,29 +1,35 @@
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
-        <a class="navbar-brand" href="{{ url_for('home') }}">
-            <img src="/static/images/cits3403_projectlogo.png" alt="by Juvincia !" class="rounded-circle d-inline-block align-text-top img-fluid" width="70" height="70">
-        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
         <div class="navbar-nav">
-            <a class="nav-link active hover-btn" href="{{ url_for('home') }}">Home</a>
-            <a class="nav-link hover-btn" href="{{ url_for('leaderboard') }}">Leaderboard</a>
-            <a class="nav-link hover-btn" href="{{ url_for('faq') }}">FAQ</a>
-
             {% if session.get('user_id') %}
-                
-                <a class="nav-link hover-btn" href="{{ url_for('profile') }}">Profile</a>
-                <a class="nav-link hover-btn" href="{{ url_for('comments') }}">Comments</a>
-                <a class="nav-link text-danger hover-btn" href="#" id="logoutBtn">Logout</a>
-
-            {% else %}
-                
-                <a class="nav-link text-primary hover-btn" href="{{ url_for('signin_page') }}">Sign In</a>
-                <a class="nav-link text-success hover-btn" href="{{ url_for('signup_page') }}">Sign Up</a>
-
+                <a class="nav-link d-flex align-items-center text-dark pe-3" href="{{ url_for('profile') }}">
+                        <img src="{{ url_for('static', filename='images/' + current_user.profile_image) }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" alt="Profile">
+                        <span class="fw-bold fs-5">{{ current_user.username }}</span>
+                </a>
             {% endif %}
+            
+            <div class="navbar-nav position-absolute mt-3 end-0 pe-3">
+                <a class="nav-link active hover-btn" href="{{ url_for('home') }}">Home</a>
+                <a class="nav-link hover-btn" href="{{ url_for('leaderboard') }}">Leaderboard</a>
+                <a class="nav-link hover-btn" href="{{ url_for('faq') }}">FAQ</a>
+                {% if session.get('user_id') %}                
+                    <a class="nav-link hover-btn" href="{{ url_for('profile') }}">Profile</a>
+                    <a class="nav-link hover-btn" href="{{ url_for('comments') }}">Comments</a>
+                    <a class="nav-link text-danger hover-btn" href="#" id="logoutBtn">Logout</a>
+
+                {% else %}
+                    
+                    <a class="nav-link text-primary hover-btn" href="{{ url_for('signin_page') }}">Sign In</a>
+                    <a class="nav-link text-success hover-btn" href="{{ url_for('signup_page') }}">Sign Up</a>
+
+                {% endif %}
+            </div>
+            
+            
         </div>
         </div>
     </div>

@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 import os
 from dotenv import load_dotenv
-from db import db, bcrypt
+from db import db, bcrypt, User
 
 load_dotenv()
 app = Flask(__name__)
@@ -26,3 +26,11 @@ migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 api = Api(app)
 bcrypt.init_app(app)
+
+@app.context_processor
+def inject_user():
+    if session.get('user_id'):
+        user = User.query.get(session.get('user_id'))
+        return dict(current_user=user)
+    
+    return dict(current_user=None)
