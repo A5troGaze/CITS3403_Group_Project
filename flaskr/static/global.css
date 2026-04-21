@@ -1,5 +1,4 @@
 /* below is the CSS for typed-out animation */
-
 .typed-out{
     overflow: hidden;
     border-right: .15em solid var(--main-color);
@@ -19,4 +18,15 @@
     35% {width: 100%;}
     60% {width: 100%;}
     100% {width: 0;}
+}
+
+
+/* below is the CSS for the runaway button animations */
+.runaway-btn {
+    transition: transform 0.2s ease-in-out;
+}
+
+.runaway-btn:hover {
+    transform: translate(0px,-5px);
+    font-weight: bold;
 }

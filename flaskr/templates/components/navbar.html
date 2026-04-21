@@ -1,29 +1,27 @@
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
         <a class="navbar-brand" href="{{ url_for('home') }}">
-            Annoying Website
-            <!-- we can put the logo here -->
-            <!-- <img src="path/to/" alt="by Juvincia !" width="30" height="24"> -->
+            <img src="/static/images/cits3403_projectlogo.png" alt="by Juvincia !" class="d-inline-block align-text-top img-fluid rounded-start" width="70" height="70">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
         <div class="navbar-nav">
-            <a class="nav-link active" href="{{ url_for('home') }}">Home</a>
-            <a class="nav-link" href="{{ url_for('leaderboard') }}">Leaderboard</a>
-            <a class="nav-link" href="{{ url_for('faq') }}">FAQ</a>
+            <a class="nav-link active runaway-btn" href="{{ url_for('home') }}">Home</a>
+            <a class="nav-link runaway-btn" href="{{ url_for('leaderboard') }}">Leaderboard</a>
+            <a class="nav-link runaway-btn" href="{{ url_for('faq') }}">FAQ</a>
 
             {% if session.get('user_id') %}
                 
-                <a class="nav-link" href="{{ url_for('profile') }}">Profile</a>
-                <a class="nav-link" href="{{ url_for('comments') }}">Comments</a>
-                <a class="nav-link text-danger" href="#" id="logoutBtn">Logout</a>
+                <a class="nav-link runaway-btn" href="{{ url_for('profile') }}">Profile</a>
+                <a class="nav-link runaway-btn" href="{{ url_for('comments') }}">Comments</a>
+                <a class="nav-link text-danger runaway-btn" href="#" id="logoutBtn">Logout</a>
 
             {% else %}
                 
-                <a class="nav-link text-primary" href="{{ url_for('signin_page') }}">Sign In</a>
-                <a class="nav-link text-success" href="{{ url_for('signup_page') }}">Sign Up</a>
+                <a class="nav-link text-primary runaway-btn" href="{{ url_for('signin_page') }}">Sign In</a>
+                <a class="nav-link text-success runaway-btn" href="{{ url_for('signup_page') }}">Sign Up</a>
 
             {% endif %}
         </div>
@@ -49,6 +47,13 @@
                 .catch(err => console.error("Error during logout:", err));
             });
         }
+        logoutBtn.addEventListener('mouseenter', () => {
+            logoutBtn.innerText = "Are you sure?";
+        });
+        logoutBtn.addEventListener('mouseleave', () => {
+            logoutBtn.innerText = "Logout";
+        });
+
     </script>
 </nav>
 	
