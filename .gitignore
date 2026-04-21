@@ -1,0 +1,7 @@
+flaskr/.venv/
+.venv/
+flaskr/__pycache__/
+__pycache__/
+flaskr/node_modules/
+node_modules/
+.env
