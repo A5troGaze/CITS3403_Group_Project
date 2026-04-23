@@ -3,20 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Landing</title>
+    <title>404: Page Not Found</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="{{ url_for('static', filename='global.css') }}">
     <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
-    <script>
-        $.get("../components/navbar.html", function(data){
-        $("#navbar").replaceWith(data);
-        });
-    </script>
-    <script>
-        $.get("../components/footer.html", function(data){
-        $("#footer").replaceWith(data);
-        });
-    </script>
   
   </head>
 
@@ -30,9 +20,9 @@
     }
   </style>
 
-  <body>
+  <body class="d-flex flex-column min-vh-100">
 
-    <div id="navbar"></div>
+    {% include 'components/navbar.html' %}
 
     <main class="flex-grow-1">
 
@@ -48,23 +38,24 @@
           <p class="lead mb-4">Oops! Page Not Found!</p>
 
           <!--button-->
-          <a href="landing.html" class="btn btn-dark btn-lg text-white">Go to Home</a>
+          <a href="/" class="btn btn-dark btn-lg text-white" id="UsertoHome">Go to Home</a>
+          
+
         </div>
 
         <!--right side (image)-->
         <div class="col-12 col-md-6 d-flex justify-content-center align-items-center image-section">
-          <img id="meme_image" src="" alt="404 Meme" class="img-fluid">
-          <br>
-          <p1>
-            <!-- empty paragraph-->
-          </p1>
+          {% if session.get('user_id') %}
+            <img src="{{ url_for('static', filename='images/' + current_user.profile_image) }}" class="rounded-circle me-2" style="object-fit: cover; max-width: 100%; height: auto;" alt="Profile Image">
+          {% else %}
+            <img id="meme_image" src="" alt="404 Meme" class="img-fluid">
+          {% endif %}
         </div>
       </div>
 
     </main>
 
-    <div id="footer"></div>
-
+    {% include 'components/footer.html' %}
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
@@ -72,16 +63,31 @@
     <script>
       //array with meme images in
       const cat_memes = [
-        '../static/404_images/meme_01.png',
-        '../static/404_images/meme_02.jpg',
-        '../static/404_images/meme_03.jpg',
-        '../static/404_images/meme_04.png',
-        '../static/404_images/meme_05.jpg'
+        '../static/images/404_images/meme_01.png',
+        '../static/images/404_images/meme_02.jpg',
+        '../static/images/404_images/meme_03.jpg',
+        '../static/images/404_images/meme_04.png',
+        '../static/images/404_images/meme_05.jpg'
       ]
 
       //random function to pick image
-      const random_index = Math.floor(Math.random() * cat_memes.length);
-      document.getElementById("meme_image").src = cat_memes[random_index];
+      const memeImage = document.getElementById("meme_image");
+      if (memeImage) {
+        const random_index = Math.floor(Math.random() * cat_memes.length);
+        memeImage.src = cat_memes[random_index];
+      }
+      
+      
+
+      //hover animation for button
+      const UsertoHome = document.getElementById('UsertoHome');
+  
+      UsertoHome.addEventListener('mouseenter', () => {
+        UsertoHome.innerText = "Ha, you suck! 67!";
+      });
+      UsertoHome.addEventListener('mouseleave', () => {
+        UsertoHome.innerText = "Go to Home";
+      });
 
   </script>
   </body>
