@@ -63,11 +63,11 @@
     <script>
       //array with meme images in
       const cat_memes = [
-        '../static/images/404_images/meme_01.png',
-        '../static/images/404_images/meme_02.jpg',
-        '../static/images/404_images/meme_03.jpg',
-        '../static/images/404_images/meme_04.png',
-        '../static/images/404_images/meme_05.jpg'
+        "{{ url_for('static', filename='images/404_images/meme_01.png') }}",
+    "{{ url_for('static', filename='images/404_images/meme_02.jpg') }}",
+    "{{ url_for('static', filename='images/404_images/meme_03.jpg') }}",
+    "{{ url_for('static', filename='images/404_images/meme_04.png') }}",
+    "{{ url_for('static', filename='images/404_images/meme_05.jpg') }}"
       ]
 
       //random function to pick image
