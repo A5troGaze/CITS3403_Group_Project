@@ -7,7 +7,6 @@ from config import *
 import os
 from werkzeug.utils import secure_filename
 
-
 # sign in logic
 class CheckSession(Resource):
     def get(self):
