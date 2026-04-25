@@ -145,7 +145,6 @@
         </div>
 
         <script>
-            let hard_mode = false;
 
             // --- Mode Select Taunt --------------------------------------------------
             document.getElementById("btn-easy").addEventListener("click", () => {
@@ -158,14 +157,12 @@
             
             document.getElementById("btn-hard").addEventListener("click", () => {
                 //hide mode select -> start game
-                hard_mode = true;
                 document.getElementById("mode-overlay").style.display = "none";
             });
 
             document.getElementById("taunt-ok").addEventListener("click", () => {
                 document.getElementById("taunt-overlay").style.display = "none";
                 //hard either way -> start game
-                hard_mode = true;
             });
 
 
@@ -179,16 +176,38 @@
 
 
 
-            // --- Player Image ------------------------------------------------------
+            // --- Player Image ------------------------------------------------------ #fix
+            /*let player_img_loaded = false;
+            {% if session.get("user_id")%}
+                const player_img = new Image();
+                player_img.src = {{ url_for('static', filename='images/' + current_user.profile_image) }}
+                let player_img_loaded = false;
+                //if the play image loads -> draw the maze (will draw player if image is loaded, otherwise will draw player as a blue square)
+                player_img.onload = () => {
+                    player_img_loaded = true;
+                    draw();
+                };
+            {% endif %}*/
+
             const player_img = new Image();
-            //player_img.src = //get to this!
+            //player_img.src = {{ url_for('static', filename='images/' + current_user.profile_image) }}
             let player_img_loaded = false;
             //if the play image loads -> draw the maze (will draw player if image is loaded, otherwise will draw player as a blue square)
             player_img.onload = () => {
                 player_img_loaded = true;
                 draw();
             };
+            
 
+            // --- Goal Image -------------------------------------------------------- 
+            const goal_img = new Image();
+            goal_img.src = /*"/static/images/cits3403_projectlogo.png";*/ "/static/images/icon_head.jpg"; //smaller logo?
+            let goal_img_loaded = false;
+            //if the play image loads -> draw the maze (will draw goal if image is loaded, otherwise will draw player as a blue square)
+            goal_img.onload = () => {
+                goal_img_loaded = true;
+                draw();
+            };
 
 
             // --- Player and Goal --------------------------------------------------
@@ -294,7 +313,6 @@
                 }
 
                 // Draw goal
-                /*
                 if (goal_img_loaded) {
                     maze_context.drawImage(
                         goal_img, 
@@ -312,14 +330,6 @@
                         goal.size *scale
                     );
                 }
-                */
-                maze_context.fillStyle = "green";
-                maze_context.fillRect(
-                    goal.x *scale, 
-                    goal.y *scale, 
-                    goal.size *scale, 
-                    goal.size *scale
-                );
 
 
 
