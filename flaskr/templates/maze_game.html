@@ -6,21 +6,132 @@
         <title>The Maze</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
         <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
-
-        <script>
-            $.get("../components/navbar.html", function(data){
-            $("#navbar").replaceWith(data);
-            });
-        </script>
-        <script>
-            $.get("../components/footer.html", function(data){
-            $("#footer").replaceWith(data);
-            });
-        </script>
+        <style>
+        /* ── Mode select overlay ── */
+            #mode-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.75);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            }
+ 
+            #mode-box {
+                background: #fff;
+                border-radius: 16px;
+                padding: 40px 50px;
+                text-align: center;
+                max-width: 380px;
+                width: 90%;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            }
+ 
+            #mode-box h2 {
+                font-size: 1.8rem;
+                font-weight: 800;
+                margin-bottom: 8px;
+            }
+ 
+            #mode-box p {
+                color: #666;
+                margin-bottom: 28px;
+                font-size: 0.95rem;
+            }
+ 
+            .mode-btn {
+                display: block;
+                width: 100%;
+                padding: 14px;
+                border: none;
+                border-radius: 10px;
+                font-size: 1.05rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: transform 0.1s, box-shadow 0.1s;
+                margin-bottom: 12px;
+            }
+ 
+            .mode-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+            .mode-btn:active { transform: translateY(0); }
+ 
+            #btn-easy  { background: #28a745; color: #fff; }
+            #btn-hard  { background: #dc3545; color: #fff; }
+ 
+        /* ── Taunt popup (easy mode) ── */
+            #taunt-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.6);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                z-index: 10001;
+            }
+ 
+            #taunt-box {
+                background: #fff;
+                border-radius: 16px;
+                padding: 36px 44px;
+                text-align: center;
+                max-width: 340px;
+                width: 90%;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            }
+ 
+            #taunt-box h3 {
+                font-size: 1.5rem;
+                font-weight: 800;
+                margin-bottom: 10px;
+                color: #dc3545;
+            }
+ 
+            #taunt-box p {
+                color: #444;
+                margin-bottom: 24px;
+            }
+ 
+            #taunt-ok {
+                background: #343a40;
+                color: #fff;
+                border: none;
+                border-radius: 10px;
+                padding: 12px 32px;
+                font-size: 1rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+ 
+            #taunt-ok:hover { background: #000; }
+        </style>
+    
     </head>
 
     <body class="bg-light text-center d-flex flex-column min-vh-100">
-        <div id="navbar"></div>
+
+        {% include 'components/navbar.html' %}
+
+
+        <!--"mode" selection-->
+        <div id="mode-overlay">
+            <div id="mode-box">
+                <h2>Dude! That's A-Maze-ing!</h2>
+                <p>Choose your difficulty level.<br>Choose wisely...</p>
+                <button class="mode-btn" id="btn-easy">Easy</button>
+                <button class="mode-btn" id="btn-hard">Hard</button>
+            </div>
+        </div>
+
+        <!--taunt popup (taunt the user when they pick easy mode)-->
+        <div id="taunt-overlay" style="display: none; flex-direction: column;">
+            <div id="taunt-box">
+                <h3>Easy Mode? Really?</h3>
+                <p>There is no easy mode.<br><strong> Get good 😎</strong></p>
+                <button id="taunt-ok">Yes Master</button>
+            </div>
+        </div>
 
         <div class="container mt-4">
             <h2>Complete the Maze!</h2>
@@ -34,20 +145,60 @@
         </div>
 
         <script>
+            let hard_mode = false;
+
+            // --- Mode Select Taunt --------------------------------------------------
+            document.getElementById("btn-easy").addEventListener("click", () => {
+                //hide mode select -> taunt user
+                document.getElementById("mode-overlay").style.display = "none";
+                const taunt = document.getElementById("taunt-overlay");
+                taunt.style.display = "flex";
+            });
+
+            
+            document.getElementById("btn-hard").addEventListener("click", () => {
+                //hide mode select -> start game
+                hard_mode = true;
+                document.getElementById("mode-overlay").style.display = "none";
+            });
+
+            document.getElementById("taunt-ok").addEventListener("click", () => {
+                document.getElementById("taunt-overlay").style.display = "none";
+                //hard either way -> start game
+                hard_mode = true;
+            });
+
+
+
+            // --- Maze Canvas Setup --------------------------------------------------
             const BASE_SIZE = 400;
             const maze_canvas = document.getElementById("maze_canvas");
             const maze_context = maze_canvas.getContext("2d");
             let firstplay = true;
             let inputLocked = false;
 
+
+
+            // --- Player Image ------------------------------------------------------
+            const player_img = new Image();
+            //player_img.src = //get to this!
+            let player_img_loaded = false;
+            //if the play image loads -> draw the maze (will draw player if image is loaded, otherwise will draw player as a blue square)
+            player_img.onload = () => {
+                player_img_loaded = true;
+                draw();
+            };
+
+
+
+            // --- Player and Goal --------------------------------------------------
             //player dimenstions
             let player = {x: 20, y: 20, size: 15};
-
             //goal dimensions
             let goal = {x: 360, y: 360, size: 20};
 
             //maze wall definitions
-            const walls = [
+            const static_walls = [
                 // Outer border
                 {x: 0, y: 0, w: 400, h: 10},
                 {x: 0, y: 0, w: 10, h: 400},
@@ -60,7 +211,7 @@
                 {x: 40, y: 120, w: 240, h: 10},
                 {x: 80, y: 80, w: 360, h: 10},
                 {x: 320, y: 80, w: 10, h: 80},
-                {x: 240, y: 160, w: 10, h: 80},
+                {x: 240, y: 160, w: 10, h: 90},
                 {x: 280, y: 120, w: 10, h: 40},
                 {x: 240, y: 200, w: 120, h: 10},
                 {x: 280, y: 240, w: 120, h: 10},
@@ -78,6 +229,39 @@
 
             ];
 
+
+
+            // --- Dynamic Walls -----------------------------------------------------
+            // Defined walls to appear (add), disappear (remove) and the trigger (trigger).
+            // the message will be displayed when the wall is triggered
+            const dynamic_wall_events = [
+                {
+                    fired: false,
+                    trigger: {x: 360, y: 240, w: 40, h:60}, // when player enters this area -> trigger the wall
+                    add: [{x: 360, y: 280, w:30, h:10}, {x: 240, y: 200, w:10, h:80}], // add this wall to the maze
+                    remove: [{x: 240, y: 160, w: 10, h: 90}, {x: 240, y: 280, w: 10, h: 120}], // remove this wall from the maze (can be empty if no walls need to be removed)
+                    message: "Ha, blocked!"
+                },
+                {
+                    fired: false,
+                    trigger: {x: 180, y: 300, w: 40, h:60},
+                    add: [{x: 170, y: 350, w: 30, h: 10}, {x: 280, y: 240, w: 85, h: 10}],
+                    remove: [{x: 280, y: 240, w: 120, h: 10}],
+                    message: "Yes... Dance for me puppet!"
+                }
+            ];
+
+            //Active dynamic walls
+            let active_dynamic_walls = [];
+
+            //All walls currently in the maze (static + active dynamic)
+            function getAllWalls() {
+                return [...static_walls, ...active_dynamic_walls];
+            }
+
+
+
+            // --- Draw Game Canvas --------------------------------------------------
             // Draw everything on the canvas that the maze exists on
             function draw() {
                 maze_context.clearRect(0, 0, maze_canvas.width, maze_canvas.height);
@@ -87,9 +271,20 @@
                     maze_canvas.height / BASE_SIZE
                 );
 
-                // Draw walls
-                maze_context.fillStyle = "black";
-                for (let wall of walls) {
+                // Draw static walls
+                for (let wall of static_walls) {
+                    maze_context.fillStyle = "#222";
+                    maze_context.fillRect(
+                        wall.x *scale, 
+                        wall.y *scale, 
+                        wall.w *scale, 
+                        wall.h *scale
+                    );
+                }
+
+                //Draw dynamic walls
+                for (let wall of active_dynamic_walls) {
+                    maze_context.fillStyle = "#222";
                     maze_context.fillRect(
                         wall.x *scale, 
                         wall.y *scale, 
@@ -99,6 +294,25 @@
                 }
 
                 // Draw goal
+                /*
+                if (goal_img_loaded) {
+                    maze_context.drawImage(
+                        goal_img, 
+                        goal.x *scale, 
+                        goal.y *scale, 
+                        goal.size *scale, 
+                        goal.size *scale
+                    );
+                } else {
+                    maze_context.fillStyle = "green";
+                    maze_context.fillRect(
+                        goal.x *scale, 
+                        goal.y *scale, 
+                        goal.size *scale, 
+                        goal.size *scale
+                    );
+                }
+                */
                 maze_context.fillStyle = "green";
                 maze_context.fillRect(
                     goal.x *scale, 
@@ -107,16 +321,29 @@
                     goal.size *scale
                 );
 
+
+
                 // Draw player
-                maze_context.fillStyle = "blue";
-                maze_context.fillRect(
-                    player.x *scale, 
-                    player.y *scale, 
-                    player.size *scale, 
-                    player.size *scale
-                );
+                if (player_img_loaded) {
+                    maze_context.drawImage(
+                        player_img, 
+                        player.x *scale, 
+                        player.y *scale, 
+                        player.size *scale, 
+                        player.size *scale
+                    );
+                } else {
+                    maze_context.fillStyle = "blue";
+                    maze_context.fillRect(
+                        player.x *scale, 
+                        player.y *scale, 
+                        player.size *scale, 
+                        player.size *scale
+                    );
+                }
             }
 
+            // --- Resize Canvas ------------------------------------------------------
             //resize canvas to fit window while maintaining aspect ratio
             function resizeCanvas() {
                 const padding = 20; // some padding around the maze
@@ -124,24 +351,15 @@
                     window.innerWidth - padding,
                     window.innerHeight - 150
                 );
-
                 maze_canvas.width = size;
                 maze_canvas.height = size;
                 draw(); //redraw after resize
             }
 
-            /* Collision detection Version 1 (check if player is currently colliding, not good for movement as player can "skip" through walls if they move fast enough)
-            function isColliding(rect1, rect2) {
-                return (
-                    rect1.x < rect2.x + rect2.w &&
-                    rect1.x + rect1.size > rect2.x &&
-                    rect1.y < rect2.y + rect2.h &&
-                    rect1.y + rect1.size > rect2.y
-                );
-            }*/
-            // Collision detection Version 2 (check if player would collide at new position)
+            // --- Collision Detection ------------------------------------------------
+            // Collision detection (check if player would collide at new position)
             function wouldCollide(pos) {
-                for (let wall of walls) {
+                for (let wall of getAllWalls()) {
                     if (
                         pos.x < wall.x + wall.w &&
                         pos.x + player.size > wall.x &&
@@ -154,7 +372,7 @@
                 return false;
             }
 
-            // Check for a win
+            // --- Check for Win ------------------------------------------------------
             function checkWin() {
                 if (
                     player.x < goal.x + goal.size &&
@@ -167,26 +385,73 @@
                 }
             }
 
+
+
+            // --- Dynamic Wall Triggers -----------------------------------------------
+            function checkWallEvents() {
+                for (let event of dynamic_wall_events) {
+                    if (event.fired) continue; // skip if event already fired
+
+                    const trigger = event.trigger;
+                    //check if player is in trigger area
+                    const cx = player.x + player.size / 2; // player center x
+                    const cy = player.y + player.size / 2; // player center y
+
+                    if (
+                        cx > trigger.x &&
+                        cx < trigger.x + trigger.w &&
+                        cy > trigger.y &&
+                        cy < trigger.y + trigger.h
+                    ) {
+                        event.fired = true; // mark event as fired
+
+                        //remove specified walls
+                        for (let rem of event.remove) {
+                            //hide static wall
+                            const si = static_walls.findIndex(w => 
+                                w.x === rem.x && w.y === rem.y && w.w === rem.w && w.h === rem.h
+                            );
+                            if (si !== 1) {
+                                static_walls.splice(si, 1);
+                            }
+
+                            const di = active_dynamic_walls.findIndex(w => 
+                                w.x === rem.x && w.y === rem.y && w.w === rem.w && w.h === rem.h
+                            );
+                            if (di !== -1) {
+                                active_dynamic_walls.splice(di, 1);
+                            }
+                        }
+
+                        //add new walls
+                        active_dynamic_walls.push(...event.add); // add new walls
+                        showMessage(event.message); // show event message
+                    }
+
+                }
+            }
+
+
+            // --- Popup Message To Inform of Flipped Controls and Collisions ----------
             //show message to players in case of collision
             function showMessage(text, duration = 2500) {
                 const msg = document.createElement("div");
                 msg.innerText = text;
-
-                msg.style.position = "fixed";
-                msg.style.top = "50%";
-                msg.style.left = "50%";
-                msg.style.transform = "translate(-50%, -50%)";
-
-                msg.style.background = "white";
-                msg.style.color = "black";
-                msg.style.padding = "20px 30px";
-                msg.style.borderRadius = "10px";
-                msg.style.fontSize = "18px";
-                msg.style.fontWeight = "bold";
-                
-                msg.style.zIndex = "9999";
-                msg.style.opacity = "1";
-                msg.style.transition = "opacity 0.5s ease";
+                Object.assign(msg.style, {
+                    position: "fixed",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    background: "white",
+                    color: "black",
+                    padding: "20px 30px",
+                    borderRadius: "10px",
+                    fontSize: "18px",
+                    fontWeight: "bold",
+                    zIndex: "9999",
+                    opacity: "1",
+                    transition: "opacity 0.5s ease"
+                });
 
                 document.body.appendChild(msg);
 
@@ -201,7 +466,7 @@
                 }, duration);
             }
             
-            // Reset game
+            // --- Reset Game ----------------------------------------------------------
             function resetGame(message = "") {
                 if (firstplay) {
                     inputLocked = true;
@@ -218,6 +483,7 @@
                 }, 2500); // must match popup duration
             }
 
+            // --- Player Movement ------------------------------------------------------
             function movePlayer(event) {
 
                 if (inputLocked) return; // block input while first popup message is showing
@@ -228,9 +494,9 @@
                 }
 
                 const speed = 7;
-
                 let newPos = { ...player };
 
+                //inverted arrow key events
                 switch (event.key) {
                     case "ArrowUp":
                         newPos.y += speed; // inverted
@@ -249,35 +515,31 @@
                 }
 
                 
-
+                // to occur when different events transpire
                 if (!wouldCollide(newPos)) {
                     player = newPos;
+                    checkWallEvents();
                     checkWin();
                 } else if (firstplay) {
                     resetGame();
-                    showMessage("Oh yeah... The controls are inverted. Haha, lol.");
+                    showMessage("Oh yeah... The controls are inverted. Nice.");
                     firstplay = false;
                 } else {
                     resetGame();
-                    showMessage("Oof, you hit a wall! Get gud.");
+                    showMessage("Oof, you hit a wall! Get good.");
                 }
 
                 draw();
             }
 
             document.addEventListener("keydown", movePlayer);
-
             window.addEventListener("resize", resizeCanvas);
-            
             //initial resize to set canvas size based on window size
             resizeCanvas();
-
             // Initial draw
             draw();
 
         </script>
-
-        <div id="footer"></div>
 
     </body>
 
