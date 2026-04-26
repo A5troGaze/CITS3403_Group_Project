@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Pop-ups</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='global.css') }}">
     <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 
   </head>
@@ -19,10 +20,11 @@
 
       <div class="start-box text-center" style="max-width: 500px;">
         <h2>Do you want to go to the next level?</h2>
+        <br>
 
         <div class="d-flex justify-content-center gap-3 flex-nowrap">
-          <button class="btn btn-success px-4" onclick="next('start','yes')">Yes</button>
-          <button class="btn btn-danger px-4" onclick="next('start','no')">No</button>
+          <button class="btn btn-dark hover-btn px-4" onclick="next('start','yes')">Yes</button>
+          <button class="btn btn-dark hover-btn px-4" onclick="next('start','no')">No</button>
         </div>
 
       </div>
@@ -43,8 +45,8 @@
           </div>
 
           <div class="modal-footer">
-            <button id="yesBtn" class="btn btn-success" onclick="answer('yes')">Yes</button>
-            <button id="noBtn" class="btn btn-danger" onclick="answer('no')">No</button>
+            <button id="yesBtn" class="btn btn-dark hover-btn" onclick="answer('yes')">Yes</button>
+            <button id="noBtn" class="btn btn-dark hover-btn" onclick="answer('no')">No</button>
           </div>
         </div>
       </div>
@@ -175,7 +177,7 @@
 
       //load secret level page
       if (id === "SECRET") {
-        window.location.href = "secret_task.html";
+        window.location.href = "{{ url_for('secret') }}";
         return;
       }
 
