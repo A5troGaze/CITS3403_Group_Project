@@ -12,12 +12,12 @@
 
 
   <style>
-    .image-section img {
+    /*.image-section img {
       max-width: 100%; /* won-t exeed container width */
-      max-height: 70vh; /* won't exeed 70% of viewport height */
-      object-fit: contain; /* maintain aspect ratio */
-      border-radius: 10px; /* rounded corners */
-    }
+      /*max-height: 70vh; /* won't exeed 70% of viewport height */
+      /*object-fit: contain; /* maintain aspect ratio */
+      /*border-radius: 10px; /* rounded corners 
+    }*/
 
     #meme_image {
       width: 500px;
@@ -25,6 +25,12 @@
       object-fit: cover;
       border-radius: 50%;
       cursor: pointer;
+    }
+
+    #UsertoHome {
+      font-size: 2rem; 
+      padding: 16px 40px; 
+      border-radius: 20px;
     }
 
     main {
@@ -38,7 +44,7 @@
 
     {% include 'components/navbar.html' %}
 
-    <main class="flex-grow-1 d-flex algin-items-center">
+    <main class="flex-grow-1 d-flex align-items-center">
 
       <div class="container">
 
@@ -47,13 +53,13 @@
           <!--left side-->
           <div class="col-12 col-md-6 ps-md-5 mb-4 mb-md-0">
             <!--404-->
-            <h1 class="display-1 fw-bold">404</h1>
+            <h1 class="fw-bold" style="font-size: 10rem;">404</h1>
             <!--message-->
-            <p class="lead mb-4">Oops! Page Not Found!</p>
+            <p class="mb-4" style="font-size: 2rem">Oops... Page not found!</p>
             <!--button-->
-            <a href="/" class="btn btn-dark btn-lg text-white" id="UsertoHome">Go to Home</a>
+            <a href="/" class="btn btn-dark btn-lg hover-btn" id="UsertoHome">Go to Home</a>
             <!--click the image... ;)-->
-            <p class="mt-3 text-muted">Click the image... ;) </p>
+            <p class="mt-3 text-muted" style="font-size: 1.2rem;" id="miniMessage">Click the image... ;) </p>
           </div>
 
           <!--right side (image)-->
@@ -110,6 +116,10 @@
 
 
           memeImage.src = cat_memes[newIndex];
+          
+          const miniMsg = document.getElementById('miniMessage');
+          miniMsg.innerText = "Keep clicking ;)"
+
         });
       }
       
