@@ -8,6 +8,13 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='global.css') }}">
         <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
         <style>
+        /* */
+        #maze_card {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
         /* ── Mode select overlay ── */
             #mode-overlay {
                 position: fixed;
@@ -53,9 +60,10 @@
                 transition: transform 0.1s, box-shadow 0.1s;
                 margin-bottom: 12px;
             }
- 
-            /*.mode-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }*/
-            .mode-btn:active { transform: translateY(0); }
+
+            .mode-btn:active { 
+                transform: translateY(0); 
+            }
  
         /* ── Taunt popup (easy mode) ── */
             #taunt-overlay {
@@ -101,6 +109,13 @@
                 transition: background 0.2s;
             }
 
+        /* -- Mobile button style */
+            .mobile-btn {
+                width:60px;
+                height: 60px;
+                font-size: 1.2rem;
+            }
+
         </style>
     
     </head>
@@ -128,13 +143,26 @@
             </div>
         </div>
 
-        <div class="container mt-4">
+        <div class="container mt-2 d-flex flex-column align-items-center">
             <h2>Complete the Maze!</h2>
 
-            <div id="maze_card" class="card shadow p-3 bg-white rounded mt-4 mx-auto d-inline-block">
+            <div id="maze_card" class="card shadow p-3 bg-white rounded mt-2">
 
                 <canvas id="maze_canvas" class="border border-dark rounded"></canvas>
 
+            </div>
+
+            <div id="mobile-controls" class="d-none">
+                <div class="d-flex flex-column align-items-center gap-2 my-3">
+                    <button class="btn btn-dark mobile-btn" id="mob-up">▲</button>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-dark mobile-btn" id="mob-left">◀</button>
+                        <div style="width: 60px; height: 60px;"></div>
+                        <button class="btn btn-dark mobile-btn" id="mob-right">▶</button>
+                    </div>
+                    <button class="btn btn-dark mobile-btn" id="mob-down">▼</button>
+
+                </div>
             </div>
 
         </div>
@@ -149,7 +177,6 @@
                 taunt.style.display = "flex";
             });
 
-            
             document.getElementById("btn-hard").addEventListener("click", () => {
                 //hide mode select -> start game
                 document.getElementById("mode-overlay").style.display = "none";
@@ -171,7 +198,6 @@
 
 
             
-
             // --- Goal Image -------------------------------------------------------- 
             const goal_img = new Image();
             goal_img.src = "/static/images/cits3403_projectlogo.png"; /*"/static/images/icon_head.jpg"; *///smaller logo?
@@ -181,6 +207,7 @@
                 goal_img_loaded = true;
                 draw();
             };
+
 
 
             // --- Player and Goal --------------------------------------------------
@@ -322,18 +349,37 @@
                 maze_context.fill();
             }
 
+
+
             // --- Resize Canvas ------------------------------------------------------
             //resize canvas to fit window while maintaining aspect ratio
             function resizeCanvas() {
-                const padding = 20; // some padding around the maze
-                const size = Math.min(
-                    window.innerWidth - padding,
-                    window.innerHeight - 150
+
+                //collect and assign components to variables
+                const navbar = document.querySelector('nav') || {offsetHeight: 56};
+                const title = document.querySelector('h2');
+                const mobile_ctrls = document.getElementById('mobile-controls');
+
+                //calculate how much height is actually being used / needed
+                const used_height = 
+                    navbar.offsetHeight + (title ? title.offsetHeight : 0)
+                    + (mobile_ctrls && !mobile_ctrls.classList.contains('d-none') ? mobile_ctrls.offsetHeight :0)
+                    + 80;
+
+                //calculate minimum new size size with padding needed
+                const new_size = Math.min(
+                    window.innerWidth - 40,
+                    window.innerHeight - used_height
                 );
-                maze_canvas.width = size;
-                maze_canvas.height = size;
-                draw(); //redraw after resize
+
+                //apply new size without ever dipping below 100px
+                maze_canvas.width = Math.max(new_size, 100);
+                maze_canvas.height = Math.max(new_size, 100);
+                draw();
+
             }
+
+
 
             // --- Collision Detection ------------------------------------------------
             // Collision detection (check if player would collide at new position)
@@ -351,7 +397,9 @@
                 return false;
             }
 
-            // --- Check for Win ------------------------------------------------------
+
+
+            // --- Check for Win -------------------------------------------------------
             function checkWin() {
                 if (
                     player.x < goal.x + goal.size &&
@@ -411,6 +459,7 @@
             }
 
 
+
             // --- Popup Message To Inform of Flipped Controls and Collisions ----------
             //show message to players in case of collision
             function showMessage(text, duration = 2500) {
@@ -445,6 +494,8 @@
                 }, duration);
             }
             
+
+
             // --- Reset Game ----------------------------------------------------------
             function resetGame(message = "") {
                 if (firstplay) {
@@ -462,7 +513,9 @@
                 }, 2500); // must match popup duration
             }
 
-            // --- Player Movement ------------------------------------------------------
+
+
+            // --- Player Movement -----------------------------------------------------
             function movePlayer(event) {
 
                 if (inputLocked) return; // block input while first popup message is showing
@@ -511,11 +564,50 @@
                 draw();
             }
 
+
+
+            // --- Keyboard action -----------------------------------------------------
             document.addEventListener("keydown", movePlayer);
-            window.addEventListener("resize", resizeCanvas);
-            //initial resize to set canvas size based on window size
+
+
+
+            // --- Mobile controls -----------------------------------------------------
+            //Handle mobile input and use input to activate the pre-defined movePlayer function
+            function handleMobileInput(key) {
+                if (inputLocked) return;
+                movePlayer({key, preventDefault: () => {} });
+            }
+
+            document.getElementById("mob-up").addEventListener("click", () => handleMobileInput("ArrowUp"));
+            document.getElementById("mob-down").addEventListener("click", () => handleMobileInput("ArrowDown"));
+            document.getElementById("mob-left").addEventListener("click", () => handleMobileInput("ArrowLeft"));
+            document.getElementById("mob-right").addEventListener("click", () => handleMobileInput("ArrowRight"));
+
+            //Show or hide input based upon width of the winder -> shows controls for mobile users with vertical screen -> hides for users with horizontal screens
+            function checkMobileInput() {
+                const controls = document.getElementById("mobile-controls");
+                if (window.innerWidth < 768) {
+                    controls.classList.remove("d-none");
+
+                } else {
+                    controls.classList.add("d-none");
+                }
+            }
+
+
+
+            // --- Initial Loading and Window Resizing ----------------------------------
+            //Rezise everything and check if the mobile buttons need to be added every time the browser window size is messed with
+            window.addEventListener("resize", () => {
+                checkMobileInput();
+                resizeCanvas();
+            });
+
+            //Initial check for sufficient vertical orientation (on load)
+            checkMobileInput();
+            //Initial resize to set canvas size based on window size (on load)
             resizeCanvas();
-            // Initial draw
+            //Initial draw
             draw();
         
 
