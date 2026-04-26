@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>The Maze</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+        <link rel="stylesheet" href="{{ url_for('static', filename='global.css') }}">
         <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
         <style>
         /* ── Mode select overlay ── */
@@ -53,11 +54,8 @@
                 margin-bottom: 12px;
             }
  
-            .mode-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+            /*.mode-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }*/
             .mode-btn:active { transform: translateY(0); }
- 
-            #btn-easy  { background: #28a745; color: #fff; }
-            #btn-hard  { background: #dc3545; color: #fff; }
  
         /* ── Taunt popup (easy mode) ── */
             #taunt-overlay {
@@ -93,7 +91,6 @@
             }
  
             #taunt-ok {
-                background: #343a40;
                 color: #fff;
                 border: none;
                 border-radius: 10px;
@@ -103,8 +100,7 @@
                 cursor: pointer;
                 transition: background 0.2s;
             }
- 
-            #taunt-ok:hover { background: #000; }
+
         </style>
     
     </head>
@@ -113,14 +109,13 @@
 
         {% include 'components/navbar.html' %}
 
-
         <!--"mode" selection-->
         <div id="mode-overlay">
             <div id="mode-box">
                 <h2>Dude! That's A-Maze-ing!</h2>
                 <p>Choose your difficulty level.<br>Choose wisely...</p>
-                <button class="mode-btn" id="btn-easy">Easy</button>
-                <button class="mode-btn" id="btn-hard">Hard</button>
+                <button class="mode-btn hover-btn btn btn-dark" id="btn-easy">Easy</button>
+                <button class="mode-btn hover-btn btn btn-dark" id="btn-hard">Hard</button>
             </div>
         </div>
 
@@ -129,7 +124,7 @@
             <div id="taunt-box">
                 <h3>Easy Mode? Really?</h3>
                 <p>There is no easy mode.<br><strong> Get good 😎</strong></p>
-                <button id="taunt-ok">Yes Master</button>
+                <button id="taunt-ok" class="hover-btn btn btn-dark">Yes Master</button>
             </div>
         </div>
 
@@ -175,33 +170,11 @@
             let inputLocked = false;
 
 
-
-            // --- Player Image ------------------------------------------------------ #fix
-            /*let player_img_loaded = false;
-            {% if session.get("user_id")%}
-                const player_img = new Image();
-                player_img.src = {{ url_for('static', filename='images/' + current_user.profile_image) }}
-                let player_img_loaded = false;
-                //if the play image loads -> draw the maze (will draw player if image is loaded, otherwise will draw player as a blue square)
-                player_img.onload = () => {
-                    player_img_loaded = true;
-                    draw();
-                };
-            {% endif %}*/
-
-            const player_img = new Image();
-            //player_img.src = {{ url_for('static', filename='images/' + current_user.profile_image) }}
-            let player_img_loaded = false;
-            //if the play image loads -> draw the maze (will draw player if image is loaded, otherwise will draw player as a blue square)
-            player_img.onload = () => {
-                player_img_loaded = true;
-                draw();
-            };
             
 
             // --- Goal Image -------------------------------------------------------- 
             const goal_img = new Image();
-            goal_img.src = /*"/static/images/cits3403_projectlogo.png";*/ "/static/images/icon_head.jpg"; //smaller logo?
+            goal_img.src = "/static/images/cits3403_projectlogo.png"; /*"/static/images/icon_head.jpg"; *///smaller logo?
             let goal_img_loaded = false;
             //if the play image loads -> draw the maze (will draw goal if image is loaded, otherwise will draw player as a blue square)
             goal_img.onload = () => {
@@ -322,35 +295,31 @@
                         goal.size *scale
                     );
                 } else {
-                    maze_context.fillStyle = "green";
-                    maze_context.fillRect(
-                        goal.x *scale, 
-                        goal.y *scale, 
-                        goal.size *scale, 
-                        goal.size *scale
+                    maze_context.fillStyle = "#dc3545";
+                    maze_context.beginPath();
+                    maze_context.arc(
+                        (goal.x + goal.size / 2) * scale,
+                        (goal.y + goal.size / 2) * scale,
+                        (goal.size / 2) * scale,
+                        0,
+                        Math.PI * 2
                     );
+                    maze_context.fill();
                 }
 
 
 
-                // Draw player
-                if (player_img_loaded) {
-                    maze_context.drawImage(
-                        player_img, 
-                        player.x *scale, 
-                        player.y *scale, 
-                        player.size *scale, 
-                        player.size *scale
-                    );
-                } else {
-                    maze_context.fillStyle = "blue";
-                    maze_context.fillRect(
-                        player.x *scale, 
-                        player.y *scale, 
-                        player.size *scale, 
-                        player.size *scale
-                    );
-                }
+                // Draw player ---------------> player is a circle
+                maze_context.fillStyle = "green";
+                maze_context.beginPath();
+                maze_context.arc(
+                    (player.x + player.size / 2) * scale,
+                    (player.y + player.size / 2) * scale,
+                    (player.size / 2) * scale,
+                    0,
+                    Math.PI * 2
+                );
+                maze_context.fill();
             }
 
             // --- Resize Canvas ------------------------------------------------------
@@ -548,6 +517,7 @@
             resizeCanvas();
             // Initial draw
             draw();
+        
 
         </script>
 

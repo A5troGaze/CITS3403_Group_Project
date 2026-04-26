@@ -27,6 +27,7 @@
 .hover-btn:hover {
     transform: translate(0px,-3px);
     font-weight: bold;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 }
 
 /* below is the CSS for the FAQ page (Juvincia) */
