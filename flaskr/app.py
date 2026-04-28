@@ -95,7 +95,7 @@ def signup_page():
 def profile():
     if not session.get('user_id'):
         return redirect(url_for('signin_page'))
-    current_user = User.query.get(session.get('user_id'))
+    current_user = db.session.get(User, session.get('user_id'))
     return render_template('profile.html', user=current_user)
 
 @app.route('/leaderboard')
