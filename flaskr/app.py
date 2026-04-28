@@ -109,6 +109,7 @@ def comments():
 def faq():
     return render_template('FAQ.html')
 
+
 @app.route('/api/test')
 def test_route():
     return {"message": "Server and DB are connected!"}, 200
@@ -176,6 +177,10 @@ def update_name():
             print("Error: Could not update your name in the database, maybe it's just a bad name.", e)
 
     return redirect(url_for('profile'))
+
+@app.route('/human_check')
+def human_check():
+    return render_template('/human_check.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
