@@ -15,33 +15,48 @@
 
     {% include 'components/navbar.html' %}
 
-    <div class="banner-wrapper w-100 min-vh-25 overflow-hidden">
-        <img src="{{ url_for('static', filename='images/' + current_user.banner_image) }}" alt="Profile Banner" 
-        class="w-100 h-100" style="object-fit: cover;">
-    </div>
-
-    <div class="card border-0 shadow" style="border-radius: 1rem;">    
-    <form action="/upload_photo" method="POST" enctype="multipart/form-data">
+    <div class="banner-wrapper w-100 overflow-hidden" style="height: 300px;">
+    
+    <form action="/upload_banner" method="POST" enctype="multipart/form-data" class="w-100 h-100">
         
-        <label id="avatar-trigger" for="top-file-upload" class="position-absolute top-0 start-50 translate-middle" style="width: 150px; height: 150px; cursor: pointer; z-index: 10;">
+        <label id="banner-trigger" for="banner-file-upload" class="position-relative w-100 h-100 d-block m-0" style="cursor: pointer;">
             
-            <div class="position-relative rounded-circle overflow-hidden border border-white bg-white shadow-sm w-100 h-100">
+            <img src="{{ url_for('static', filename='images/' + current_user.banner_image) }}" alt="Profile Banner" class="w-100 h-100" style="object-fit: cover;">
+            
+            <div id="banner-overlay" class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style="background-color: rgba(0,0,0,0.6); opacity: 0; transition: opacity 0.3s ease;">
                 
-                <img src="{{ url_for('static', filename='images/' + current_user.profile_image) }}" alt="Profile Photo" class="w-100 h-100" style="object-fit: cover;">
-                
-                <div id="avatar-overlay" class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style="background-color: rgba(0,0,0,0.6); opacity: 0; transition: opacity 0.3s ease;">
-                    <i class="bi bi-pencil text-white" style="font-size: 2.5rem;"></i>
-                </div>
-                
+                <i class="bi bi-pencil text-white" style="font-size: 2.5rem;"></i>
+
             </div>
             
         </label>
 
-        <input id="top-file-upload" type="file" name="profile_pic" accept="image/png, image/jpeg" style="display: none;" required onchange="this.form.submit();">
+        <input id="banner-file-upload" type="file" name="banner_pic" accept="image/png, image/jpeg" style="display: none;" required onchange="this.form.submit();">
     </form>
-    <br><br>
-        
- 
+    
+</div>
+
+    <div class="w-100 position-relative">    
+        <form action="/upload_photo" method="POST" enctype="multipart/form-data">
+            
+            <label id="avatar-trigger" for="top-file-upload" class="position-absolute top-0 start-50 translate-middle" style="width: 150px; height: 150px; cursor: pointer; z-index: 10;">
+                
+                <div class="position-relative rounded-circle overflow-hidden border border-white bg-white shadow-sm w-100 h-100">
+                    
+                    <img src="{{ url_for('static', filename='images/' + current_user.profile_image) }}" alt="Profile Photo" class="w-100 h-100" style="object-fit: cover;">
+                    
+                    <div id="avatar-overlay" class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style="background-color: rgba(0,0,0,0.6); opacity: 0; transition: opacity 0.3s ease;">
+                        <i class="bi bi-pencil text-white" style="font-size: 2.5rem;"></i>
+                    </div>
+                    
+                </div>
+                
+            </label>
+
+            <input id="top-file-upload" type="file" name="profile_pic" accept="image/png, image/jpeg" style="display: none;" required onchange="this.form.submit();">
+        </form>
+        <br><br>
+    </div>
 
     <div class="text-center mx-auto mt-5">
         <h1 class="fw-bold" id="profilewelcome" data-name="{{ user.name }}" data-username="{{ user.username }}">Edit your profile, {{ user.username }}</h1>    

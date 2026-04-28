@@ -38,4 +38,15 @@ document.addEventListener("DOMContentLoaded", function() {
         avatarOverlay.style.opacity = '0';
     });
 
+    const bannerTrigger = document.getElementById('banner-trigger');
+    const bannerOverlay = document.getElementById('banner-overlay');
+
+    bannerTrigger.addEventListener('mouseenter', () => {
+        bannerOverlay.style.opacity = '1';
+    });
+
+    bannerTrigger.addEventListener('mouseleave', () => {
+        bannerOverlay.style.opacity = '0';
+    });
+
 });

@@ -74,7 +74,7 @@ api.add_resource(Logout, '/logout', endpoint='logout')
 
 
 
-# app routing
+# app page routing
 @app.route('/')
 def home():
     return render_template('landing.html')
@@ -110,6 +110,15 @@ def comments():
 def faq():
     return render_template('FAQ.html')
 
+@app.route('/popups')
+def popups():
+    return render_template('pop_ups.html')
+
+@app.route('/secret')
+def secret():
+    return render_template('secret_task.html')
+
+# routing for profile page functionality (uploading profile picture, changing username and name)
 @app.route('/api/test')
 def test_route():
     return {"message": "Server and DB are connected!"}, 200
@@ -133,6 +142,28 @@ def upload_photo():
 
         user = User.query.get(user_id)
         user.profile_image = unique_filename
+        db.session.commit()
+    return redirect(url_for('profile'))
+
+@app.route('/upload_banner', methods=['POST'])
+def upload_banner():
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('signin_page'))
+
+    if 'banner_pic' not in request.files:
+        return redirect(url_for('profile'))
+        
+    file = request.files['banner_pic']
+
+    if file.filename != '':
+        filename = secure_filename(file.filename)
+        unique_filename = f"user_{user_id}_{filename}"
+        save_path = os.path.join(app.root_path, 'static', 'images', unique_filename)
+        file.save(save_path)
+
+        user = User.query.get(user_id)
+        user.banner_image = unique_filename
         db.session.commit()
     return redirect(url_for('profile'))
 
@@ -177,14 +208,6 @@ def update_name():
             print("Error: Could not update your name in the database, maybe it's just a bad name.", e)
 
     return redirect(url_for('profile'))
-
-@app.route('/popups')
-def popups():
-    return render_template('pop_ups.html')
-
-@app.route('/secret')
-def secret():
-    return render_template('secret_task.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
