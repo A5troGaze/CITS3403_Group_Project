@@ -8,14 +8,6 @@ document.addEventListener("DOMContentLoaded", function() {
         newusername.innerText = "Save New Username";
     });
 
-    const newprofilepic = document.getElementById('newprofilepic');
-    newprofilepic.addEventListener('mouseenter', () => {
-        newprofilepic.innerText = "Are you sure you want to commmit IDENTITY FRAUD???";
-    });
-    newprofilepic.addEventListener('mouseleave', () => {
-        newprofilepic.innerText = "Save New Photo";
-    });
-
     const newname = document.getElementById('newname');
     newname.addEventListener('mouseenter', () => {
         newname.innerText = "So you wanna be someone else? Bruh.";
