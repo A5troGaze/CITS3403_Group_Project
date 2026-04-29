@@ -118,7 +118,8 @@ def popups():
 def secret():
     return render_template('secret_task.html')
 
-# routing for profile page functionality (uploading profile picture, changing username and name)
+
+# routing for profile page functionality
 @app.route('/api/test')
 def test_route():
     return {"message": "Server and DB are connected!"}, 200
@@ -271,6 +272,35 @@ def delete_account():
 @app.route('/boom')
 def boom():
     return render_template('boom.html')
+
+
+# routing for leaderboard/timing functionality
+@app.route('/save_time', methods=['POST'])
+def save_time():
+    user_id = session.get('user_id')
+    if not user_id:
+        return {"success": False, "error": "Unauthorized"}, 401
+
+    data = request.get_json()
+    new_time = float(data.get('time'))
+
+    user = db.session.get(User, user_id)
+
+    if user:
+        try:
+            if user.best_time is None or new_time < user.best_time:
+                user.best_time = new_time
+                db.session.commit()
+                return {"success": True, "message": "New personal best saved!"}, 200
+            else:
+                return {"success": True, "message": "Time recorded, but not a new record."}, 200
+                
+        except Exception as e:
+            db.session.rollback()
+            return {"success": False, "error": str(e)}, 500
+
+    return {"success": False, "error": "User not found"}, 404
+
 
 if __name__ == '__main__':
     app.run(debug=True)
