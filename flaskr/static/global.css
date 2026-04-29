@@ -95,3 +95,16 @@
     font-size: 1.2rem;
     font-weight: bold;
 }
+
+
+/* below is the CSS for the boom page */
+@keyframes pulse-spin {
+    0% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.4) rotate(180deg); }
+    100% { transform: scale(1) rotate(360deg); }
+}
+
+.animated-boom {
+    display: inline-block;
+    animation: pulse-spin 2s infinite ease-in-out;
+}

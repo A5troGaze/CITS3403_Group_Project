@@ -131,7 +131,15 @@
             </form>
 
 
-            <h5 class="card-title text-danger">Delete your account</h5>
+            <hr class="my-4">
+            <h5 class="card-title text-danger">Delete Account</h5>
+            <p class="small text-muted mb-3">Once you delete your account, there is no going back. Please be certain.</p>
+
+            <form id="delete-account-form" action="/delete_account" method="POST">
+                <button type="button" id="delete-btn" class="btn btn-outline-danger w-100 fw-bold transition-all">
+                    Delete My Account
+                </button>
+            </form>
         </div>
     </div>
 

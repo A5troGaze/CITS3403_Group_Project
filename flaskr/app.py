@@ -244,5 +244,33 @@ def update_password():
 
     return redirect(url_for('profile'))
 
+@app.route('/delete_account', methods=['POST'])
+def delete_account():
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('signin_page'))
+
+    user = db.session.get(User, user_id)
+
+    if user:
+        try:
+            db.session.delete(user)
+            db.session.commit()
+            session.clear() 
+            
+            return redirect(url_for('boom'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash("Error: You can't escape us that easily. Something went wrong.", "danger")
+            print("Deletion Error:", e)
+            return redirect(url_for('profile'))
+
+    return redirect(url_for('signin_page'))
+
+@app.route('/boom')
+def boom():
+    return render_template('boom.html')
+
 if __name__ == '__main__':
     app.run(debug=True)

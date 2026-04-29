@@ -88,4 +88,27 @@ document.addEventListener("DOMContentLoaded", function() {
         bannerOverlay.style.opacity = '0';
     });
 
+    const deleteBtn = document.getElementById('delete-btn');
+    const deleteForm = document.getElementById('delete-account-form');
+    let deleteClickCount = 0;
+
+    if (deleteBtn && deleteForm) {
+        deleteBtn.addEventListener('click', () => {
+            deleteClickCount++;
+
+            if (deleteClickCount === 1) {
+                deleteBtn.innerText = "Are you sure? This is permanent.";
+                deleteBtn.classList.replace('btn-outline-danger', 'btn-danger'); 
+            
+            } else if (deleteClickCount === 2) {
+                deleteBtn.innerText = "LAST WARNING! Click to DESTROY account!";
+                deleteBtn.classList.add('text-uppercase', 'fs-5'); 
+            
+            } else if (deleteClickCount === 3) {
+                deleteBtn.innerText = "💥 IGNITING... 💥";
+                deleteForm.submit(); 
+            }
+        });
+    }
+
 });
