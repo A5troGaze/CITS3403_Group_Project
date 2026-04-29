@@ -22,7 +22,10 @@ function stopTimerAndSave() {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ time: timeTakenSec })
+        body: JSON.stringify({ 
+            time: timeTakenSec,
+            task_name: 'secret_task' // Change this depending on which page/game this is!
+        })
     })
     .then(response => response.json())
     .then(data => {

@@ -63,12 +63,13 @@ class User(db.Model, SerializerMixin):
             self._password_hash, password.encode('utf-8')
         )
     
-    serialize_rules = ('-password_hash',)
+    serialize_rules = ('-password_hash', '-_password_hash', '-scores.user')
 
-    volume_time = db.Column(db.Float, nullable=True, default=None)
-    brightness_time = db.Column(db.Float, nullable=True, default=None)
-    maze_time = db.Column(db.Float, nullable=True, default=None)
-    tnc_quiz_time = db.Column(db.Float, nullable=True, default=None)
+    scores = db.relationship('Score', backref='user', cascade="all, delete-orphan")
 
-    # popups_time = db.Column(db.Float, nullable=True, default=None)
-    # not sure how we're going to implement popups, so leaving it out for now
+class Score(db.Model, SerializerMixin):
+    __tablename__ = 'score'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    task_name = db.Column(db.String(50), nullable=False) 
+    best_time = db.Column(db.Float, nullable=False)

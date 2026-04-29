@@ -1,12 +1,14 @@
 <!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Pop-ups</title>
+    <title>Landing</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='global.css') }}">
     <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
-
+    <script src="{{ url_for('static', filename='js/pop_ups.js') }}" defer></script>
   </head>
 
 
@@ -19,10 +21,10 @@
 
       <div class="start-box text-center" style="max-width: 500px;">
         <h2>Do you want to go to the next level?</h2>
-
+        <br>
         <div class="d-flex justify-content-center gap-3 flex-nowrap">
-          <button class="btn btn-success px-4" onclick="next('start','yes')">Yes</button>
-          <button class="btn btn-danger px-4" onclick="next('start','no')">No</button>
+          <button class="btn btn-dark px-4 hover-btn" onclick="next('start','yes')">Yes</button>
+          <button class="btn btn-light px-4 hover-btn" onclick="next('start','no')">No</button>
         </div>
 
       </div>
@@ -43,169 +45,15 @@
           </div>
 
           <div class="modal-footer">
-            <button id="yesBtn" class="btn btn-success" onclick="answer('yes')">Yes</button>
-            <button id="noBtn" class="btn btn-danger" onclick="answer('no')">No</button>
+            <button id="yesBtn" class="btn btn-dark hover-btn" onclick="answer('yes')">Yes</button>
+            <button id="noBtn" class="btn btn-light hover-btn" onclick="answer('no')">No</button>
           </div>
         </div>
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-    // ----------------------------
-    // NAVIGATION GRAPH
-    // ----------------------------
-    const nodes = {
-      start: {
-        text: "Remember... don't lie this time. Do you want to go to the next level?",
-        yes: "node3",
-        no: "node2"
-      },
-
-      node2: {
-        text: "Are you procrastinating?",
-        yes: "node4",
-        no: "node5"
-      },
-
-      node3: {
-        text: "Do you enjoy games of chance?",
-        yes: "node4",
-        no: "node5"
-      },
-
-      node4: {
-        text: "Do you like surprises?",
-        yes: "SECRET",
-        no: "node8"
-      },
-
-      node5: {
-        text: "Haha... there is no escape. Are you ready?",
-        yes: "node6",
-        no: "node11"
-      },
-
-      node6: {
-        text: "There is no game... You are part of an experiment. Would you like to enter your details for a chance to win an iPad?",
-        yes: "node7",
-        no: "node9"
-      },
-
-      node7: {
-        text: "You said you don't like games of chance. Liar. Back to the start for you.",
-        yes: "start",
-        no: "node12",
-        yesText: "I am a liar; I deserve this...",
-        noText: "No!"
-      },
-
-      node8: {
-        text: "Nah, everyone likes surprises. Do you want to play some russian roulette?",
-        yes: "node13",
-        no: "node9"
-      },
-
-      node9: {
-        text: "You're missing out... But okay. Do you want to go to the next level now?",
-        yes: "NEXT_LEVEL",
-        no: "node10"
-      },
-
-      node10: {
-        text: "That was a rhetorical question... Wisdom has been chasing you for a long time, but you have always been faster, huh?",
-        yes: "NEXT_LEVEL",
-        yesText: "Yeah...",
-        buttons: ["yes"]
-      },
-
-      node11: {
-        text: "That was rhetorical...",
-        yes: "node6",
-        yesText: "Oh...",
-        buttons: ["yes"]
-      },
-
-      node12: {
-        text: "No is not an option.",
-        yes: "start",
-        yesText: "Oh...",
-        buttons: ["yes"]
-      },
-
-      node13: {
-        text: "Damn, you freaky. You also said you don't like surprises though... Back to the start for you.",
-        yes: "start",
-        yesText: "I am freaky; I deserve this...",
-        buttons: ["yes"]
-      }
-
-    };
-
-    // ----------------------------
-    // STATE
-    // ----------------------------
-    let currentNode = null;
-    const modal = new bootstrap.Modal(document.getElementById('questionModal'));
-
-    // ----------------------------
-    // FLOW CONTROL
-    // ----------------------------
-    function next(nodeId, choice) {
-      currentNode = nodes[nodeId][choice];
-      handleNode(currentNode);
-    }
-
-    function answer(choice) {
-      const nextId = nodes[currentNode][choice];
-      handleNode(nextId);
-    }
-
-    // ----------------------------
-    // NODE HANDLER
-    // ----------------------------
-    function handleNode(id) {
-
-      //load next level
-      if (id === "NEXT_LEVEL") {
-        window.location.href = "next_level.html";
-        return;
-      }
-
-      //load secret level page
-      if (id === "SECRET") {
-        window.location.href = "secret_task.html";
-        return;
-      }
-
-      currentNode = id;
-      const node = nodes[id];
-
-      document.getElementById("questionText").innerText = nodes[id].text;
-
-      const yesBtn = document.getElementById("yesBtn");
-      const noBtn = document.getElementById("noBtn");
-
-      // --- SET BUTTON TEXT ---
-      yesBtn.innerText = node.yesText || "Yes";
-      noBtn.innerText = node.noText || "No";
-
-      // --- SHOW/HIDE BUTTONS ---
-      yesBtn.style.display = "inline-block";
-      noBtn.style.display = "inline-block";
-
-      if (node.buttons) {
-        yesBtn.style.display = node.buttons.includes("yes") ? "inline-block" : "none";
-        noBtn.style.display = node.buttons.includes("no") ? "inline-block" : "none";
-      }
-
-      modal.show();
-    }
-    </script>
-
-    <div id="footer"></div>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
   </body>
-
 </html>

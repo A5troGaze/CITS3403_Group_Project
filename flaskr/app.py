@@ -2,7 +2,7 @@
 from flask import request, make_response, session, render_template, redirect, url_for, flash
 from flask_restful import Resource
 from flask_migrate import Migrate
-from db import db, User
+from db import db, User, Score
 from config import *
 import os
 from werkzeug.utils import secure_filename
@@ -274,6 +274,10 @@ def boom():
     return render_template('boom.html')
 
 
+@app.route('/test')
+def test():
+    return render_template('pop_ups.html')
+
 # routing for leaderboard/timing functionality
 @app.route('/save_time', methods=['POST'])
 def save_time():
@@ -283,23 +287,33 @@ def save_time():
 
     data = request.get_json()
     new_time = float(data.get('time'))
+    task_name = data.get('task_name')
 
     user = db.session.get(User, user_id)
 
-    if user:
+    if user and task_name:
         try:
-            if user.best_time is None or new_time < user.best_time:
-                user.best_time = new_time
-                db.session.commit()
-                return {"success": True, "message": "New personal best saved!"}, 200
+            existing_score = db.session.query(Score).filter_by(user_id=user.id, task_name=task_name).first()
+
+            if existing_score:
+                if new_time < existing_score.best_time:
+                    existing_score.best_time = new_time
+                    db.session.commit()
+                    return {"success": True, "message": f"New personal best on {task_name}!"}, 200
+                else:
+                    return {"success": True, "message": "Time recorded, but not a new record."}, 200
+            
             else:
-                return {"success": True, "message": "Time recorded, but not a new record."}, 200
+                new_score = Score(user_id=user.id, task_name=task_name, best_time=new_time)
+                db.session.add(new_score)
+                db.session.commit()
+                return {"success": True, "message": f"First score for {task_name} saved!"}, 200
                 
         except Exception as e:
             db.session.rollback()
             return {"success": False, "error": str(e)}, 500
 
-    return {"success": False, "error": "User not found"}, 404
+    return {"success": False, "error": "Invalid request"}, 400
 
 
 if __name__ == '__main__':
