@@ -59,12 +59,12 @@
     </div>
 
     <div class="text-center mx-auto mt-5">
-        <h1 class="fw-bold" id="profilewelcome" data-name="{{ user.name }}" data-username="{{ user.username }}">Edit your profile, {{ user.username }}</h1>    
+        <h1 class="fw-bold" id="profilewelcome" data-name="{{ user.name }}" data-username="{{ user.username }}">Edit your profile, {{ user.username }}</h1>  
     </div>
 
     <div class="card mx-auto p-2 col-11 col-md-8 col-lg-5 mt-5">
         
-        <div class="card-body">
+        <div class="card-body border-bottom">
             <h5 class="fs-3 card-title">Profile Overview</h5>
             <h5 class="card-title">Username</h5>
 
@@ -72,6 +72,7 @@
                 <span class="fs-6 me-auto" id="newusername">{{ user.username }}</span>
                 <i class="bi bi-pencil text-muted edit-icon"></i>
             </div>
+        
 
             <form id="username-edit-state" action="/update_username" method="POST" class="mt-3 d-none">
                 <div class="input-group">
@@ -103,14 +104,48 @@
     </div>
     <br>
 
-    <div class="card mx-auto p-2 col-11 col-md-8 col-lg-5 mt-5">
+    <div class="card mx-auto p-2 col-11 col-md-8 col-lg-5 mt-5 border-danger">
         <div class="card-body">
             <h5 class="fs-3 card-title text-danger">Danger Zone</h5>
-            <p class="small text-muted">Delete your account, change your password, etcetera whatever who cares, read the fineprint.</p>
+            <p class="small text-muted border-bottom pb-3 mb-3">Delete your account, change your password, etcetera whatever who cares, read the fineprint.</p>
             <h5 class="card-title">Change your password</h5>
-            <p class="small text-muted mb-2">P.S. There's no fineprint LOL.</p>
+
+            <form action="/update_password" method="POST" class="border-bottom pb-3 mb-3">
+                
+                <div class="mb-3">
+                    <label for="current-password" class="form-label small fw-bold">Current Password</label>
+                    <input type="password" class="form-control" id="current-password" name="current_password" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="new-password" class="form-label small fw-bold">New Password</label>
+                    <input type="password" class="form-control" id="new-password" name="new_password" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="confirm-password" class="form-label small fw-bold">Confirm New Password</label>
+                    <input type="password" class="form-control" id="confirm-password" name="confirm_password" required>
+                </div>
+
+                <button type="submit" class="btn btn-danger w-100 fw-bold">Update Password</button>
+            </form>
+
+
+            <h5 class="card-title text-danger">Delete your account</h5>
         </div>
     </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <script>
+                {% for category, message in messages %}
+                    alert({{ message | tojson }});
+                {% endfor %}
+            </script>
+        {% endif %}
+    {% endwith %}
+
+    <script src="{{ url_for('static', filename='js/profile.js') }}" defer></script>
 
     <br><br><br><br>
     {% include 'components/footer.html' %}

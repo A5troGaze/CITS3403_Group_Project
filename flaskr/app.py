@@ -1,5 +1,5 @@
 # all imports
-from flask import request, make_response, session, render_template, redirect, url_for
+from flask import request, make_response, session, render_template, redirect, url_for, flash
 from flask_restful import Resource
 from flask_migrate import Migrate
 from db import db, User
@@ -140,7 +140,7 @@ def upload_photo():
         save_path = os.path.join(app.root_path, 'static', 'images', unique_filename)
         file.save(save_path)
 
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
         user.profile_image = unique_filename
         db.session.commit()
     return redirect(url_for('profile'))
@@ -162,7 +162,7 @@ def upload_banner():
         save_path = os.path.join(app.root_path, 'static', 'images', unique_filename)
         file.save(save_path)
 
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
         user.banner_image = unique_filename
         db.session.commit()
     return redirect(url_for('profile'))
@@ -174,17 +174,19 @@ def update_username():
         return redirect(url_for('signin_page'))
 
     new_username = request.form.get('username')
-    user = User.query.get(user_id)
+    
+    user = db.session.get(User, user_id)
 
     if new_username and new_username != user.username:
         try:
             user.username = new_username
             db.session.commit()
             session['username'] = new_username
+            flash("Username successfully updated! I hope you enjoying trolling other people.", "success")
             
         except Exception as e:
             db.session.rollback()
-            print("Error: Don't steal other people's usernames! Try another one.", e)
+            flash("Error: Don't steal other people's usernames! Try another one.", "danger")
 
     return redirect(url_for('profile'))
 
@@ -195,17 +197,50 @@ def update_name():
         return redirect(url_for('signin_page'))
 
     new_name = request.form.get('name')
-    user = User.query.get(user_id)
+    
+    user = db.session.get(User, user_id)
 
     if new_name and new_name != user.name:
         try:
             user.name = new_name
             db.session.commit()
             session['name'] = new_name
+            flash("Name successfully updated! Have fun with your new name, I guess. I'll just let the government know.", "success")
             
         except Exception as e:
             db.session.rollback()
-            print("Error: Could not update your name in the database, maybe it's just a bad name.", e)
+            flash("Error: Could not update your name in the database, maybe it's just a bad name.", "danger")
+
+    return redirect(url_for('profile'))
+
+@app.route('/update_password', methods=['POST'])
+def update_password():
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('signin_page'))
+
+    current_password = request.form.get('current_password')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+
+    user = db.session.get(User, user_id)
+
+    if not user.authenticate(current_password):
+        flash("Error: Incorrect current password. Do you even know your own password?", "danger")
+        return redirect(url_for('profile'))
+
+    if new_password != confirm_password:
+        flash("Error: New passwords do not match. Don't be silly, do it properly.", "danger")
+        return redirect(url_for('profile'))
+
+    try:
+        user.password_hash = new_password 
+        db.session.commit()
+        flash("Success: Password updated successfully! I'll always know all your passwords anyways, no matter how often you change it.", "success")
+        
+    except Exception as e:
+        db.session.rollback()
+        flash("Error: Could not update password.", "danger")
 
     return redirect(url_for('profile'))
 
