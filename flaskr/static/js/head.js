@@ -1,4 +1,5 @@
 // JS for timer functionality
+
 // document.addEventListener('DOMContentLoaded', () => {
     
 //     let startTime = performance.now();

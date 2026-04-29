@@ -112,16 +112,16 @@ function answer(choice) {
 // ----------------------------
 function handleNode(id) {
 
-    //load next level  (need to reroute)
     if (id === "NEXT_LEVEL") {
-    window.location.href = "next_level.html";
-    return;
+        modal.hide();
+        stopTimerAndSave('standard_ending'); // Pass the name of this specific ending
+        return;
     }
 
-    //load secret level page  (need to reroute)
     if (id === "SECRET") {
-    window.location.href = "secret_task.html";
-    return;
+        modal.hide(); 
+        stopTimerAndSave('secret_ending'); // Pass the name of the secret ending
+        return;
     }
 
     currentNode = id;
@@ -141,9 +141,42 @@ function handleNode(id) {
     noBtn.style.display = "inline-block";
 
     if (node.buttons) {
-    yesBtn.style.display = node.buttons.includes("yes") ? "inline-block" : "none";
-    noBtn.style.display = node.buttons.includes("no") ? "inline-block" : "none";
+        yesBtn.style.display = node.buttons.includes("yes") ? "inline-block" : "none";
+        noBtn.style.display = node.buttons.includes("no") ? "inline-block" : "none";
     }
 
     modal.show();
+}
+
+let startTime = performance.now(); 
+
+function stopTimerAndSave(taskName) {
+    if (!startTime) return;
+
+    const endTime = performance.now();
+    const timeTakenSec = ((endTime - startTime) / 1000).toFixed(2);
+    
+    const resultText = document.getElementById('result-text');
+    if(resultText) {
+        resultText.innerText = `You finished the ${taskName} in ${timeTakenSec} seconds! Saving...`;
+    }
+
+    fetch('/save_time', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+            time: timeTakenSec,
+            task_name: taskName 
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`Score saved! You reached the ${taskName} in ${timeTakenSec}s.`);
+        } else {
+            alert("Error saving time!");
+        }
+    });
 }
