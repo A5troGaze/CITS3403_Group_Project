@@ -178,5 +178,10 @@ def update_name():
 
     return redirect(url_for('profile'))
 
+# volume game route
+@app.route('/volume_game')
+def volume_game():
+    return render_template('volume_game.html')
+
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,32 +1,34 @@
 /* below is the CSS for scroll animation */
-.typed-out{
-    overflow: hidden;
-    font-size: 1.6rem;
-    width: 0;
-    animation: 
-        typing 1s linear infinite;
-    animation-play-state: paused; 
-    animation-delay: calc(var(--scroll) * -1s);
+.typed-out {
+  overflow: hidden;
+  font-size: 1.6rem;
+  width: 0;
+  animation:
+    typing 1s linear infinite;
+  animation-play-state: paused;
+  animation-delay: calc(var(--scroll) * -1s);
 }
 
 .text-animation {
-    display: inline-flex;
-    white-space: nowrap;
+  display: inline-flex;
+  white-space: nowrap;
 }
 
 @keyframes typing {
-    to {width: 100%;}
+  to {
+    width: 100%;
+  }
 }
 
 
 /* below is the CSS for the button animations */
 .hover-btn {
-    transition: transform 0.2s ease-in-out;
+  transition: transform 0.2s ease-in-out;
 }
 
 .hover-btn:hover {
-    transform: translate(0px,-3px);
-    font-weight: bold;
+  transform: translate(0px, -3px);
+  font-weight: bold;
 }
 
 /* below is the CSS for the FAQ page (Juvincia) */
@@ -64,6 +66,66 @@ body {
   margin-bottom: 28px;
 }
 
-.faq-container h3 + p {
+.faq-container h3+p {
   text-align: left;
+}
+
+/* volume game css */
+#volume-slider {
+  align-items: center;
+  display: flex;
+  margin: 3em auto;
+  padding: 30px 0;
+  width: 500px;
+}
+
+.volume-icon {
+  cursor: pointer;
+  height: 60px;
+  transform: rotate(-0deg);
+  transform-origin: center left;
+  width: 60px;
+}
+
+.volume-icon-bg {
+  fill: #100100;
+  transition: fill 300ms;
+}
+
+.volume-icon:hover .volume-icon-bg {
+  fill: #b6aebf;
+}
+
+#circle-mask-shape {
+  transform: scale(0);
+  transform-origin: center center;
+}
+
+.volume-track {
+  background-color: #e1dee5;
+  border-radius: 3px;
+  flex: 1;
+  height: 4px;
+  margin-left: 5px;
+  position: relative;
+}
+
+.volume-indicator {
+  background-color: #6eaa35;
+  border-radius: 50%;
+  height: 12px;
+  left: 0;
+  position: absolute;
+  top: -4px;
+  width: 12px;
+  transition: visibility 100ms, opacity 100ms;
+}
+
+.box-fill {
+  position: absolute;
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
 }
