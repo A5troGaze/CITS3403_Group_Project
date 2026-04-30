@@ -1,6 +1,8 @@
 # CITS3403_Group_Project
 Group Project for CITS3403. Semester 1, 2026, UWA.
 
+NOTE: All the following code only works in Unix/Linux shell. If using Windows, change to WSL.
+
 ## How to run this game:
 
 ### 1. Set up virtual environment:
