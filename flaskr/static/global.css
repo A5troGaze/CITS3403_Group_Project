@@ -69,7 +69,9 @@ body {
 }
 
 /* below is the css for human_checker (Juvincia) */
-/* ── Timer bar ── */
+/* ── Invisible verify button ── */
+#captcha-submit         { opacity: 0; transition: opacity 0.15s; }
+#captcha-submit:hover   { opacity: 1; }
 .quiz-timer-bar {
   height: 3px;
   background: #f0f0f0;
@@ -85,7 +87,7 @@ body {
 
 /* ── Moving checkbox ── */
 .moving-checkbox {
-  position: absolute;
+  position: absolute !important;
   left: 16px;
   top: 50%;
   transform: translateY(-50%);
@@ -93,6 +95,7 @@ body {
   height: 17px;
   cursor: pointer;
 }
+
 
 /* ── CAPTCHA grid ── */
 .captcha-grid {
@@ -116,12 +119,13 @@ body {
 /* ── Custom slider ── */
 .custom-slider-track {
   position: relative;
-  height: 6px;
+  height: 8px;
   background: #dee2e6;
-  border-radius: 3px;
+  border-radius: 4px;
   cursor: pointer;
-  margin-bottom: 12px;
+  margin: 8px 0 24px 0;
   user-select: none;
+  touch-action: none;
 }
 .custom-slider-fill {
   position: absolute;
@@ -129,7 +133,7 @@ body {
   height: 100%;
   width: 0%;
   background: #212529;
-  border-radius: 3px;
+  border-radius: 4px;
   pointer-events: none;
 }
 .custom-slider-fill.valid  { background: #198754; }
@@ -139,13 +143,14 @@ body {
   top: 50%;
   left: 0%;
   transform: translate(-50%, -50%);
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   background: #fff;
   border: 2px solid #212529;
   border-radius: 50%;
   pointer-events: none;
   transition: transform 0.1s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
 .custom-slider-thumb.valid  { border-color: #198754; }
 .custom-slider-thumb.danger { border-color: #dc3545; }
