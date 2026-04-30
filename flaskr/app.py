@@ -135,6 +135,11 @@ def popups():
 def secret():
     return render_template('secret_task.html')
 
+@app.route('/tnc1')
+def tnc1():
+    return render_template('tnc.html')
+
+
 
 # routing for profile page functionality
 @app.route('/api/test')
@@ -290,10 +295,6 @@ def delete_account():
 def boom():
     return render_template('boom.html')
 
-
-@app.route('/test')
-def test():
-    return render_template('pop_ups.html')
 
 # routing for leaderboard/timing functionality
 @app.route('/save_time', methods=['POST'])

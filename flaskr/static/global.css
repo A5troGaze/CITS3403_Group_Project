@@ -1,4 +1,4 @@
-/* below is the CSS for scroll animation on the landing page */
+/* below is the CSS for scroll animation */
 .typed-out{
     overflow: hidden;
     font-size: 1.6rem;
@@ -107,4 +107,8 @@
 .animated-boom {
     display: inline-block;
     animation: pulse-spin 2s infinite ease-in-out;
+}
+
+.small-text {
+    font-size: 5px;
 }
