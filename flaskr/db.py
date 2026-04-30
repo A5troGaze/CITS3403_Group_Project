@@ -67,6 +67,28 @@ class User(db.Model, SerializerMixin):
 
     scores = db.relationship('Score', backref='user', cascade="all, delete-orphan")
 
+    @property
+    def total_time(self):
+        secret_times = [float(score.best_time) for score in self.scores if score.task_name == 'secret_ending']
+        
+        if secret_times:
+            return min(secret_times) 
+            
+        REQUIRED_TASKS = 7  # change this value depending on how many games we have
+        
+        best_task_times = {}
+        for score in self.scores:
+            time = float(score.best_time)
+            task = score.task_name
+            
+            if task not in best_task_times or time < best_task_times[task]:
+                best_task_times[task] = time
+        if len(best_task_times) < REQUIRED_TASKS:
+            return 0.0
+            
+        total = sum(best_task_times.values())
+        return round(total, 2)
+
 class Score(db.Model, SerializerMixin):
     __tablename__ = 'score'
     id = db.Column(db.Integer, primary_key=True)

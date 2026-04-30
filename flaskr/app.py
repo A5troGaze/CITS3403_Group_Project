@@ -1,7 +1,8 @@
 # all imports
-from flask import request, make_response, session, render_template, redirect, url_for, flash
+from flask import request, make_response, session, render_template, redirect, url_for, flash, jsonify
 from flask_restful import Resource
 from flask_migrate import Migrate
+from flask_login import current_user 
 from db import db, User, Score
 from config import *
 import os
@@ -100,7 +101,23 @@ def profile():
 
 @app.route('/leaderboard')
 def leaderboard():
-    return render_template('leaderboard.html')
+    all_users = User.query.all()
+    finished_users = [user for user in all_users if user.total_time > 0]
+    sorted_users = sorted(finished_users, key=lambda u: u.total_time, reverse=False)
+    
+    for index, user in enumerate(sorted_users):
+        user.real_rank = index + 1 
+        
+    display_users = sorted_users[:20]
+    
+    if current_user.is_authenticated and current_user.total_time > 0:
+        if current_user not in display_users:
+            for user in sorted_users:
+                if user.id == current_user.id:
+                    display_users.append(user) 
+                    break
+                    
+    return render_template('leaderboard.html', users=display_users)
 
 @app.route('/comments')
 def comments():
@@ -314,6 +331,28 @@ def save_time():
             return {"success": False, "error": str(e)}, 500
 
     return {"success": False, "error": "Invalid request"}, 400
+
+@app.route('/api/search')
+def api_search():
+    query = request.args.get('q', '').lower()
+    all_users = User.query.all()
+    finished_users = [user for user in all_users if user.total_time > 0]
+    
+    if query:
+        finished_users = [user for user in finished_users if query in user.username.lower()]
+        
+    sorted_users = sorted(finished_users, key=lambda u: u.total_time, reverse=False)
+    
+    results = []
+    for index, user in enumerate(sorted_users):
+        results.append({
+            "rank": index + 1,
+            "username": user.username,
+            "total_time": user.total_time,
+            "is_current_user": current_user.is_authenticated and user.id == current_user.id
+        })
+        
+    return jsonify(results)
 
 
 if __name__ == '__main__':
