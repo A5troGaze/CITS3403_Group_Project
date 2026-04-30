@@ -6,7 +6,7 @@
         <title>The Maze</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
         <link rel="stylesheet" href="{{ url_for('static', filename='global.css') }}">
-        <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+        <!--<script src="https://code.jquery.com/jquery-1.10.2.js"></script>-->
         <style>
         /* */
             #maze_card {
@@ -135,7 +135,7 @@
         </div>
 
         <!--taunt popup (taunt the user when they pick easy mode)-->
-        <div id="taunt-overlay" style="display: none; flex-direction: column;">
+        <div id="taunt-overlay" class="display: none; flex-direction: column;">
             <div id="taunt-box">
                 <h3>Easy Mode? Really?</h3>
                 <p>There is no easy mode.<br><strong> Get good 😎</strong></p>
@@ -167,7 +167,7 @@
 
         </div>
 
-        <script src="../static/js/maze.js"></script>
+        <script src="{{ url_for('static', filename='js/maze.js') }}"></script>
 
     </body>
 

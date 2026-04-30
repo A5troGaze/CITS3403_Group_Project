@@ -1,4 +1,4 @@
-// --- Mode Select Taunt --------------------------------------------------
+            // --- Mode Select Taunt --------------------------------------------------
             document.getElementById("btn-easy").addEventListener("click", () => {
                 //hide mode select -> taunt user
                 document.getElementById("mode-overlay").style.display = "none";
@@ -24,18 +24,30 @@
             const maze_context = maze_canvas.getContext("2d");
             let firstplay = true;
             let inputLocked = false;
+            const goal_image_path = "static/images/bullseye.svg";
+            const player_image_path = "static/images/cart4.svg";
 
 
             
             // --- Goal Image -------------------------------------------------------- 
             const goal_img = new Image();
-            goal_img.src = "/static/images/cits3403_projectlogo.png"; /*"/static/images/icon_head.jpg"; *///smaller logo?
+            goal_img.src = goal_image_path; //smaller logo?
             let goal_img_loaded = false;
             //if the play image loads -> draw the maze (will draw goal if image is loaded, otherwise will draw player as a blue square)
             goal_img.onload = () => {
                 goal_img_loaded = true;
                 draw();
             };
+
+            // --- Player Image -----------------------------------------------------
+            const player_img = new Image();
+            player_img.src = player_image_path;
+            let player_img_loaded = false;
+            //
+            player_img.onload = () => {
+                player_img_loaded = true;
+                draw();
+            }
 
 
 
@@ -166,16 +178,27 @@
 
 
                 // Draw player ---------------> player is a circle
-                maze_context.fillStyle = "green";
-                maze_context.beginPath();
-                maze_context.arc(
-                    (player.x + player.size / 2) * scale,
-                    (player.y + player.size / 2) * scale,
-                    (player.size / 2) * scale,
-                    0,
-                    Math.PI * 2
-                );
-                maze_context.fill();
+                if (player_img_loaded) {
+                    maze_context.drawImage(
+                        player_img,
+                        player.x *scale,
+                        player.y *scale,
+                        player.size *scale,
+                        player.size *scale
+                    )
+                } else {
+                    maze_context.fillStyle = "green";
+                    maze_context.beginPath();
+                    maze_context.arc(
+                        (player.x + player.size / 2) * scale,
+                        (player.y + player.size / 2) * scale,
+                        (player.size / 2) * scale,
+                        0,
+                        Math.PI * 2
+                    );
+                    maze_context.fill();
+                }
+                
             }
 
 
