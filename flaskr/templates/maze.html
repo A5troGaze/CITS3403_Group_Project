@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>The Maze</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+        <link rel="stylesheet" href="{{ url_for('static', filename='global.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/maze.css') }}">
+    </head>
+
+    <body class="bg-light text-center d-flex flex-column min-vh-100">
+
+        {% include 'components/navbar.html' %}
+
+        <!--"mode" selection-->
+        <div id="mode-overlay">
+            <div id="mode-box">
+                <h2>Dude! That's A-Maze-ing!</h2>
+                <p>Choose your difficulty level.<br>Choose wisely...</p>
+                <button class="mode-btn hover-btn btn btn-dark" id="btn-easy">Easy</button>
+                <button class="mode-btn hover-btn btn btn-dark" id="btn-hard">Hard</button>
+            </div>
+        </div>
+
+        <!--taunt popup (taunt the user when they pick easy mode)-->
+        <div id="taunt-overlay" class="display: none; flex-direction: column;">
+            <div id="taunt-box">
+                <h3>Easy Mode? Really?</h3>
+                <p>There is no easy mode.<br><strong> Get good 😎</strong></p>
+                <button id="taunt-ok" class="hover-btn btn btn-dark">Yes Master</button>
+            </div>
+        </div>
+
+        <div class="container mt-2 d-flex flex-column align-items-center">
+            <h2>Complete the Maze!</h2>
+
+            <div id="maze_card" class="card shadow p-3 bg-white rounded mt-2">
+
+                <canvas id="maze_canvas" class="border border-dark rounded"></canvas>
+
+            </div>
+
+            <div id="mobile-controls" class="d-none">
+                <div class="d-flex flex-column align-items-center gap-2 my-3">
+                    <button class="btn btn-dark mobile-btn" id="mob-up">▲</button>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-dark mobile-btn" id="mob-left">◀</button>
+                        <div style="width: 60px; height: 60px;"></div>
+                        <button class="btn btn-dark mobile-btn" id="mob-right">▶</button>
+                    </div>
+                    <button class="btn btn-dark mobile-btn" id="mob-down">▼</button>
+
+                </div>
+            </div>
+
+        </div>
+
+        <script src="{{ url_for('static', filename='js/maze.js') }}"></script>
+
+    </body>
+
+</html>
