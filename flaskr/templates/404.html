@@ -3,11 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title id="error_title">404: Page Not Found</title>
+    <title>{{ error_title }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="{{ url_for('static', filename='global.css') }}">
     <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
-  
   </head>
 
 
@@ -21,6 +20,10 @@
       cursor: pointer;
     }
 
+    #meme_image:hover {
+      transform: scale(1.03);
+    }
+
     #UsertoHome {
       font-size: 2rem; 
       padding: 16px 40px; 
@@ -31,6 +34,7 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
+      min-height: 100%;
     }
   </style>
 
@@ -47,9 +51,9 @@
           <!--left side-->
           <div class="col-12 col-md-6 ps-md-5 mb-4 mb-md-0">
             <!--404-->
-            <h1 id="error_code" class="fw-bold" style="font-size: 10rem;">404</h1>
+            <h1 class="fw-bold" style="font-size: 10rem;">{{ error }}</h1>
             <!--message-->
-            <p id="error_msg" class="mb-4" style="font-size: 2rem">Oops... Page not found!</p>
+            <p class="mb-4" style="font-size: 2rem">{{ error_message }}</p>
             <!--button-->
             <a href="/" class="btn btn-dark btn-lg hover-btn" id="UsertoHome">Go to Home</a>
             <!--click the image... ;)-->
@@ -76,20 +80,16 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.min.js" integrity="sha384-G/EV+4j2dNv+tEPo3++6LCgdCROaejBqfUeNjuKAiuXbjrxilcCdDz6ZAVfHWe1Y" crossorigin="anonymous"></script>
     <script>
 
 
       //show error code, error message and tab title ================================
       //[IMPORTANT MESSAGE!: VS CODE LIKES TO COMPLAIN ABOUT THE JINJA SYNTAX HERE, BUT IT WORKS, PLEASE DO NOT TWEAK]
       const error = {{ error | tojson }};
-      document.getElementById("error_code").innerText = error;
+      const errorMessage = {{ error_message | tojson }};
+      const errorTitle =  {{ error_title | tojson }} ;
 
-      const error_message = {{ error_message | tojson }};
-      document.getElementById("error_msg").innerText = error_message;
-
-      const error_title =  {{ error_title | tojson }} ;
-      document.getElementById("error_title").innerText = error_title;
+      document.title = errorTitle;
 
 
       // Image load =================================================================
@@ -107,7 +107,7 @@
       {% endif %}
 
       //random function to pick image when image is clicked
-      if (memeImage) {
+      if (memeImage && cat_memes.length > 0) {
         memeImage.addEventListener('click', () => {
           let newIndex;
           let current = memeImage.src;
