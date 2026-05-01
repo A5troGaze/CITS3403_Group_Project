@@ -42,6 +42,7 @@ class User(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     profile_image = db.Column(db.String, nullable=False, server_default='icon_head.jpg')
+    banner_image = db.Column(db.String, nullable=False, server_default='default_banner.png')
     name = db.Column(db.String, nullable=False)
     username = db.Column(db.String(80), unique=True, nullable=False)
     _password_hash = db.Column(db.String)
@@ -62,12 +63,35 @@ class User(db.Model, SerializerMixin):
             self._password_hash, password.encode('utf-8')
         )
     
-    serialize_rules = ('-password_hash',)
+    serialize_rules = ('-password_hash', '-_password_hash', '-scores.user')
 
-    volume_time = db.Column(db.Float, nullable=True, default=None)
-    brightness_time = db.Column(db.Float, nullable=True, default=None)
-    maze_time = db.Column(db.Float, nullable=True, default=None)
-    tnc_quiz_time = db.Column(db.Float, nullable=True, default=None)
+    scores = db.relationship('Score', backref='user', cascade="all, delete-orphan")
 
-    # popups_time = db.Column(db.Float, nullable=True, default=None)
-    # not sure how we're going to implement popups, so leaving it out for now
+    @property
+    def total_time(self):
+        secret_times = [float(score.best_time) for score in self.scores if score.task_name == 'secret_ending']
+        
+        if secret_times:
+            return min(secret_times) 
+            
+        REQUIRED_TASKS = 1  # change this value depending on how many games we have
+        
+        best_task_times = {}
+        for score in self.scores:
+            time = float(score.best_time)
+            task = score.task_name
+            
+            if task not in best_task_times or time < best_task_times[task]:
+                best_task_times[task] = time
+        if len(best_task_times) < REQUIRED_TASKS:
+            return 0.0
+            
+        total = sum(best_task_times.values())
+        return round(total, 2)
+
+class Score(db.Model, SerializerMixin):
+    __tablename__ = 'score'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    task_name = db.Column(db.String(50), nullable=False) 
+    best_time = db.Column(db.Float, nullable=False)
