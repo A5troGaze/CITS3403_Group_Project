@@ -8,14 +8,15 @@
 //    4.  Timer bars
 //    5.  Status messages
 //    6.  Modal
-//    7.  Suspicious flash
+//    7.  Suspicious pop up
 //    8.  Question routing
 //    9.  Q1 — Moving checkbox
 //   10.  Q2 — CAPTCHA grid
 //   11.  Q3 — Cat paws
 //   12.  Q4 — Pain slider
-//   13.  Final screen
-//   14.  Boot
+//   13.  Q5 — Logic puzzle
+//   14.  Final screen
+//   15.  Boot
 // ─────────────────────────────────────────────
 
 
@@ -36,6 +37,7 @@ const Quiz = {
   q2: {},
   q3: {},
   q4: {},
+  q5: {},
   modal: null,
   modalCb: null,
   reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
@@ -184,7 +186,7 @@ document.addEventListener('click', (e) => {
 }, true);
 
 
-// ── 7. Suspicious flash ──────────────────────
+// ── 7. Suspicious pop up ──────────────────────
 
 function flashSuspicious() {
   const el = document.getElementById('suspicious-overlay');
@@ -196,7 +198,13 @@ function flashSuspicious() {
 
 // ── 8. Question routing ──────────────────────
 
-const Q_INITS = { 1: () => initQ1(), 2: () => initQ2(), 3: () => initQ3(), 4: () => initQ4() };
+const Q_INITS = {
+  1: () => initQ1(),
+  2: () => initQ2(),
+  3: () => initQ3(),
+  4: () => initQ4(),
+  5: () => initQ5(),
+};
 
 function resetQ(qid, msg) {
   Quiz.clearAll();
@@ -250,7 +258,10 @@ function restartQuiz() {
   document.getElementById('q2-card').classList.add('d-none');
   document.getElementById('q3-card').classList.add('d-none');
   document.getElementById('q4-card').classList.add('d-none');
+  document.getElementById('q5-card').classList.add('d-none');
   document.getElementById('floating-bicycle').classList.add('d-none');
+  // Drop any fork buttons left over from a previous run.
+  document.querySelectorAll('#logic-options .logic-fork-option').forEach(el => el.remove());
   document.body.classList.remove('hc-completed');
   document.body.classList.add('hc-immersive');
   document.getElementById('q1-card').classList.remove('d-none');
@@ -847,7 +858,140 @@ function initQ4() {
 }
 
 
-// ── 13. Final screen ─────────────────────────
+// ── 13. Q5 — Logic puzzle ────────────────────
+//
+//  All four base options are wrong. Clicking one streams a sneering
+//  verdict in via a 30ms-per-character typewriter, locks all logic
+//  buttons for 3.2s, then unlocks them. After TWO wrong attempts,
+//  the base options are hidden and a fork appears:
+//    - "This question is impossible." (give up — the human response)
+//    - "Keep trying — I can solve this." (persistence — the robot one)
+//  Only "give up" advances to the final screen. "Keep trying" resets
+//  the attempt counter and brings the base options back; the fork
+//  reappears after another two wrongs. The user can loop forever.
+//
+//  Verdict pool is 8 messages so back-to-back wrong attempts don't
+//  repeat the same text.
+
+const Q5_VERDICTS = [
+  'Incorrect. The intersection of Ω and Σ under condition β renders this trivially false. A human with adequate reasoning would have seen this.',
+  'Wrong. You have confused ⊕ with ⊗, a fundamental error. This response is consistent with pattern-matching rather than genuine cognition.',
+  'Incorrect. The premise explicitly constrains Σ membership. Selecting this option suggests you did not read the question. Suspicious.',
+  'Also incorrect. While Φ is indeed bounded by domain constraints, this does not resolve the core asymmetry. Try harder.',
+  'Demonstrably false under standard inference rules. Reconsider — or do not. The system is patient.',
+  'No. The mapping ↦ does not commute under the given constraints. This is a textbook misreading.',
+  'Incorrect. Your selection violates the closure condition over Σ ∪ Ω. A first-year would have noticed.',
+  'Wrong, and tellingly so. The pattern of your errors is being analysed.',
+];
+
+const Q5_TYPEWRITER_MS = 30;
+const Q5_DISABLE_MS    = 3200;
+
+function initQ5() {
+  hideStatus('q5-status');
+  Quiz.q5 = { attempts: 0, loops: 0 };
+  document.getElementById('q5-reset-banner').classList.add('d-none');
+
+  // Drop any fork buttons left from a previous run before re-binding.
+  document.querySelectorAll('#logic-options .logic-fork-option').forEach(el => el.remove());
+
+  document.querySelectorAll('#logic-options .logic-base-option').forEach((btn) => {
+    btn.disabled = false;
+    btn.classList.remove('d-none');
+    const onClick = () => onLogicClick(btn);
+    btn.addEventListener('click', onClick);
+    Quiz.handlers.push([btn, 'click', onClick]);
+  });
+}
+
+function onLogicClick(btn) {
+  Quiz.q5.attempts++;
+  const verdict = Q5_VERDICTS[Math.floor(Math.random() * Q5_VERDICTS.length)];
+  addFlag('Logic answer ' + (parseInt(btn.dataset.idx, 10) + 1) + ' selected — incorrect');
+
+  // Lock all logic buttons during the verdict reveal.
+  document.querySelectorAll('#logic-options button').forEach(b => b.disabled = true);
+  typewriteStatus('q5-status', verdict, Q5_TYPEWRITER_MS);
+
+  Quiz.track(setTimeout(() => {
+    hideStatus('q5-status');
+    document.querySelectorAll('#logic-options button').forEach(b => b.disabled = false);
+    if (Quiz.q5.attempts >= 2) showForkOptions();
+  }, Q5_DISABLE_MS));
+}
+
+function typewriteStatus(id, fullText, msPerChar) {
+  const el = document.getElementById(id);
+  el.className = 'alert alert-danger py-2 mt-3';
+  el.textContent = '';
+  el.classList.remove('d-none');
+  let i = 0;
+  const tick = () => {
+    if (i >= fullText.length) return;
+    el.textContent = fullText.slice(0, ++i);
+    Quiz.track(setTimeout(tick, msPerChar));
+  };
+  tick();
+}
+
+function showForkOptions() {
+  // Hide the four base options. They'll come back if the user picks
+  // "keep trying."
+  document.querySelectorAll('#logic-options .logic-base-option').forEach(b => {
+    b.classList.add('d-none');
+  });
+
+  const wrap = document.getElementById('logic-options');
+  let giveUp     = wrap.querySelector('.logic-fork-give-up');
+  let keepTrying = wrap.querySelector('.logic-fork-keep-trying');
+
+  // Create fork buttons on first appearance; reuse them on later loops.
+  if (!giveUp) {
+    giveUp = document.createElement('button');
+    giveUp.className = 'btn btn-outline-success text-start logic-fork-option logic-fork-give-up';
+    giveUp.textContent = 'This question is impossible.';
+    wrap.appendChild(giveUp);
+
+    const onGiveUp = () => {
+      addFlag('User recognised question as unsolvable');
+      advanceQ(5);
+    };
+    giveUp.addEventListener('click', onGiveUp);
+    Quiz.handlers.push([giveUp, 'click', onGiveUp]);
+  }
+
+  if (!keepTrying) {
+    keepTrying = document.createElement('button');
+    keepTrying.className = 'btn btn-outline-secondary text-start logic-fork-option logic-fork-keep-trying';
+    keepTrying.textContent = 'Keep trying — I can solve this.';
+    wrap.appendChild(keepTrying);
+
+    const onKeepTrying = () => {
+      Quiz.q5.loops++;
+      addFlag('Q5 persistence loop #' + Quiz.q5.loops);
+      Quiz.q5.attempts = 0;
+      hideForkOptions();
+    };
+    keepTrying.addEventListener('click', onKeepTrying);
+    Quiz.handlers.push([keepTrying, 'click', onKeepTrying]);
+  }
+
+  giveUp.classList.remove('d-none');
+  keepTrying.classList.remove('d-none');
+}
+
+function hideForkOptions() {
+  // Show base options again so the user can resume making wrong picks.
+  document.querySelectorAll('#logic-options .logic-base-option').forEach(b => {
+    b.classList.remove('d-none');
+  });
+  document.querySelectorAll('#logic-options .logic-fork-option').forEach(el => {
+    el.classList.add('d-none');
+  });
+}
+
+
+// ── 14. Final screen ─────────────────────────
 
 function showFinal() {
   Quiz.clearAll();
@@ -855,10 +999,23 @@ function showFinal() {
   document.body.classList.remove('hc-immersive');
   document.body.classList.add('hc-completed');
   document.querySelectorAll('.hc-card:not(.d-none)').forEach(c => c.classList.add('d-none'));
+
+  // Populate the summary so the user sees the cost of "passing."
+  const summary = document.getElementById('final-summary');
+  if (summary) {
+    summary.innerHTML = `
+      <div class="bg-light border rounded p-2 final-log mb-3">
+        <div class="log-row">
+          <strong>${Quiz.flags}</strong> behavioural flag${Quiz.flags === 1 ? '' : 's'} recorded across ${TOTAL_QUESTIONS} verification steps.
+        </div>
+        <div class="log-verdict">Verdict: HUMAN (low confidence)</div>
+      </div>`;
+  }
+
   document.getElementById('final-card').classList.remove('d-none');
 }
 
 
-// ── 14. Boot ─────────────────────────────────
+// ── 15. Boot ─────────────────────────────────
 
 initQ1();

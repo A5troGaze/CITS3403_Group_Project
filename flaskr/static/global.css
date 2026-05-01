@@ -69,21 +69,25 @@ body {
 }
 
 /* below is the css for human_checker (Juvincia) */
-
-
-/* ── Final log ── */
-.final-log {
-  max-height: 220px;
-  overflow-y: auto;
-  font-size: 0.78rem;
-  line-height: 2;
+/* ── shared elements across the quiz cards ── */
+/* timer bar */
+.quiz-timer-bar {
+  height: 3px;
+  background: #f0f0f0;
+  border-radius: 2px;
+  overflow: hidden;
 }
-.log-row        { color: #6c757d; }
-.log-row.danger { color: #dc3545; }
-.log-row.warn   { color: #e67e00; }
-.log-verdict    { color: #dc3545; font-weight: 600; margin-top: 8px; }
-
-/* ── Suspicious overlay ── */
+.quiz-timer-fill {
+  height: 100%;
+  width: 100%;
+  background: #e67e00;
+  border-radius: 2px;
+  transition: width linear, background .3s;
+}
+.quiz-timer-fill.warn {
+  background: #cc2200;
+}
+/* ── suspicious overlay ── */
 .suspicious-overlay {
   display: none;
   position: fixed;
@@ -98,8 +102,7 @@ body {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.2; }
 }
-
-/* ── Page chrome: navbar dim while quiz active ── */
+/* ── page chrome: navbar dim while quiz active ── */
 .hc-main {
   padding-top: 1.25rem;
 }
@@ -112,8 +115,7 @@ body.hc-immersive .navbar .nav-link:not(#logoutBtn) {
 body.hc-completed .navbar .nav-link {
   transition: opacity .3s, filter .3s;
 }
-
-/* ── Card transitions ── */
+/* ── card transitions ── */
 .card.hc-card {
   transition: opacity .35s ease, transform .35s ease;
 }
@@ -121,6 +123,17 @@ body.hc-completed .navbar .nav-link {
   opacity: 0;
   transform: translateY(8px);
 }
+/* ── Final log ── */
+.final-log {
+  max-height: 220px;
+  overflow-y: auto;
+  font-size: 0.78rem;
+  line-height: 2;
+}
+.log-row        { color: #6c757d; }
+.log-row.danger { color: #dc3545; }
+.log-row.warn   { color: #e67e00; }
+.log-verdict    { color: #dc3545; font-weight: 600; margin-top: 8px; }
 
 /* ------------------- Q1 are you human checkbox ------------------- */
 /* ── Moving checkbox ── */
@@ -178,22 +191,6 @@ body.hc-completed .navbar .nav-link {
   The JS reduces --peak-opacity each retry (1 → 0.6 → 0.35) so the button is harder to find as you fail more. */
 #captcha-submit         { opacity: 0; transition: opacity 0.15s; }
 #captcha-submit:hover   { opacity: var(--peak-opacity, 1); }
-.quiz-timer-bar {
-  height: 3px;
-  background: #f0f0f0;
-  border-radius: 2px;
-  overflow: hidden;
-}
-.quiz-timer-fill {
-  height: 100%;
-  width: 100%;
-  background: #e67e00;
-  border-radius: 2px;
-  transition: width linear, background .3s;
-}
-.quiz-timer-fill.warn {
-  background: #cc2200;
-}
 /* Sits in document flow (position: relative). Faint while un-armed; 
    sightly more visible once armed but still subtle so it's
    hard to find. */
@@ -231,7 +228,6 @@ body.hc-completed .navbar .nav-link {
 }
 
 /* ------------------- Q4 pain slider ------------------- */
-  
 /* ── Custom slider ── */
 .custom-slider-track {
   position: relative;
@@ -285,5 +281,43 @@ body.hc-completed .navbar .nav-link {
   .custom-slider-thumb.holding {
     animation: none;
     transform: translate(-50%, -50%) scale(1.15);
+  }
+}
+
+/* ------------------- Q5 logic puzzle ------------------- */
+/* Fork buttons (give-up / keep-trying) slide in from above when they
+   replace the four base options after two wrong attempts. */
+.logic-fork-option {
+  animation: slide-in .3s ease-out;
+}
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ------------------- Final screen ------------------- */
+/* SVG stroke draw-in: dasharray equals the path length, dashoffset
+   shifts the visible region. Animating offset → 0 reveals the stroke
+   progressively, looking like the line is being drawn live. The tick
+   has a 0.5s delay so the circle finishes drawing first. */
+.final-checkmark .final-circle {
+  stroke-dasharray: 290;
+  stroke-dashoffset: 290;
+  animation: draw-circle 0.6s ease-out forwards;
+}
+.final-checkmark .final-tick {
+  stroke-dasharray: 70;
+  stroke-dashoffset: 70;
+  animation: draw-tick 0.4s 0.5s ease-out forwards;
+}
+@keyframes draw-circle { to { stroke-dashoffset: 0; } }
+@keyframes draw-tick   { to { stroke-dashoffset: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .logic-fork-option { animation: none; }
+  .final-checkmark .final-circle,
+  .final-checkmark .final-tick {
+    animation: none;
+    stroke-dashoffset: 0;
   }
 }

@@ -112,6 +112,27 @@
         <div id="q4-status"></div>
       </div>
 
+      <!-- Q5: Logical reasoning -->
+      <div class="card border rounded-3 p-4 mb-3 d-none hc-card" id="q5-card">
+        <div class="text-uppercase text-muted mb-2" style="font-size:0.72rem; letter-spacing:0.1em;">Step 05 / 05 &mdash; Logical reasoning</div>
+        <h3 class="h5 fw-semibold mb-1">Evaluate the following and select the correct conclusion.</h3>
+        <p class="text-muted small mb-3">Read carefully. Only one answer is correct.</p>
+        <div class="alert alert-danger py-2 d-none" id="q5-reset-banner"></div>
+        <div class="bg-light border rounded p-3 mb-3 small text-muted lh-lg">
+          Given: <em>&forall;x &isin; &Omega;</em>, if <em>x &oplus; &Phi;(x) = 0</em>, then <em>x &isin; &Sigma;</em><br>
+          Given: <em>&exist;y &isin; &Sigma;</em> such that <em>y &otimes; &Phi;(y) &ge; &Omega;</em><br>
+          Given: <em>&Omega; &cap; &Sigma; &ne; &empty;</em> under condition <em>&beta;</em><br><br>
+          Therefore, for all <em>z</em> where <em>&Phi;(z) &mapsto; &Ropf;</em>:
+        </div>
+        <div class="d-grid gap-2" id="logic-options">
+          <button class="btn btn-outline-secondary text-start logic-base-option" data-idx="0">z must belong to &Sigma; &cup; &Omega;</button>
+          <button class="btn btn-outline-secondary text-start logic-base-option" data-idx="1">z cannot satisfy both conditions simultaneously</button>
+          <button class="btn btn-outline-secondary text-start logic-base-option" data-idx="2">The premise is self-consistent and z &isin; &Sigma;</button>
+          <button class="btn btn-outline-secondary text-start logic-base-option" data-idx="3">Insufficient data &mdash; &Phi; is undefined over &Ropf;</button>
+        </div>
+        <div id="q5-status"></div>
+      </div>
+
       <!-- Placeholder: shown after Q1 until later question commits land -->
       <div class="card border rounded-3 p-4 mb-3 d-none text-center hc-card" id="placeholder-card">
         <div class="text-uppercase text-muted mb-2" style="font-size:0.72rem; letter-spacing:0.1em;">Stand by</div>
@@ -120,10 +141,19 @@
         <button class="btn btn-outline-dark btn-sm" id="placeholder-restart">Restart</button>
       </div>
 
-      <!-- Final screen (placeholder body until the Q5 commit fills it in) -->
+      <!-- Final screen: shown when the user clears all five questions. -->
       <div class="card border rounded-3 p-4 mb-3 d-none text-center hc-card" id="final-card">
+        <div class="final-checkmark mx-auto" style="width:96px; height:96px;">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="46" fill="none" stroke="#198754" stroke-width="6" class="final-circle"/>
+            <polyline points="28,52 44,68 72,36" fill="none" stroke="#198754" stroke-width="6"
+              stroke-linecap="round" stroke-linejoin="round" class="final-tick"/>
+          </svg>
+        </div>
         <div class="fw-bold mt-3 mb-1" style="font-size:1.6rem;">Status verified.</div>
-        <div class="text-muted mb-4" style="font-size:1.1rem;">You are human.</div>
+        <div class="text-muted mb-3" style="font-size:1.1rem;">You are (probably) human.</div>
+        <div class="text-start small" id="final-summary"></div>
+        <a href="/" class="btn btn-dark px-4 mt-2">Continue</a>
       </div>
 
     </div>
