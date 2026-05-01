@@ -4,167 +4,72 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Human Verification</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='global.css') }}">
 </head>
-<body class="bg-white py-5">
+<body class="bg-white pt-3 pb-5 hc-immersive">
 
-  <!-- ── Header ── -->
-  <div class="text-center mb-5">
-    <span class="text-muted text-uppercase small letter-spacing-wide d-block mb-2">Security Check</span>
-    <h1 class="h2 fw-semibold">Are you a human?</h1>
-    <p class="text-muted">Please complete all verification steps to continue.</p>
-  </div>
+  {% include 'components/navbar.html' %}
 
-  <!-- ── Progress bar ── -->
-  <div class="container" style="max-width:600px;">
-    <div class="d-flex justify-content-between mb-1">
-      <small class="text-muted">Verification progress</small>
-      <small class="text-muted" id="progress-pct">0%</small>
+  <main class="hc-main">
+
+    <!-- Header -->
+    <div class="text-center mb-5">
+      <span class="text-muted text-uppercase small d-block mb-2">Security Check</span>
+      <h1 class="h2 fw-semibold">Are you a human?</h1>
+      <p class="text-muted">Please complete all verification steps to continue.</p>
     </div>
-    <div class="progress mb-4" style="height:4px;">
-      <div class="progress-bar bg-dark" id="progress-fill" style="width:0%;transition:width 0.6s ease;"></div>
-    </div>
-  </div>
 
-  <!-- ── Quiz cards ── -->
-  <div class="container" style="max-width:600px;">
-
-    <!-- Q1 -->
-    <div class="card border rounded-3 p-4 mb-3" id="q1-card">
-      <div class="text-uppercase text-muted mb-2" style="font-size:0.72rem;letter-spacing:0.1em;">Step 01 / 05 — Basic confirmation</div>
-      <h3 class="h5 fw-semibold mb-1">Please confirm your biological status.</h3>
-      <p class="text-muted small mb-3">Tick the box below to proceed.</p>
-      <div class="quiz-timer-bar mb-3"><div class="quiz-timer-fill" id="q1-timer"></div></div>
-      <div class="alert alert-danger py-2 d-none" id="q1-reset-banner"></div>
-      <div class="checkbox-area bg-light border rounded p-3 position-relative" id="checkbox-area" style="min-height:56px;">
-        <input type="checkbox" id="moving-checkbox" class="moving-checkbox">
-        <label class="text-muted ms-4 ps-2" for="moving-checkbox">
-          I confirm that I am a human being and not a synthetic entity.
-        </label>
+    <!-- Progress bar -->
+    <div class="container" style="max-width:600px;">
+      <div class="d-flex justify-content-between mb-1">
+        <small class="text-muted">Verification progress</small>
+        <small class="text-muted" id="progress-pct">0%</small>
       </div>
-      <div id="q1-status"></div>
+      <div class="progress mb-4" style="height:4px;">
+        <div class="progress-bar bg-dark" id="progress-fill" style="width:0%; transition:width 0.6s ease;"></div>
+      </div>
     </div>
 
-    <!-- Q2 -->
-    <div class="card border rounded-3 p-4 mb-3 d-none position-relative" id="q2-card" style="min-height:420px;">
-      <div class="text-uppercase text-muted mb-2" style="font-size:0.72rem;letter-spacing:0.1em;">Step 02 / 05 — Visual pattern recognition</div>
-      <h3 class="h5 fw-semibold mb-1">Select all squares containing a bicycle.</h3>
-      <p class="text-muted small mb-3">Click each matching image, then click verify when done.</p>
-      <div class="quiz-timer-bar mb-3"><div class="quiz-timer-fill" id="q2-timer"></div></div>
-      <div class="alert alert-danger py-2 d-none" id="q2-reset-banner"></div>
-      <div class="d-flex align-items-center gap-2 bg-light border rounded p-2 mb-3">
-        <span class="text-primary fw-bold fs-5">&#9632;&#9632;</span>
-        <div class="small text-muted">
-          <strong class="text-dark">HumanCheck™ v4.1</strong><br>
-          Select all images matching the category above.
+    <!-- Quiz cards -->
+    <div class="container" style="max-width:600px;">
+
+      <!-- Q1: Basic confirmation -->
+      <div class="card border rounded-3 p-4 mb-3 hc-card" id="q1-card">
+        <div class="text-uppercase text-muted mb-2" style="font-size:0.72rem; letter-spacing:0.1em;">Step 01 / 05 &mdash; Basic confirmation</div>
+        <h3 class="h5 fw-semibold mb-1">Please confirm your biological status.</h3>
+        <p class="text-muted small mb-3">Tick the box below to proceed.</p>
+        <div class="quiz-timer-bar mb-3"><div class="quiz-timer-fill" id="q1-timer"></div></div>
+        <div class="alert alert-danger py-2 d-none" id="q1-reset-banner"></div>
+        <div class="checkbox-area bg-light border rounded p-3 position-relative" id="checkbox-area" style="min-height:64px;">
+          <input type="checkbox" id="moving-checkbox" class="moving-checkbox">
+          <label class="text-muted ms-4 ps-2" for="moving-checkbox">
+            I confirm that I am a human being and not a synthetic entity.
+          </label>
         </div>
+        <a href="#" id="q1-give-up" class="q1-give-up small text-muted mt-2 d-none">Having trouble? Give up.</a>
+        <div id="q1-status"></div>
       </div>
-      <div class="captcha-grid mb-2" id="captcha-grid"></div>
-      <div class="d-flex justify-content-between align-items-center mt-1">
-        <button class="btn btn-link btn-sm text-muted p-0" onclick="refreshCaptcha()">↺ refresh images</button>
+
+      <!-- Placeholder: shown after Q1 until later question commits land -->
+      <div class="card border rounded-3 p-4 mb-3 d-none text-center hc-card" id="placeholder-card">
+        <div class="text-uppercase text-muted mb-2" style="font-size:0.72rem; letter-spacing:0.1em;">Stand by</div>
+        <h3 class="h5 fw-semibold mb-1">More verification steps coming soon.</h3>
+        <p class="text-muted small mb-3">The remaining checks have not been deployed yet. Restart this one to verify it still works.</p>
+        <button class="btn btn-outline-dark btn-sm" id="placeholder-restart">Restart</button>
       </div>
-      <div id="q2-status"></div>
-      <button class="btn btn-dark btn-sm" id="captcha-submit" onclick="submitCaptcha()"
-        style="position:absolute; bottom:20px; right:20px;">Verify</button>
+
+      <!-- Final screen (placeholder body until the Q5 commit fills it in) -->
+      <div class="card border rounded-3 p-4 mb-3 d-none text-center hc-card" id="final-card">
+        <div class="fw-bold mt-3 mb-1" style="font-size:1.6rem;">Status verified.</div>
+        <div class="text-muted mb-4" style="font-size:1.1rem;">You are human.</div>
+      </div>
+
     </div>
 
-    <!-- Floating bicycle -->
-    <div id="floating-bicycle" onclick="floatingBicycleClicked()"
-      style="display:none; position:fixed; z-index:800; cursor:pointer; opacity:0.85;">
-      <svg width="36" height="36" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="15" cy="40" r="10" fill="none" stroke="#555" stroke-width="2.5"/>
-        <circle cx="45" cy="40" r="10" fill="none" stroke="#555" stroke-width="2.5"/>
-        <circle cx="15" cy="40" r="2"  fill="#555"/>
-        <circle cx="45" cy="40" r="2"  fill="#555"/>
-        <line x1="15" y1="40" x2="28" y2="22" stroke="#555" stroke-width="2"/>
-        <line x1="28" y1="22" x2="45" y2="40" stroke="#555" stroke-width="2"/>
-        <line x1="28" y1="22" x2="22" y2="22" stroke="#555" stroke-width="2"/>
-        <line x1="28" y1="22" x2="34" y2="22" stroke="#555" stroke-width="2"/>
-        <line x1="22" y1="22" x2="18" y2="28" stroke="#555" stroke-width="1.5"/>
-        <line x1="34" y1="22" x2="38" y2="28" stroke="#555" stroke-width="1.5"/>
-        <ellipse cx="31" cy="20" rx="4" ry="2" fill="none" stroke="#555" stroke-width="1.5"/>
-      </svg>
-    </div>
+  </main>
 
-    <!-- Q3 -->
-    <div class="card border rounded-3 p-4 mb-3 d-none" id="q3-card">
-      <div class="text-uppercase text-muted mb-2" style="font-size:0.72rem;letter-spacing:0.1em;">Step 03 / 05 — Perceptual accuracy</div>
-      <h3 class="h5 fw-semibold mb-1">How many fingers is this cat holding up?</h3>
-      <p class="text-muted small mb-3">Count carefully. The flower may or may not be relevant.</p>
-      <div class="quiz-timer-bar mb-3"><div class="quiz-timer-fill" id="q3-timer"></div></div>
-      <div class="alert alert-danger py-2 d-none" id="q3-reset-banner"></div>
-      <div class="d-flex justify-content-center align-items-center bg-light border rounded p-3 mb-3">
-<<<<<<< HEAD
-        <img src="{{ url_for('static', filename='images/human_check_imgs/human_check_q3.jpg') }}" alt="A cat holding something" class="rounded" style="max-width:260px;width:100%;">      <div class="row g-2" id="answer-options"></div>
-=======
-        <img src="{{ url_for('static', filename='images/human_check_q3.jpg') }}" alt="A cat holding something" class="rounded" style="max-width:260px;width:100%;">      </div>
-      <div class="row g-2" id="answer-options"></div>
->>>>>>> 6fe196b81c9ac1fbe42d4abe015071134db1b853
-      <div id="q3-status"></div>
-    </div>
-
-    <!-- Q4 -->
-    <div class="card border rounded-3 p-4 mb-3 d-none" id="q4-card">
-      <div class="text-uppercase text-muted mb-2" style="font-size:0.72rem;letter-spacing:0.1em;">Step 04 / 05 — Biometric empathy scan</div>
-      <h3 class="h5 fw-semibold mb-3">Drag the slider to indicate your current pain level.</h3>
-      <div class="alert alert-danger py-2 d-none" id="q4-reset-banner"></div>
-      <div class="bg-light border rounded p-3">
-        <div class="d-flex justify-content-between mb-2">
-          <small class="text-muted">No pain</small>
-          <small class="text-muted">Unbearable</small>
-        </div>
-        <div class="custom-slider-track" id="slider-track">
-          <div class="custom-slider-fill" id="slider-fill"></div>
-          <div class="custom-slider-thumb" id="slider-thumb"></div>
-        </div>
-        <div class="text-center fw-bold fs-3 mt-2" id="pain-value">0</div>
-        <div class="text-center text-muted small mt-1" id="pain-verdict" style="min-height:36px;"></div>
-        <div class="text-center text-success fw-semibold mt-2 d-none" id="pain-confirm">
-          ✓ Reading confirmed
-        </div>
-      </div>
-      <div id="q4-status"></div>
-    </div>
-
-    <!-- Q5 -->
-    <div class="card border rounded-3 p-4 mb-3 d-none" id="q5-card">
-      <div class="text-uppercase text-muted mb-2" style="font-size:0.72rem;letter-spacing:0.1em;">Step 05 / 05 — Logical reasoning</div>
-      <h3 class="h5 fw-semibold mb-1">Evaluate the following and select the correct conclusion.</h3>
-      <p class="text-muted small mb-3">Read carefully. Only one answer is correct.</p>
-      <div class="alert alert-danger py-2 d-none" id="q5-reset-banner"></div>
-      <div class="bg-light border rounded p-3 mb-3 small text-muted lh-lg">
-        Given: <em>∀x ∈ Ω</em>, if <em>x ⊗ Δ(x) = 0</em>, then <em>x ∉ Σ</em><br>
-        Given: <em>∃y ∈ Σ</em> such that <em>y ⊕ Δ(y) ≥ Ω</em><br>
-        Given: <em>Ω ∩ Σ ≠ ∅</em> under condition <em>β</em><br><br>
-        Therefore, for all <em>z</em> where <em>Δ(z) → ∞</em>:
-      </div>
-      <div class="d-grid gap-2" id="logic-options">
-        <button class="btn btn-outline-secondary text-start" onclick="selectLogic(this, 0)">z must belong to Σ ∪ Ω</button>
-        <button class="btn btn-outline-secondary text-start" onclick="selectLogic(this, 1)">z cannot satisfy both conditions simultaneously</button>
-        <button class="btn btn-outline-secondary text-start" onclick="selectLogic(this, 2)">The premise is self-consistent and z ∈ Σ</button>
-        <button class="btn btn-outline-secondary text-start" onclick="selectLogic(this, 3)">Insufficient data — Δ is undefined over ∞</button>
-      </div>
-      <div id="q5-status"></div>
-    </div>
-
-    <!-- Final screen -->
-    <div class="card border rounded-3 p-4 mb-3 d-none text-center" id="final-card">
-      <div class="fw-bold text-danger mb-2" style="font-size:2.4rem;letter-spacing:-0.02em;">INCONCLUSIVE</div>
-      <p class="text-muted mb-4">
-        Your verification could not be completed.<br>
-        Our systems flagged <strong id="flag-count">0</strong> anomalies during this session.
-      </p>
-      <div class="bg-light border rounded p-3 text-start mb-4 small final-log" id="final-log"></div>
-      <div class="d-flex gap-3 justify-content-center">
-        <button class="btn btn-outline-secondary" onclick="location.reload()">Try again</button>
-        <button class="btn btn-dark" onclick="window.location.href='NEXT_GAME_URL_HERE'">Continue anyway</button>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ── Modal ── -->
+  <!-- Modal -->
   <div class="modal fade" id="sure-modal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -173,17 +78,18 @@
         </div>
         <div class="modal-body text-muted" id="sure-modal-body"></div>
         <div class="modal-footer border-0 pt-0">
-          <button class="btn btn-outline-secondary" onclick="closeModal(false)">Cancel</button>
-          <button class="btn btn-dark" onclick="closeModal(true)">Yes, continue</button>
+          <button class="btn btn-outline-secondary" id="sure-modal-cancel">Cancel</button>
+          <button class="btn btn-dark" id="sure-modal-confirm">Yes, continue</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ── Suspicious flash overlay ── -->
+  <!-- Suspicious flash overlay -->
   <div class="suspicious-overlay" id="suspicious-overlay"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{{ url_for('static', filename='human_check.js') }}"></script>
+
 </body>
 </html>

@@ -1,98 +1,122 @@
 // ─────────────────────────────────────────────
 //  human_check.js
-//  All logic for the Human Verification quiz.
+//
 //  Sections:
-//    1. State & config
-//    2. Progress bar
-//    3. Logging & flags
-//    4. Timer bars
-//    5. Status messages
-//    6. Modal
-//    7. Suspicious flash
-//    8. Question routing
-//    9. Q1 — Moving checkbox
-//   10. Q2 — CAPTCHA grid
-//   11. Q3 — Cat fingers
-//   12. Q4 — Pain slider
-//   13. Q5 — Logic puzzle
-//   14. Final screen
-//   15. Boot
+//    1.  State & config
+//    2.  Progress bar
+//    3.  Logging & flags
+//    4.  Timer bars
+//    5.  Status messages
+//    6.  Modal
+//    7.  Suspicious flash
+//    8.  Question routing
+//    9.  Q1 — Moving checkbox
+//   10.  Final screen
+//   11.  Boot
 // ─────────────────────────────────────────────
 
 
-// ── 1. State & config ─────────────────────────
+// ── 1. State & config ────────────────────────
 
 const TOTAL_QUESTIONS = 5;
-// Each question adds this much progress per cycle
-const PROGRESS_PER_Q = { 1: 8, 2: 16, 3: 24, 4: 32, 5: 40 };
+const PROGRESS_PER_Q  = { 1: 20, 2: 20, 3: 20, 4: 20, 5: 20 };
 
-let currentQ         = 1;
-let progressVal      = 0;
-let flagCount        = 0;
-let sessionLog       = [];
-let modalCallback    = null;
-let progressInterval = null;
-const timerIntervals = {};
+const Quiz = {
+  current: 1,
+  progress: 0,
+  flags: 0,
+  log: [],
+  timers: {},
+  scheduled: new Set(),
+  handlers: [],
+  q1: {},
+  modal: null,
+  modalCb: null,
+  reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
+};
+
+Quiz.track = (id) => { Quiz.scheduled.add(id); return id; };
+
+Quiz.clearAll = () => {
+  Quiz.scheduled.forEach((id) => { clearTimeout(id); clearInterval(id); });
+  Quiz.scheduled.clear();
+  Object.keys(Quiz.timers).forEach(clearTimerBar);
+  Quiz.handlers.forEach(([el, ev, fn]) => el && el.removeEventListener(ev, fn));
+  Quiz.handlers = [];
+};
+
+matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
+  Quiz.reducedMotion = e.matches;
+});
 
 
-// ── 2. Progress bar ───────────────────────────
+// ── 2. Progress bar ──────────────────────────
 
 function setProgress(val) {
-  progressVal = Math.max(0, Math.min(100, val));
-  document.getElementById('progress-fill').style.width = progressVal + '%';
-  document.getElementById('progress-pct').textContent  = Math.round(progressVal) + '%';
-}
-
-function startProgressWobble() {
-  clearInterval(progressInterval);
-  progressInterval = setInterval(() => {
-    if (Math.random() < 0.3) {
-      setProgress(progressVal - (Math.random() * 10 + 3));
-    }
-  }, 3500);
+  Quiz.progress = Math.max(0, Math.min(100, val));
+  document.getElementById('progress-fill').style.width = Quiz.progress + '%';
+  document.getElementById('progress-pct').textContent  = Math.round(Quiz.progress) + '%';
 }
 
 
-// ── 3. Logging & flags ────────────────────────
+// ── 3. Logging & flags ───────────────────────
 
 function log(msg, type = 'info') {
-  sessionLog.push({ msg, type, time: new Date().toLocaleTimeString() });
+  Quiz.log.push({ msg, type, time: new Date().toLocaleTimeString() });
 }
 
 function addFlag(msg) {
-  flagCount++;
+  Quiz.flags++;
   log('[FLAG] ' + msg, 'danger');
 }
 
 
-// ── 4. Timer bars ─────────────────────────────
+// ── 4. Timer bars ────────────────────────────
+//  CSS-transition driven: set 100%, force reflow, set 0% with a long
+//  linear transition. A setTimeout fallback fires onExpire even if the
+//  tab has been backgrounded (transitionend can be unreliable then).
 
 function startTimerBar(id, duration, onExpire) {
   clearTimerBar(id);
   const fill = document.getElementById(id);
   if (!fill) return;
-  fill.style.width = '100%';
-  const start = Date.now();
-  timerIntervals[id] = setInterval(() => {
-    const elapsed = Date.now() - start;
-    const pct = Math.max(0, 100 - (elapsed / duration * 100));
-    fill.style.width      = pct + '%';
-    fill.style.background = pct < 25 ? '#cc2200' : '#e67e00';
-    if (elapsed >= duration) { clearTimerBar(id); onExpire(); }
-  }, 50);
+
+  fill.style.transition = 'none';
+  fill.style.width      = '100%';
+  fill.classList.remove('warn');
+  void fill.offsetWidth;
+
+  fill.style.transition = `width ${duration}ms linear, background .3s`;
+  fill.style.width      = '0%';
+
+  const warnTimer   = setTimeout(() => fill.classList.add('warn'), duration * 0.75);
+  const expireTimer = setTimeout(onExpire, duration + 50);
+  Quiz.timers[id] = { warnTimer, expireTimer };
 }
 
 function clearTimerBar(id) {
-  if (timerIntervals[id]) { clearInterval(timerIntervals[id]); delete timerIntervals[id]; }
+  const t = Quiz.timers[id];
+  if (t) {
+    clearTimeout(t.warnTimer);
+    clearTimeout(t.expireTimer);
+    delete Quiz.timers[id];
+  }
+  const fill = document.getElementById(id);
+  if (fill) {
+    fill.style.transition = 'none';
+    fill.classList.remove('warn');
+  }
 }
 
 
-// ── 5. Status messages ────────────────────────
+// ── 5. Status messages ───────────────────────
 
 function showStatus(id, type, msg) {
   const el = document.getElementById(id);
-  // Map internal type to Bootstrap alert class
-  const bsClass = type === 'danger' ? 'alert-danger' : type === 'warn' ? 'alert-warning' : 'alert-info';
+  if (!el) return;
+  const bsClass = type === 'danger' ? 'alert-danger'
+                : type === 'warn'   ? 'alert-warning'
+                : 'alert-info';
   el.className   = 'alert ' + bsClass + ' py-2 mt-3';
   el.textContent = msg;
   el.classList.remove('d-none');
@@ -100,12 +124,13 @@ function showStatus(id, type, msg) {
 
 function hideStatus(id) {
   const el = document.getElementById(id);
+  if (!el) return;
   el.classList.add('d-none');
   el.textContent = '';
 }
 
 
-// ── 6. Modal ──────────────────────────────────
+// ── 6. Modal ─────────────────────────────────
 
 const SURE_MESSAGES = [
   'Are you sure? This action has been noted.',
@@ -115,564 +140,234 @@ const SURE_MESSAGES = [
   'Are you sure? Your response time is being monitored.',
 ];
 
-let bsModal = null;
+// Selectors that the random "are you sure?" interceptor must NOT eat,
+// or the actual mechanic clicks would get swallowed.
+const MODAL_WHITELIST = '.captcha-tile, #moving-checkbox, #slider-track, #logic-options, #floating-bicycle, #q1-give-up, #placeholder-restart, #sure-modal';
 
 function showModal(msg, cb) {
   document.getElementById('sure-modal-body').textContent = msg;
-  modalCallback = cb;
-  if (!bsModal) bsModal = new bootstrap.Modal(document.getElementById('sure-modal'), { backdrop: 'static', keyboard: false });
-  bsModal.show();
+  Quiz.modalCb = cb;
+  if (!Quiz.modal) {
+    Quiz.modal = new bootstrap.Modal(
+      document.getElementById('sure-modal'),
+      { backdrop: 'static', keyboard: false }
+    );
+  }
+  Quiz.modal.show();
 }
 
 function closeModal(confirmed) {
-  bsModal.hide();
-  if (modalCallback) modalCallback(confirmed);
-  modalCallback = null;
+  if (Quiz.modal) Quiz.modal.hide();
+  const cb = Quiz.modalCb;
+  Quiz.modalCb = null;
+  if (cb) cb(confirmed);
 }
 
-// Random "are you sure?" on ~18% of clicks
+document.getElementById('sure-modal-cancel').addEventListener('click', () => closeModal(false));
+document.getElementById('sure-modal-confirm').addEventListener('click', () => closeModal(true));
+
 document.addEventListener('click', (e) => {
-  if (e.target.closest('#sure-modal')) return;
+  if (e.target.closest(MODAL_WHITELIST)) return;
   if (Math.random() < 0.18) {
     e.stopImmediatePropagation();
     e.preventDefault();
-    showModal(SURE_MESSAGES[Math.floor(Math.random() * SURE_MESSAGES.length)], (yes) => {
-      if (!yes) addFlag('User cancelled action — possible avoidance behaviour');
-    });
+    showModal(
+      SURE_MESSAGES[Math.floor(Math.random() * SURE_MESSAGES.length)],
+      (yes) => { if (!yes) addFlag('User cancelled action — possible avoidance behaviour'); }
+    );
   }
 }, true);
 
 
-// ── 7. Suspicious flash ───────────────────────
+// ── 7. Suspicious flash ──────────────────────
 
 function flashSuspicious() {
   const el = document.getElementById('suspicious-overlay');
   el.style.display = 'block';
-  setTimeout(() => el.style.display = 'none', 1800);
+  setTimeout(() => { el.style.display = 'none'; }, 1800);
   addFlag('Suspicious interaction pattern detected');
 }
 
 
-// ── 8. Question routing ───────────────────────
+// ── 8. Question routing ──────────────────────
+
+const Q_INITS = { 1: () => initQ1() };
 
 function resetQ(qid, msg) {
+  Quiz.clearAll();
   addFlag(msg);
   const banner = document.getElementById(qid + '-reset-banner');
-  banner.textContent = '⚠ ' + msg;
-  banner.classList.remove('d-none');
-  setTimeout(() => { banner.classList.add('d-none'); initCurrentQ(); }, 2400);
+  if (banner) {
+    banner.textContent = '⚠ ' + msg;
+    banner.classList.remove('d-none');
+  }
+  Quiz.track(setTimeout(() => {
+    if (banner) banner.classList.add('d-none');
+    initCurrentQ();
+  }, 2400));
 }
 
 function advanceQ(from) {
-  setProgress(progressVal + PROGRESS_PER_Q[from]);
+  Quiz.clearAll();
+  setProgress(Quiz.progress + PROGRESS_PER_Q[from]);
   flashSuspicious();
   setTimeout(() => {
     showModal('Suspicious activity detected. Please re-verify before continuing.', () => {
-      if (progressVal >= 100) {
-        showFinal();
-        return;
-      }
+      const fromCard = document.getElementById('q' + from + '-card');
+      if (fromCard) fromCard.classList.add('d-none');
 
-      document.getElementById('q' + from + '-card').classList.add('d-none');
-      currentQ = from + 1;
+      if (Quiz.progress >= 100) { showFinal(); return; }
 
-      if (currentQ <= TOTAL_QUESTIONS) {
-        document.getElementById('q' + currentQ + '-card').classList.remove('d-none');
+      Quiz.current = from + 1;
+      const nextCard = document.getElementById('q' + Quiz.current + '-card');
+
+      if (nextCard) {
+        nextCard.classList.remove('d-none');
         initCurrentQ();
       } else {
-        currentQ = 1;
-        showModal('Verification incomplete. Please restart the sequence.', () => {
-          document.getElementById('q' + TOTAL_QUESTIONS + '-card').classList.add('d-none');
-          document.getElementById('q1-card').classList.remove('d-none');
-          initCurrentQ();
-        });
+        document.getElementById('placeholder-card').classList.remove('d-none');
       }
     });
   }, 600);
 }
 
 function initCurrentQ() {
-  const fns = { 1: initQ1, 2: initQ2, 3: initQ3, 4: initQ4, 5: initQ5 };
-  if (fns[currentQ]) fns[currentQ]();
+  const fn = Q_INITS[Quiz.current];
+  if (fn) fn();
 }
 
+function restartQuiz() {
+  Quiz.clearAll();
+  Quiz.current = 1;
+  setProgress(0);
+  document.getElementById('placeholder-card').classList.add('d-none');
+  document.getElementById('final-card').classList.add('d-none');
+  document.body.classList.remove('hc-completed');
+  document.body.classList.add('hc-immersive');
+  document.getElementById('q1-card').classList.remove('d-none');
+  initQ1();
+}
 
-// ── 9. Q1 — Moving checkbox ───────────────────
+document.getElementById('placeholder-restart').addEventListener('click', restartQuiz);
 
-let q1StartTime = null;
+
+// ── 9. Q1 — Moving checkbox ──────────────────
+//  Fleeing behaviour: pointermove on the area pushes the checkbox in the
+//  opposite direction of the cursor when the cursor enters its proximity.
+//  Position is driven entirely by `transform: translate(...)` so the CSS
+//  transition handles the easing.
+//
+//  Anti-cheat: q1.startTime is set at initQ1() (not on first hover) so
+//  clicking the checkbox before any cursor movement still trips the
+//  too-fast guard.
+//
+//  Surrender: after 60% of the timer, a "Give up" link fades in.
 
 function initQ1() {
-  q1StartTime = null;
   hideStatus('q1-status');
 
-  // Clone to remove stale listeners on reset
-  const old = document.getElementById('moving-checkbox');
-  const cb  = old.cloneNode(true);
-  cb.checked         = false;
-  cb.style.left      = '16px';
-  cb.style.top       = '50%';
-  cb.style.transform = 'translateY(-50%)';
-  old.parentNode.replaceChild(cb, old);
+  const area   = document.getElementById('checkbox-area');
+  const cb     = document.getElementById('moving-checkbox');
+  const giveUp = document.getElementById('q1-give-up');
+  const banner = document.getElementById('q1-reset-banner');
 
-  cb.addEventListener('mouseover', onCheckboxHover);
-  cb.addEventListener('change',    onCheckboxChange);
+  cb.checked = false;
+  cb.classList.remove('fleeing');
+  banner.classList.add('d-none');
+  giveUp.classList.add('d-none');
+
+  Quiz.q1.startTime = Date.now();
+  Quiz.q1.tx = 16;
+  Quiz.q1.ty = Math.max(8, area.offsetHeight / 2 - 8);
+  Quiz.q1.lastMove = 0;
+
+  cb.style.transition = 'none';
+  cb.style.transform  = `translate(${Quiz.q1.tx}px, ${Quiz.q1.ty}px)`;
+  void cb.offsetWidth;
+  cb.style.transition = '';
+
+  const onMove = (e) => {
+    const now = Date.now();
+    if (now - Quiz.q1.lastMove < 30) return;
+    Quiz.q1.lastMove = now;
+
+    const rect = area.getBoundingClientRect();
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+    const cx = Quiz.q1.tx + 8;
+    const cy = Quiz.q1.ty + 8;
+    const dx = cx - px;
+    const dy = cy - py;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist >= 60) return;
+
+    const ux = dist > 0 ? dx / dist : 1;
+    const uy = dist > 0 ? dy / dist : 0;
+    const fleeDist = 60 - dist + 12;
+
+    let nx = cx + ux * fleeDist - 8;
+    let ny = cy + uy * fleeDist - 8;
+    nx = Math.max(4, Math.min(area.offsetWidth  - 21, nx));
+    ny = Math.max(4, Math.min(area.offsetHeight - 21, ny));
+
+    Quiz.q1.tx = nx;
+    Quiz.q1.ty = ny;
+    cb.style.transform = `translate(${nx}px, ${ny}px)`;
+    cb.classList.add('fleeing');
+  };
+
+  const onChange = () => {
+    if (!cb.checked) return;
+    const elapsed = Date.now() - Quiz.q1.startTime;
+    if (elapsed < 400) {
+      cb.checked = false;
+      resetQ('q1', 'Suspicious instant click. Session reset for security.');
+      return;
+    }
+    if (elapsed < 1800) {
+      cb.checked = false;
+      resetQ('q1', 'Response was too fast. Automated behaviour detected.');
+      return;
+    }
+    advanceQ(1);
+  };
+
+  const onGiveUp = (e) => {
+    e.preventDefault();
+    showModal('Withdrawing is also suspicious.', (yes) => {
+      addFlag('User attempted to withdraw from Q1');
+      if (yes) resetQ('q1', 'Withdrawal noted. Restarting verification step.');
+    });
+  };
+
+  area.addEventListener('pointermove', onMove);
+  cb.addEventListener('change', onChange);
+  giveUp.addEventListener('click', onGiveUp);
+  Quiz.handlers.push([area, 'pointermove', onMove]);
+  Quiz.handlers.push([cb, 'change', onChange]);
+  Quiz.handlers.push([giveUp, 'click', onGiveUp]);
 
   startTimerBar('q1-timer', 18000, () =>
     resetQ('q1', 'Response time exceeded. Session reset for security.')
   );
-}
 
-function onCheckboxHover() {
-  if (!q1StartTime) q1StartTime = Date.now();
-  const area = document.getElementById('checkbox-area');
-  const cb   = document.getElementById('moving-checkbox');
-  cb.style.transform = 'none';
-  cb.style.left = (Math.random() * (area.offsetWidth  - 28) + 4) + 'px';
-  cb.style.top  = (Math.random() * (area.offsetHeight - 28) + 4) + 'px';
-}
-
-function onCheckboxChange() {
-  if (!q1StartTime) return;
-  if (Date.now() - q1StartTime < 1800) {
-    resetQ('q1', 'Response was too fast. Automated behaviour detected.');
-    return;
-  }
-  clearTimerBar('q1-timer');
-  advanceQ(1);
+  Quiz.track(setTimeout(() => giveUp.classList.remove('d-none'), 18000 * 0.6));
 }
 
 
-// ── 10. Q2 — CAPTCHA grid ─────────────────────
-
-const TILE_TYPES = ['cat', 'hydrant', 'toilet', 'stickfigure'];
-
-const TILE_SVG = {
-  cat: `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="30" cy="34" r="16" fill="#ccc" stroke="#aaa" stroke-width="1.5"/>
-    <circle cx="30" cy="30" r="13" fill="#ddd"/>
-    <polygon points="14,20 20,8 26,20" fill="#ccc" stroke="#aaa" stroke-width="1"/>
-    <polygon points="34,20 40,8 46,20" fill="#ccc" stroke="#aaa" stroke-width="1"/>
-    <circle cx="25" cy="30" r="2.5" fill="#555"/>
-    <circle cx="35" cy="30" r="2.5" fill="#555"/>
-    <circle cx="26" cy="29" r="1"   fill="#fff"/>
-    <circle cx="36" cy="29" r="1"   fill="#fff"/>
-    <ellipse cx="30" cy="35" rx="3" ry="2" fill="#e8a0a0"/>
-    <line x1="18" y1="34" x2="10" y2="31" stroke="#aaa" stroke-width="1"/>
-    <line x1="18" y1="36" x2="10" y2="36" stroke="#aaa" stroke-width="1"/>
-    <line x1="42" y1="34" x2="50" y2="31" stroke="#aaa" stroke-width="1"/>
-    <line x1="42" y1="36" x2="50" y2="36" stroke="#aaa" stroke-width="1"/>
-  </svg>`,
-  hydrant: `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-    <rect x="22" y="42" width="16" height="8"  rx="2" fill="#e05" stroke="#c04" stroke-width="1.5"/>
-    <rect x="18" y="30" width="24" height="16" rx="3" fill="#f16" stroke="#c04" stroke-width="1.5"/>
-    <ellipse cx="30" cy="30" rx="12" ry="5" fill="#e05" stroke="#c04" stroke-width="1.5"/>
-    <rect x="24" y="20" width="12" height="12" rx="2" fill="#f16" stroke="#c04" stroke-width="1.5"/>
-    <ellipse cx="30" cy="20" rx="7" ry="4" fill="#e05" stroke="#c04" stroke-width="1.5"/>
-    <rect x="10" y="34" width="8" height="5" rx="2" fill="#e05" stroke="#c04" stroke-width="1"/>
-    <rect x="42" y="34" width="8" height="5" rx="2" fill="#e05" stroke="#c04" stroke-width="1"/>
-    <circle cx="30" cy="37" r="3" fill="#c04"/>
-  </svg>`,
-  toilet: `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-    <rect x="18" y="8"  width="24" height="10" rx="3" fill="#ddd" stroke="#bbb" stroke-width="1.5"/>
-    <rect x="16" y="16" width="28" height="6"  rx="2" fill="#eee" stroke="#bbb" stroke-width="1.5"/>
-    <ellipse cx="30" cy="40" rx="18" ry="14" fill="#f5f5f5" stroke="#bbb" stroke-width="1.5"/>
-    <ellipse cx="30" cy="40" rx="13" ry="10" fill="#e8e8e8" stroke="#bbb" stroke-width="1"/>
-    <ellipse cx="30" cy="40" rx="8"  ry="6"  fill="#ccc"/>
-    <rect x="27" y="52" width="6" height="6" rx="1" fill="#ddd" stroke="#bbb" stroke-width="1"/>
-  </svg>`,
-  stickfigure: `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="30" cy="12" r="7" fill="none" stroke="#888" stroke-width="2"/>
-    <line x1="30" y1="19" x2="30" y2="38" stroke="#888" stroke-width="2"/>
-    <line x1="30" y1="26" x2="18" y2="32" stroke="#888" stroke-width="2"/>
-    <line x1="30" y1="26" x2="42" y2="32" stroke="#888" stroke-width="2"/>
-    <line x1="30" y1="38" x2="20" y2="52" stroke="#888" stroke-width="2"/>
-    <line x1="30" y1="38" x2="40" y2="52" stroke="#888" stroke-width="2"/>
-  </svg>`,
-  bicycle: `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="15" cy="40" r="10" fill="none" stroke="#555" stroke-width="2.5"/>
-    <circle cx="45" cy="40" r="10" fill="none" stroke="#555" stroke-width="2.5"/>
-    <circle cx="15" cy="40" r="2"  fill="#555"/>
-    <circle cx="45" cy="40" r="2"  fill="#555"/>
-    <line x1="15" y1="40" x2="28" y2="22" stroke="#555" stroke-width="2"/>
-    <line x1="28" y1="22" x2="45" y2="40" stroke="#555" stroke-width="2"/>
-    <line x1="28" y1="22" x2="22" y2="22" stroke="#555" stroke-width="2"/>
-    <line x1="28" y1="22" x2="34" y2="22" stroke="#555" stroke-width="2"/>
-    <line x1="22" y1="22" x2="18" y2="28" stroke="#555" stroke-width="1.5"/>
-    <line x1="34" y1="22" x2="38" y2="28" stroke="#555" stroke-width="1.5"/>
-    <ellipse cx="31" cy="20" rx="4" ry="2" fill="none" stroke="#555" stroke-width="1.5"/>
-  </svg>`
-};
-
-let captchaSubmits = 0;
-let captchaRows   = 3;
-let bicycleIndex  = -1;
-
-function initQ2() {
-  hideStatus('q2-status');
-  captchaSubmits = 0;
-  captchaRows    = 3;
-  bicycleIndex   = -1;
-  document.getElementById('floating-bicycle').style.display = 'none';
-  moveVerifyButton();
-  renderGrid();
-  startTimerBar('q2-timer', 22000, () =>
-    resetQ('q2', 'Verification timed out. Please complete the CAPTCHA again.')
-  );
-}
-
-function moveVerifyButton() {
-  const btn  = document.getElementById('captcha-submit');
-  const card = document.getElementById('q2-card');
-  const cardW = card.offsetWidth  || 560;
-  const cardH = card.offsetHeight || 520;
-  const btnW  = 80;
-  const btnH  = 36;
-  const padding = 16;
-
-  // Bottom-right quadrant only
-  const minX = Math.floor(cardW * 0.55);
-  const maxX = cardW - btnW - padding;
-  const minY = Math.floor(cardH * 0.75);
-  const maxY = cardH - btnH - padding;
-
-  btn.style.left   = (minX + Math.floor(Math.random() * Math.max(1, maxX - minX))) + 'px';
-  btn.style.top    = (minY + Math.floor(Math.random() * Math.max(1, maxY - minY))) + 'px';
-  btn.style.bottom = 'auto';
-  btn.style.right  = 'auto';
-  btn.style.zIndex = '10';
-}
-
-function showFloatingBicycle() {
-  const el = document.getElementById('floating-bicycle');
-  const maxX = window.innerWidth  - 60;
-  const maxY = window.innerHeight - 60;
-  el.style.left    = Math.floor(Math.random() * maxX) + 'px';
-  el.style.top     = Math.floor(Math.random() * maxY) + 'px';
-  el.style.display = 'block';
-}
-
-function floatingBicycleClicked() {
-  document.getElementById('floating-bicycle').style.display = 'none';
-  hideStatus('q2-status');
-  advanceQ(2);
-}
-
-function renderGrid() {
-  const grid  = document.getElementById('captcha-grid');
-  const total = captchaRows * 3;
-  grid.style.gridTemplateRows = `repeat(${captchaRows}, 1fr)`;
-  grid.innerHTML = '';
-
-  const types = Array.from({ length: total }, () =>
-    TILE_TYPES[Math.floor(Math.random() * TILE_TYPES.length)]
-  );
-
-  types.forEach((type) => {
-    const tile = document.createElement('div');
-    tile.className    = 'captcha-tile';
-    tile.dataset.type = type;
-    tile.innerHTML    = TILE_SVG[type];
-    tile.addEventListener('click', () => tile.classList.toggle('selected'));
-    grid.appendChild(tile);
-  });
-}
-
-function refreshCaptcha() {
-  renderGrid();
-  log('User refreshed CAPTCHA — possible evasion tactic');
-}
-
-function submitCaptcha() {
-  const selectedTiles = [...document.querySelectorAll('.captcha-tile.selected')];
-
-  if (selectedTiles.length === 0) {
-    showStatus('q2-status', 'warn', 'Please select at least one image before verifying.');
-    return;
-  }
-
-  clearTimerBar('q2-timer');
-  captchaSubmits++;
-  captchaRows++;
-  addFlag('Incorrect CAPTCHA submission #' + captchaSubmits);
-
-  // After 2 failed submits, show the floating bicycle
-  if (captchaSubmits >= 2) showFloatingBicycle();
-
-  showStatus('q2-status', 'danger', 'Incorrect selection. Please try again.');
-  setTimeout(() => {
-    hideStatus('q2-status');
-    moveVerifyButton();
-    renderGrid();
-    startTimerBar('q2-timer', 22000, () => resetQ('q2', 'Verification timed out.'));
-  }, 1800);
-}
-
-
-// ── 11. Q3 — Cat fingers ──────────────────────
-
-const BASE_NUMBERS  = [3, 4, 5, 6];
-const CORRECT_ANSWER = 4;
-
-let answerIntervals = [];
-
-function initQ3() {
-  hideStatus('q3-status');
-  renderAnswerBtns();
-  startTimerBar('q3-timer', 15000, () =>
-    resetQ('q3', 'Perceptual task timed out. Too slow for a human — or too slow for a bot?')
-  );
-}
-
-function renderAnswerBtns() {
-  answerIntervals.forEach(clearInterval);
-  answerIntervals = [];
-  const wrap = document.getElementById('answer-options');
-  wrap.innerHTML = '';
-
-  [...BASE_NUMBERS].sort(() => Math.random() - 0.5).forEach(n => {
-    const btn = document.createElement('button');
-    btn.className   = 'btn btn-outline-secondary col-6 py-3 fs-3 fw-bold';
-    btn.textContent = n;
-
-    btn.addEventListener('mouseenter', () => {
-      const iv = setInterval(() => btn.textContent = Math.floor(Math.random() * 10) + 1, 600);
-      answerIntervals.push(iv);
-      btn._iv = iv;
-    });
-    btn.addEventListener('mouseleave', () => {
-      clearInterval(btn._iv);
-      btn.textContent = n;
-    });
-    btn.addEventListener('click', () => {
-      answerIntervals.forEach(clearInterval);
-      if (n === CORRECT_ANSWER) {
-        clearTimerBar('q3-timer');
-        advanceQ(3);
-      } else {
-        showStatus('q3-status', 'danger', 'Incorrect. Recount carefully. The flower is a clue.');
-        addFlag('Q3 wrong answer: ' + n);
-        setTimeout(() => hideStatus('q3-status'), 1800);
-      }
-    });
-
-    wrap.appendChild(btn);
-  });
-}
-
-
-// ── 12. Q4 — Pain slider ──────────────────────
-
-const PAIN_MESSAGES = [
-  [0,   0,  'Reading of 0 is consistent with synthetic entities. Biological organisms register baseline nociceptive activity.'],
-  [1,   29, 'Sub-threshold values are associated with non-biological substrates. This range is invalid. Please try again.'],
-  [30,  75, 'Value within acceptable range. Hold the slider in position to confirm your reading.'],
-  [76,  99, 'Elevated reading detected. This range is outside acceptable parameters. Please try again.'],
-  [100, 100,'Extreme value recorded. This response is consistent with dramatic overcorrection. Flagged.'],
-];
-
-let q4Confirmed   = false;
-let q4Value       = 0;
-let q4HoldTimer   = null;
-let q4HoldStart   = null;
-let q4AnimFrame   = null;
-
-function getPainMsg(val) {
-  return (PAIN_MESSAGES.find(([lo, hi]) => val >= lo && val <= hi) || [])[2] || 'Awaiting biometric input...';
-}
-
-function isValidRange(val) { return val >= 30 && val <= 75; }
-
-function initQ4() {
-  hideStatus('q4-status');
-  q4Confirmed = false;
-  q4Value     = 0;
-  clearTimeout(q4HoldTimer);
-  cancelAnimationFrame(q4AnimFrame);
-  q4HoldStart = null;
-
-  const track = document.getElementById('slider-track');
-  const newTrack = track.cloneNode(true);
-  track.parentNode.replaceChild(newTrack, track);
-
-  const fill  = newTrack.querySelector('#slider-fill');
-  const thumb = newTrack.querySelector('#slider-thumb');
-
-  // Reset visuals
-  setSliderVisuals(fill, thumb, 0);
-  document.getElementById('pain-confirm').classList.add('d-none');
-
-  let dragging = false;
-
-  function getPct(clientX) {
-    const rect = newTrack.getBoundingClientRect();
-    return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-  }
-
-  function setSliderPos(pct) {
-    const val  = Math.round(pct * 100);
-    q4Value    = val;
-    fill.style.width  = (pct * 100) + '%';
-    thumb.style.left  = (pct * 100) + '%';
-    setSliderVisuals(fill, thumb, val);
-    document.getElementById('pain-verdict').textContent = getPainMsg(val);
-  }
-
-  function startHold() {
-    if (q4HoldStart !== null) return;
-    q4HoldStart = Date.now();
-    // Animate the thumb border as a progress ring
-    tickHold(fill, thumb);
-    q4HoldTimer = setTimeout(() => {
-      if (dragging && isValidRange(q4Value)) confirmPain(fill, thumb);
-    }, 2000);
-  }
-
-  function cancelHold() {
-    clearTimeout(q4HoldTimer);
-    cancelAnimationFrame(q4AnimFrame);
-    q4HoldStart = null;
-    q4HoldTimer = null;
-  }
-
-  function tickHold(fill, thumb) {
-    if (q4HoldStart === null) return;
-    const elapsed = Date.now() - q4HoldStart;
-    const pct     = Math.min(elapsed / 2000, 1);
-    // Pulse the thumb size slightly as feedback
-    const scale = 1 + pct * 0.3;
-    thumb.style.transform = `translate(-50%, -50%) scale(${scale})`;
-    if (pct < 1) q4AnimFrame = requestAnimationFrame(() => tickHold(fill, thumb));
-  }
-
-  newTrack.addEventListener('pointerdown', (e) => {
-    if (q4Confirmed) return;
-    dragging = true;
-    newTrack.setPointerCapture(e.pointerId);
-    setSliderPos(getPct(e.clientX));
-    if (isValidRange(q4Value)) startHold();
-  });
-
-  newTrack.addEventListener('pointermove', (e) => {
-    if (!dragging || q4Confirmed) return;
-    setSliderPos(getPct(e.clientX));
-    // Reset hold if still in valid range, cancel if not
-    if (isValidRange(q4Value)) {
-      if (q4HoldStart === null) startHold();
-    } else {
-      cancelHold();
-      thumb.style.transform = 'translate(-50%, -50%) scale(1)';
-    }
-  });
-
-  newTrack.addEventListener('pointerup', () => {
-    if (!dragging || q4Confirmed) return;
-    dragging = false;
-    cancelHold();
-    // Snap back to 0
-    setSliderPos(0);
-    thumb.style.transform = 'translate(-50%, -50%) scale(1)';
-  });
-
-  newTrack.addEventListener('pointercancel', () => {
-    dragging = false;
-    cancelHold();
-    setSliderPos(0);
-    thumb.style.transform = 'translate(-50%, -50%) scale(1)';
-  });
-}
-
-function setSliderVisuals(fill, thumb, val) {
-  const state = isValidRange(val) ? 'valid' : val > 0 ? 'danger' : '';
-  fill.className  = 'custom-slider-fill'  + (state ? ' ' + state : '');
-  thumb.className = 'custom-slider-thumb' + (state ? ' ' + state : '');
-  const valEl = document.getElementById('pain-value');
-  valEl.textContent = val;
-  valEl.className   = 'pain-value' + (state === 'valid' ? ' valid' : '');
-}
-
-function confirmPain(fill, thumb) {
-  if (q4Confirmed) return;
-  q4Confirmed = true;
-  cancelAnimationFrame(q4AnimFrame);
-
-  fill.className  = 'custom-slider-fill valid';
-  thumb.className = 'custom-slider-thumb valid';
-  thumb.style.transform = 'translate(-50%, -50%) scale(1)';
-  document.getElementById('pain-value').className = 'pain-value valid';
-  document.getElementById('pain-confirm').classList.remove('d-none');
-
-  addFlag('Pain reading of ' + q4Value + ' confirmed');
-  setTimeout(() => advanceQ(4), 1400);
-}
-
-function updatePainDisplay(val) {
-  document.getElementById('pain-value').textContent   = val;
-  document.getElementById('pain-verdict').textContent = getPainMsg(val);
-}
-
-
-// ── 13. Q5 — Logic puzzle ─────────────────────
-
-const LOGIC_VERDICTS = [
-  'Incorrect. The intersection of Ω and Σ under condition β renders this trivially false. A human with adequate reasoning would have seen this.',
-  'Wrong. You have confused ⊗ with ⊕, a fundamental error. This response is consistent with pattern-matching rather than genuine cognition.',
-  'Incorrect. The premise explicitly constrains Σ membership. Selecting this option suggests you did not read the question. Suspicious.',
-  'Also incorrect. While Δ is indeed bounded by domain constraints, this does not resolve the core asymmetry. Try harder.',
-];
-
-let logicAttempts = 0;
-
-function initQ5() {
-  hideStatus('q5-status');
-  logicAttempts = 0;
-  document.querySelectorAll('#logic-options .btn').forEach(b => b.disabled = false);
-}
-
-function selectLogic(btn, idx) {
-  showStatus('q5-status', 'danger', LOGIC_VERDICTS[idx]);
-  addFlag('Logic answer ' + (idx + 1) + ' selected — incorrect');
-  document.querySelectorAll('#logic-options .btn').forEach(b => b.disabled = true);
-  logicAttempts++;
-
-  const shouldAdvance = logicAttempts >= 2;
-
-  setTimeout(() => {
-    hideStatus('q5-status');
-    document.querySelectorAll('#logic-options .btn').forEach(b => b.disabled = false);
-    if (shouldAdvance) {
-      // Small extra delay so status hide completes before advancing
-      setTimeout(() => advanceQ(5), 200);
-    }
-  }, 3200);
-}
-
-
-// ── 14. Final screen ──────────────────────────
+// ── 10. Final screen ─────────────────────────
 
 function showFinal() {
-  clearInterval(progressInterval);
+  Quiz.clearAll();
   setProgress(100);
-  // Hide whichever card is currently visible
-  document.querySelectorAll('.card:not(.d-none)').forEach(c => c.classList.add('d-none'));
+  document.body.classList.remove('hc-immersive');
+  document.body.classList.add('hc-completed');
+  document.querySelectorAll('.hc-card:not(.d-none)').forEach(c => c.classList.add('d-none'));
   document.getElementById('final-card').classList.remove('d-none');
-  document.getElementById('flag-count').textContent = flagCount;
-
-  const logEl = document.getElementById('final-log');
-  logEl.innerHTML = '<div class="text-muted text-uppercase small mb-2" style="letter-spacing:0.08em;">Session audit log</div>';
-  sessionLog.forEach(({ time, msg, type }) => {
-    const row = document.createElement('div');
-    row.className = 'log-row ' + type;
-    row.textContent = '[' + time + '] ' + msg;
-    logEl.appendChild(row);
-  });
-  const verdict = document.createElement('div');
-  verdict.className = 'log-verdict';
-  verdict.textContent = 'VERDICT: INCONCLUSIVE — Entity could not be classified.';
-  logEl.appendChild(verdict);
 }
 
 
-// ── 15. Boot ──────────────────────────────────
+// ── 11. Boot ─────────────────────────────────
 
-startProgressWobble();
 initQ1();

@@ -83,17 +83,31 @@ body {
   width: 100%;
   background: #e67e00;
   border-radius: 2px;
+  transition: width linear, background .3s;
+}
+.quiz-timer-fill.warn {
+  background: #cc2200;
 }
 
 /* ── Moving checkbox ── */
+/* Position is driven entirely by `transform: translate(...)` from JS,
+   so the transition below eases the flee motion. */
 .moving-checkbox {
   position: absolute !important;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
+  left: 0;
+  top: 0;
   width: 17px;
   height: 17px;
   cursor: pointer;
+  transition: transform .18s cubic-bezier(.2,.7,.3,1), box-shadow .18s;
+  will-change: transform;
+}
+.moving-checkbox.fleeing {
+  box-shadow: 0 0 0 6px rgba(230,126,0,0.18);
+}
+.moving-checkbox:focus-visible {
+  outline: 2px solid #0d6efd;
+  outline-offset: 2px;
 }
 
 
@@ -181,4 +195,38 @@ body {
 @keyframes pulse-border {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.2; }
+}
+
+/* ── Page chrome: navbar dim while quiz active ── */
+.hc-main {
+  padding-top: 1.25rem;
+}
+body.hc-immersive .navbar .nav-link:not(#logoutBtn) {
+  pointer-events: none;
+  opacity: 0.55;
+  filter: grayscale(0.4);
+  transition: opacity .3s, filter .3s;
+}
+body.hc-completed .navbar .nav-link {
+  transition: opacity .3s, filter .3s;
+}
+
+/* ── Card transitions ── */
+.card.hc-card {
+  transition: opacity .35s ease, transform .35s ease;
+}
+.card.hc-card.entering {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+/* ── Q1 surrender link ── */
+.q1-give-up {
+  display: inline-block;
+  text-decoration: underline;
+  font-style: italic;
+  cursor: pointer;
+}
+.q1-give-up:hover {
+  color: #6c757d !important;
 }
