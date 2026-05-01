@@ -184,7 +184,7 @@ def popups():
 
 @app.route('/secret')
 def secret():
-    return render_template('secret_task.html')
+    return render_template('secret.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
