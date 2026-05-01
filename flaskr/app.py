@@ -178,5 +178,91 @@ def update_name():
 
     return redirect(url_for('profile'))
 
+#app route for 404 page
+@app.route('/404')
+def not_found():
+
+    #folder location meme_images are located
+    folder = os.path.join(app.static_folder, 'images/404_images')
+    
+    #list of meme_images in folder
+    files = os.listdir(folder)
+
+    #filter to only 'compatible' files
+    image_files = [
+        f for f in files
+        if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))
+    ]
+
+    #create url_for()'s for each file in the folder
+    image_list = [
+        url_for('static', filename=f'images/404_images/{file}')
+        for file in image_files
+    ]
+
+    #render template with dynamic image list, error code, error message, tab title
+    return render_template('404.html', image_list=image_list, error='404', error_message='Oops... Page not found!', error_title='404: Page Not Found'), 404
+
+#page not found error handler -> redirects to '404' page
+@app.errorhandler(404)
+def page_not_found(e):
+
+    folder = os.path.join(app.static_folder, 'images/404_images')
+    
+    files = os.listdir(folder)
+
+    image_files = [
+        f for f in files
+        if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))
+    ]
+
+    image_list = [
+        url_for('static', filename=f'images/404_images/{file}')
+        for file in image_files
+    ]
+
+    #return with image list, correct error code, message & title
+    return render_template('404.html', image_list=image_list, error='404', error_message='Oops... Page not found!', error_title='404: Page Not Found'), 404
+
+#bad request error handler -> redirects to '404' page
+@app.errorhandler(400)
+def bad_request(e):
+    
+    folder = os.path.join(app.static_folder, 'images/404_images')
+    
+    files = os.listdir(folder)
+
+    image_files = [
+        f for f in files
+        if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))
+    ]
+
+    image_list = [
+        url_for('static', filename=f'images/404_images/{file}')
+        for file in image_files
+    ]
+
+    return render_template('404.html', image_list=image_list, error='400', error_message='Bad request!', error_title='400: Bad Request'), 400
+
+#forbidden error handler -> redirects to '404' page
+@app.errorhandler(403)
+def forbidden(e):
+
+    folder = os.path.join(app.static_folder, 'images/404_images')
+    
+    files = os.listdir(folder)
+
+    image_files = [
+        f for f in files
+        if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))
+    ]
+
+    image_list = [
+        url_for('static', filename=f'images/404_images/{file}')
+        for file in image_files
+    ]
+
+    return render_template('404.html', image_list=image_list, error='403', error_message='Forbidden!', error_title='403: Forbidden'), 403
+
 if __name__ == '__main__':
     app.run(debug=True)
