@@ -232,6 +232,25 @@ body.hc-completed .navbar .nav-link {
   color: #6c757d !important;
 }
 
+/* ── Q3 cat paws ── */
+/* Cat photo subtly drifts in hue so re-counting doesn't feel stable.
+   Click on the correct answer flashes the button red with the wrong
+   number for 220ms before advancing — the .q3-glitching class. */
+.q3-img-wrap img {
+  animation: q3-hue 6s ease-in-out infinite;
+}
+@keyframes q3-hue {
+  0%, 100% { filter: hue-rotate(-8deg); }
+  50%      { filter: hue-rotate(8deg); }
+}
+.q3-answer.q3-glitching {
+  border-color: #dc3545 !important;
+  color: #dc3545 !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .q3-img-wrap img { animation: none; }
+}
+
 /* ── Q2 floating bicycle ── */
 /* Sits in document flow (position: relative). Faint while warming up
    (un-armed); slightly more visible once armed but still subtle so it's

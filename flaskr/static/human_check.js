@@ -12,8 +12,9 @@
 //    8.  Question routing
 //    9.  Q1 — Moving checkbox
 //   10.  Q2 — CAPTCHA grid
-//   11.  Final screen
-//   12.  Boot
+//   11.  Q3 — Cat paws
+//   12.  Final screen
+//   13.  Boot
 // ─────────────────────────────────────────────
 
 
@@ -32,6 +33,7 @@ const Quiz = {
   handlers: [],
   q1: {},
   q2: {},
+  q3: {},
   modal: null,
   modalCb: null,
   reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
@@ -192,7 +194,7 @@ function flashSuspicious() {
 
 // ── 8. Question routing ──────────────────────
 
-const Q_INITS = { 1: () => initQ1(), 2: () => initQ2() };
+const Q_INITS = { 1: () => initQ1(), 2: () => initQ2(), 3: () => initQ3() };
 
 function resetQ(qid, msg) {
   Quiz.clearAll();
@@ -244,6 +246,7 @@ function restartQuiz() {
   document.getElementById('placeholder-card').classList.add('d-none');
   document.getElementById('final-card').classList.add('d-none');
   document.getElementById('q2-card').classList.add('d-none');
+  document.getElementById('q3-card').classList.add('d-none');
   document.getElementById('floating-bicycle').classList.add('d-none');
   document.body.classList.remove('hc-completed');
   document.body.classList.add('hc-immersive');
@@ -565,7 +568,93 @@ function showFloatingBicycle() {
 }
 
 
-// ── 11. Final screen ─────────────────────────
+// ── 11. Q3 — Cat paws ────────────────────────
+//
+//  The "right" answer to "how many paws is this cat holding up" is 13,
+//  which is absurd — that's the joke. Three layered tricks make the
+//  buttons feel unstable:
+//
+//   1. Hovering a button cycles its text through random digits 1-9
+//      every 500ms (skipped under reduced-motion).
+//   2. Clicking the correct answer (13) flashes "99" with a red border
+//      for 220ms before advancing — looks like a glitch, not a smooth
+//      success.
+//   3. The cat image hue-rotates ±8° over 6s so re-counting doesn't
+//      feel grounded (CSS animation, see global.css).
+
+const Q3_OPTIONS = [12, 13, 14, 20];
+const Q3_CORRECT = 13;
+const Q3_FLICKER_MS = 500;
+const Q3_GLITCH_MS  = 220;
+
+function initQ3() {
+  hideStatus('q3-status');
+  Quiz.q3 = {};
+  document.getElementById('q3-reset-banner').classList.add('d-none');
+  renderAnswerBtns();
+  startTimerBar('q3-timer', 15000, () =>
+    resetQ('q3', 'Perceptual task timed out. Too slow for a human — or too slow for a bot?')
+  );
+}
+
+function renderAnswerBtns() {
+  const wrap = document.getElementById('answer-options');
+  wrap.innerHTML = '';
+
+  const shuffled = [...Q3_OPTIONS].sort(() => Math.random() - 0.5);
+
+  shuffled.forEach((n) => {
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-outline-secondary col-6 py-3 fs-3 fw-bold q3-answer';
+    btn.textContent = n;
+    btn.dataset.value = n;
+
+    const stopFlicker = () => {
+      if (btn._iv) { clearInterval(btn._iv); btn._iv = null; }
+    };
+    const onEnter = () => {
+      if (Quiz.reducedMotion) return;
+      const iv = setInterval(() => {
+        btn.textContent = Math.floor(Math.random() * 10) + 1;
+      }, Q3_FLICKER_MS);
+      btn._iv = iv;
+      Quiz.track(iv);
+    };
+    const onLeave = () => {
+      stopFlicker();
+      btn.textContent = n;
+    };
+    const onClick = () => {
+      stopFlicker();
+      if (n === Q3_CORRECT) {
+        // Pretend to fail for a beat, then accept — feels like a glitch.
+        btn.textContent = '99';
+        btn.classList.add('q3-glitching');
+        Quiz.track(setTimeout(() => {
+          btn.textContent = n;
+          btn.classList.remove('q3-glitching');
+          advanceQ(3);
+        }, Q3_GLITCH_MS));
+        return;
+      }
+      showStatus('q3-status', 'danger', 'Incorrect. Recount carefully. The flower is a clue.');
+      addFlag('Q3 wrong answer: ' + n);
+      Quiz.track(setTimeout(() => hideStatus('q3-status'), 1800));
+    };
+
+    btn.addEventListener('mouseenter', onEnter);
+    btn.addEventListener('mouseleave', onLeave);
+    btn.addEventListener('click', onClick);
+    // No need to track in Quiz.handlers — these buttons get wiped by
+    // wrap.innerHTML='' on the next render, which detaches them with
+    // their listeners.
+
+    wrap.appendChild(btn);
+  });
+}
+
+
+// ── 12. Final screen ─────────────────────────
 
 function showFinal() {
   Quiz.clearAll();
@@ -577,6 +666,6 @@ function showFinal() {
 }
 
 
-// ── 12. Boot ─────────────────────────────────
+// ── 13. Boot ─────────────────────────────────
 
 initQ1();
