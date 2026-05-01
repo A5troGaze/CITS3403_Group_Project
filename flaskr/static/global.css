@@ -70,8 +70,9 @@ body {
 
 /* below is the css for human_checker (Juvincia) */
 /* ── Invisible verify button ── */
+/* Hidden by default; reveals on hover. The JS reduces --peak-opacity each retry (1 → 0.6 → 0.35) so the button is harder to find as you fail more. */
 #captcha-submit         { opacity: 0; transition: opacity 0.15s; }
-#captcha-submit:hover   { opacity: 1; }
+#captcha-submit:hover   { opacity: var(--peak-opacity, 1); }
 .quiz-timer-bar {
   height: 3px;
   background: #f0f0f0;
@@ -229,4 +230,22 @@ body.hc-completed .navbar .nav-link {
 }
 .q1-give-up:hover {
   color: #6c757d !important;
+}
+
+/* ── Q2 floating bicycle ── */
+/* Sits in document flow (position: relative). Faint while warming up
+   (un-armed); slightly more visible once armed but still subtle so it's
+   hard to find. */
+#floating-bicycle {
+  position: relative;
+  z-index: 800;
+  cursor: pointer;
+  opacity: 0.35;
+  transition: opacity .4s ease;
+}
+#floating-bicycle:not(.armed) {
+  pointer-events: none;
+}
+#floating-bicycle.armed {
+  opacity: 0.65;
 }

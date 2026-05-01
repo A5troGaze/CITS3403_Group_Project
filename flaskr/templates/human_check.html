@@ -51,6 +51,29 @@
         <div id="q1-status"></div>
       </div>
 
+      <!-- Q2: Visual pattern recognition -->
+      <div class="card border rounded-3 p-4 mb-3 d-none position-relative hc-card" id="q2-card" style="min-height:420px;">
+        <div class="text-uppercase text-muted mb-2" style="font-size:0.72rem; letter-spacing:0.1em;">Step 02 / 05 &mdash; Visual pattern recognition</div>
+        <h3 class="h5 fw-semibold mb-1">Select all squares containing a bicycle.</h3>
+        <p class="text-muted small mb-3">Click each matching image, then click verify when done.</p>
+        <div class="quiz-timer-bar mb-3"><div class="quiz-timer-fill" id="q2-timer"></div></div>
+        <div class="alert alert-danger py-2 d-none" id="q2-reset-banner"></div>
+        <div class="d-flex align-items-center gap-2 bg-light border rounded p-2 mb-3">
+          <span class="text-primary fw-bold fs-5">&#9632;&#9632;</span>
+          <div class="small text-muted">
+            <strong class="text-dark">HumanCheck&trade; v4.1</strong><br>
+            Select all images matching the category above.
+          </div>
+        </div>
+        <div class="captcha-grid mb-2" id="captcha-grid"></div>
+        <div class="d-flex justify-content-between align-items-center mt-1">
+          <button class="btn btn-link btn-sm text-muted p-0" id="captcha-refresh">&#10227; refresh images</button>
+        </div>
+        <div id="q2-status"></div>
+        <button class="btn btn-dark btn-sm" id="captcha-submit"
+          style="position:absolute; bottom:20px; right:20px;">Verify</button>
+      </div>
+
       <!-- Placeholder: shown after Q1 until later question commits land -->
       <div class="card border rounded-3 p-4 mb-3 d-none text-center hc-card" id="placeholder-card">
         <div class="text-uppercase text-muted mb-2" style="font-size:0.72rem; letter-spacing:0.1em;">Stand by</div>
@@ -65,6 +88,23 @@
         <div class="text-muted mb-4" style="font-size:1.1rem;">You are human.</div>
       </div>
 
+    </div>
+
+    <!-- Floating bicycle (revealed after 2 failed CAPTCHA submits) -->
+    <div id="floating-bicycle" class="d-none" aria-label="A small bicycle">
+      <svg width="36" height="36" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="15" cy="40" r="10" fill="none" stroke="#555" stroke-width="2.5"/>
+        <circle cx="45" cy="40" r="10" fill="none" stroke="#555" stroke-width="2.5"/>
+        <circle cx="15" cy="40" r="2" fill="#555"/>
+        <circle cx="45" cy="40" r="2" fill="#555"/>
+        <line x1="15" y1="40" x2="28" y2="22" stroke="#555" stroke-width="2"/>
+        <line x1="28" y1="22" x2="45" y2="40" stroke="#555" stroke-width="2"/>
+        <line x1="28" y1="22" x2="22" y2="22" stroke="#555" stroke-width="2"/>
+        <line x1="28" y1="22" x2="34" y2="22" stroke="#555" stroke-width="2"/>
+        <line x1="22" y1="22" x2="18" y2="28" stroke="#555" stroke-width="1.5"/>
+        <line x1="34" y1="22" x2="38" y2="28" stroke="#555" stroke-width="1.5"/>
+        <ellipse cx="31" cy="20" rx="4" ry="2" fill="none" stroke="#555" stroke-width="1.5"/>
+      </svg>
     </div>
 
   </main>
