@@ -178,5 +178,13 @@ def update_name():
 
     return redirect(url_for('profile'))
 
+@app.route('/popups')
+def popups():
+    return render_template('pop_ups.html')
+
+@app.route('/secret')
+def secret():
+    return render_template('secret.html')
+
 if __name__ == '__main__':
     app.run(debug=True)
