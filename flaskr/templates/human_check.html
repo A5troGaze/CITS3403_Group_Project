@@ -89,6 +89,29 @@
         <div id="q3-status"></div>
       </div>
 
+      <!-- Q4: Biometric empathy scan -->
+      <div class="card border rounded-3 p-4 mb-3 d-none hc-card" id="q4-card">
+        <div class="text-uppercase text-muted mb-2" style="font-size:0.72rem; letter-spacing:0.1em;">Step 04 / 05 &mdash; Biometric empathy scan</div>
+        <h3 class="h5 fw-semibold mb-3">Drag the slider to indicate your current pain level.</h3>
+        <div class="alert alert-danger py-2 d-none" id="q4-reset-banner"></div>
+        <div class="bg-light border rounded p-3">
+          <div class="d-flex justify-content-between mb-2">
+            <small class="text-muted">No pain</small>
+            <small class="text-muted">Unbearable</small>
+          </div>
+          <div class="custom-slider-track" id="slider-track">
+            <div class="custom-slider-fill" id="slider-fill"></div>
+            <div class="custom-slider-thumb" id="slider-thumb"></div>
+          </div>
+          <div class="text-center fw-bold fs-3 mt-2" id="pain-value">0</div>
+          <div class="text-center text-muted small mt-1" id="pain-verdict" style="min-height:36px;"></div>
+          <div class="text-center text-success fw-semibold mt-2 d-none" id="pain-confirm">
+            &check; Reading confirmed
+          </div>
+        </div>
+        <div id="q4-status"></div>
+      </div>
+
       <!-- Placeholder: shown after Q1 until later question commits land -->
       <div class="card border rounded-3 p-4 mb-3 d-none text-center hc-card" id="placeholder-card">
         <div class="text-uppercase text-muted mb-2" style="font-size:0.72rem; letter-spacing:0.1em;">Stand by</div>

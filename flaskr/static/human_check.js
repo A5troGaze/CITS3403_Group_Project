@@ -13,8 +13,9 @@
 //    9.  Q1 — Moving checkbox
 //   10.  Q2 — CAPTCHA grid
 //   11.  Q3 — Cat paws
-//   12.  Final screen
-//   13.  Boot
+//   12.  Q4 — Pain slider
+//   13.  Final screen
+//   14.  Boot
 // ─────────────────────────────────────────────
 
 
@@ -34,6 +35,7 @@ const Quiz = {
   q1: {},
   q2: {},
   q3: {},
+  q4: {},
   modal: null,
   modalCb: null,
   reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
@@ -194,7 +196,7 @@ function flashSuspicious() {
 
 // ── 8. Question routing ──────────────────────
 
-const Q_INITS = { 1: () => initQ1(), 2: () => initQ2(), 3: () => initQ3() };
+const Q_INITS = { 1: () => initQ1(), 2: () => initQ2(), 3: () => initQ3(), 4: () => initQ4() };
 
 function resetQ(qid, msg) {
   Quiz.clearAll();
@@ -247,6 +249,7 @@ function restartQuiz() {
   document.getElementById('final-card').classList.add('d-none');
   document.getElementById('q2-card').classList.add('d-none');
   document.getElementById('q3-card').classList.add('d-none');
+  document.getElementById('q4-card').classList.add('d-none');
   document.getElementById('floating-bicycle').classList.add('d-none');
   document.body.classList.remove('hc-completed');
   document.body.classList.add('hc-immersive');
@@ -654,7 +657,197 @@ function renderAnswerBtns() {
 }
 
 
-// ── 12. Final screen ─────────────────────────
+// ── 12. Q4 — Pain slider ─────────────────────
+//
+//  Drag the thumb into the valid zone (30–75) and hold for 2 seconds
+//  to confirm. Release early and the slider snaps to 0. No timer on
+//  this question — pacing is up to the user.
+//
+//  Three layered tricks:
+//   1. Slowdown — when the cursor is in the valid zone, pointer-to-value
+//      mapping is reduced to 60% so settling exactly is harder.
+//   2. Hold pulse — a single `.holding` class on the thumb triggers a
+//      2s CSS scale animation (see global.css). No JS rAF loop needed.
+//   3. Value drift — 25% chance during a hold, the displayed value
+//      briefly flickers ±2. Visual only; doesn't affect validity. Pure
+//      gaslight.
+//
+//  Pointer events (not mouse) are used for unified mouse/touch/pen
+//  support. setPointerCapture locks moves to the track so dragging
+//  outside the element keeps working.
+
+const Q4_VALID_MIN  = 30;
+const Q4_VALID_MAX  = 75;
+const Q4_HOLD_MS    = 2000;
+const Q4_SLOWDOWN   = 0.6;   // pointer-to-value rate when inside zone
+const Q4_DRIFT_CHANCE = 0.25;
+
+const PAIN_MESSAGES = [
+  [0,   0,   'Reading of 0 is consistent with synthetic entities. Biological organisms register baseline nociceptive activity.'],
+  [1,   29,  'Sub-threshold values are associated with non-biological substrates. This range is invalid. Please try again.'],
+  [30,  75,  'Value within acceptable range. Hold the slider in position to confirm your reading.'],
+  [76,  99,  'Elevated reading detected. This range is outside acceptable parameters. Please try again.'],
+  [100, 100, 'Extreme value recorded. This response is consistent with dramatic overcorrection. Flagged.'],
+];
+
+function getPainMsg(val) {
+  for (const [lo, hi, msg] of PAIN_MESSAGES) {
+    if (val >= lo && val <= hi) return msg;
+  }
+  return 'Awaiting biometric input...';
+}
+
+function isValidPain(v) { return v >= Q4_VALID_MIN && v <= Q4_VALID_MAX; }
+
+function pointerToPct(track, clientX) {
+  const rect = track.getBoundingClientRect();
+  const rawPct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  let pct = rawPct;
+
+  // Slowdown: while the raw cursor sits inside the valid zone AND we
+  // were already in the zone last frame, only 60% of the cursor delta
+  // translates to slider movement. First entry into the zone uses the
+  // raw position so the thumb meets the cursor; subsequent moves drag.
+  const rawVal = rawPct * 100;
+  const inZoneByRaw = rawVal >= Q4_VALID_MIN && rawVal <= Q4_VALID_MAX;
+  if (inZoneByRaw && Quiz.q4.lastInZoneByRaw && Quiz.q4.lastRaw !== null) {
+    const delta = rawPct - Quiz.q4.lastRaw;
+    pct = Math.max(0, Math.min(1, Quiz.q4.lastPct + delta * Q4_SLOWDOWN));
+  }
+  Quiz.q4.lastRaw = rawPct;
+  Quiz.q4.lastPct = pct;
+  Quiz.q4.lastInZoneByRaw = inZoneByRaw;
+  return pct;
+}
+
+function applySliderPos(pct) {
+  const fill   = document.getElementById('slider-fill');
+  const thumb  = document.getElementById('slider-thumb');
+  const valEl  = document.getElementById('pain-value');
+  const verdEl = document.getElementById('pain-verdict');
+
+  const val = Math.round(pct * 100);
+  Quiz.q4.value = val;
+  fill.style.width = (pct * 100) + '%';
+  thumb.style.left = (pct * 100) + '%';
+
+  const state = isValidPain(val) ? 'valid' : val > 0 ? 'danger' : '';
+  fill.className   = 'custom-slider-fill'  + (state ? ' ' + state : '');
+  // Preserve .holding if it was set; just rebuild the type classes.
+  thumb.className  = 'custom-slider-thumb' + (state ? ' ' + state : '')
+                   + (Quiz.q4.holdStart !== null ? ' holding' : '');
+  valEl.textContent = val;
+  valEl.className   = 'text-center fw-bold fs-3 mt-2' + (state === 'valid' ? ' text-success' : '');
+  verdEl.textContent = getPainMsg(val);
+}
+
+function startHold() {
+  if (Quiz.q4.holdStart !== null || Quiz.q4.confirmed) return;
+  Quiz.q4.holdStart = Date.now();
+  document.getElementById('slider-thumb').classList.add('holding');
+
+  Quiz.q4.holdTimer = setTimeout(() => {
+    if (Quiz.q4.dragging && isValidPain(Quiz.q4.value)) confirmPain();
+  }, Q4_HOLD_MS);
+  Quiz.track(Quiz.q4.holdTimer);
+
+  // 25% chance: schedule a brief value-drift gaslight mid-hold.
+  if (Math.random() < Q4_DRIFT_CHANCE) {
+    const fireAt = 600 + Math.random() * 800;  // somewhere in the hold
+    Quiz.track(setTimeout(() => {
+      if (Quiz.q4.holdStart === null || Quiz.q4.confirmed) return;
+      const valEl = document.getElementById('pain-value');
+      const drift = Math.random() < 0.5 ? -2 : 2;
+      const ghost = Math.max(0, Math.min(100, Quiz.q4.value + drift));
+      valEl.textContent = String(ghost);
+      Quiz.track(setTimeout(() => {
+        if (Quiz.q4.holdStart !== null && !Quiz.q4.confirmed) {
+          valEl.textContent = String(Quiz.q4.value);
+        }
+      }, 350));
+    }, fireAt));
+  }
+}
+
+function cancelHold() {
+  if (Quiz.q4.holdTimer) clearTimeout(Quiz.q4.holdTimer);
+  Quiz.q4.holdStart = null;
+  Quiz.q4.holdTimer = null;
+  document.getElementById('slider-thumb').classList.remove('holding');
+}
+
+function confirmPain() {
+  if (Quiz.q4.confirmed) return;
+  Quiz.q4.confirmed = true;
+  cancelHold();
+  const fill  = document.getElementById('slider-fill');
+  const thumb = document.getElementById('slider-thumb');
+  fill.classList.add('valid');
+  thumb.classList.add('valid');
+  thumb.classList.remove('holding');
+  document.getElementById('pain-value').className = 'text-center fw-bold fs-3 mt-2 text-success';
+  document.getElementById('pain-confirm').classList.remove('d-none');
+  addFlag('Pain reading of ' + Quiz.q4.value + ' confirmed');
+  Quiz.track(setTimeout(() => advanceQ(4), 1400));
+}
+
+function initQ4() {
+  hideStatus('q4-status');
+  Quiz.q4 = {
+    value: 0,
+    confirmed: false,
+    dragging: false,
+    holdStart: null,
+    holdTimer: null,
+    lastRaw: null,
+    lastPct: 0,
+    lastInZoneByRaw: false,
+  };
+  document.getElementById('q4-reset-banner').classList.add('d-none');
+  document.getElementById('pain-confirm').classList.add('d-none');
+  applySliderPos(0);
+
+  const track = document.getElementById('slider-track');
+
+  const onDown = (e) => {
+    if (Quiz.q4.confirmed) return;
+    Quiz.q4.dragging = true;
+    track.setPointerCapture(e.pointerId);
+    applySliderPos(pointerToPct(track, e.clientX));
+    if (isValidPain(Quiz.q4.value)) startHold();
+  };
+
+  const onMove = (e) => {
+    if (!Quiz.q4.dragging || Quiz.q4.confirmed) return;
+    applySliderPos(pointerToPct(track, e.clientX));
+    if (isValidPain(Quiz.q4.value)) {
+      if (Quiz.q4.holdStart === null) startHold();
+    } else {
+      cancelHold();
+    }
+  };
+
+  const onUp = () => {
+    if (!Quiz.q4.dragging || Quiz.q4.confirmed) return;
+    Quiz.q4.dragging = false;
+    cancelHold();
+    Quiz.q4.lastRaw = null;
+    Quiz.q4.lastInZoneByRaw = false;
+    applySliderPos(0);  // snap back to 0 on release
+  };
+
+  track.addEventListener('pointerdown',   onDown);
+  track.addEventListener('pointermove',   onMove);
+  track.addEventListener('pointerup',     onUp);
+  track.addEventListener('pointercancel', onUp);
+  Quiz.handlers.push([track, 'pointerdown',   onDown]);
+  Quiz.handlers.push([track, 'pointermove',   onMove]);
+  Quiz.handlers.push([track, 'pointerup',     onUp]);
+  Quiz.handlers.push([track, 'pointercancel', onUp]);
+}
+
+
+// ── 13. Final screen ─────────────────────────
 
 function showFinal() {
   Quiz.clearAll();
@@ -666,6 +859,6 @@ function showFinal() {
 }
 
 
-// ── 13. Boot ─────────────────────────────────
+// ── 14. Boot ─────────────────────────────────
 
 initQ1();
