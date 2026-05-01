@@ -129,3 +129,70 @@ body {
   width: 20px;
   height: 20px;
 }
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes rainbow {
+  0% {
+    color: #ff4444;
+  }
+
+  33% {
+    color: #44ff44;
+  }
+
+  66% {
+    color: #4444ff;
+  }
+
+  100% {
+    color: #ff4444;
+  }
+}
+
+@keyframes flash {
+
+  0%,
+  100% {
+    color: inherit;
+  }
+
+  50% {
+    color: var(--flash-color);
+    transform: scale(1.05);
+  }
+}
+
+#progress-count.flash {
+  animation: flash 1s ease-in-out infinite;
+}
+
+#win-message {
+  animation: bounceIn 0.5s ease-out, float 2s ease-in-out 0.6s infinite, rainbow 2s linear infinite;
+}

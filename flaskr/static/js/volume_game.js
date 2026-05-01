@@ -56,12 +56,14 @@ class VolumeSlider {
         this._charging = false;
 
         const releaseSound = document.getElementById("release-sound");
-        releaseSound.pause();
-        releaseSound.currentTime = 0;
+        if (releaseSound) {
+            releaseSound.pause();
+            releaseSound.currentTime = 0;
 
-        setTimeout(() => {
-            releaseSound.play();
-        }, 10);
+            setTimeout(() => {
+                releaseSound.play();
+            }, 10);
+        }
 
         this.indicator.classList.remove("drop");
         this.indicator.style.opacity = "1";
@@ -145,7 +147,7 @@ class VolumeSlider {
                     document.getElementById("background-sound-2").volume = this.soundVolume * 0.4;
 
 
-                    document.getElementById("progress-message").innerText = `Status: ${this._successCount} / 5`;
+                    this.updateProgress(this._successCount, true, "#00ff99");
 
                     if (this._successCount >= 5) {
                         this.showAlert();
@@ -166,7 +168,7 @@ class VolumeSlider {
                         missSound.play();
                     }, 10);
 
-                    document.getElementById("progress-message").innerText = `Status: 0 / 5`;
+                    this.updateProgress(0, true, "#ff4444");
                 }
 
             }
@@ -205,6 +207,25 @@ class VolumeSlider {
         return c / 2 * (t * t * t + 2) + b;
     }
 
+    updateProgress(count, flash = true, color = "#00ff99") {
+        const progressCount = document.getElementById("progress-count");
+        const progressSuffix = document.getElementById("progress-suffix");
+
+        if (count === 5) {
+            progressCount.textContent = `${count} / 5`;
+            progressSuffix.style.visibility = "hidden";
+        } else {
+            progressCount.textContent = `${count}`;
+            progressSuffix.style.visibility = "visible";
+        }
+        if (flash) {
+            progressCount.style.setProperty("--flash-color", color);
+            progressCount.classList.remove("flash");
+            void progressCount.offsetWidth; // trigger reflow to restart animation
+            progressCount.classList.add("flash");
+        }
+    }
+
     showAlert() {
         document.getElementById("win-message").style.display = "block";
 
@@ -240,7 +261,9 @@ window.addEventListener('load', () => {
 
         bgSound.play();
         bgSound2.play();
-    });
 
-    new VolumeSlider();
+        new VolumeSlider();
+
+    }, { once: true });
+
 });
