@@ -10,11 +10,14 @@
     <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
   </head>
 
-  <body class="d-flex flex-column vh-100">
+  <body class="d-flex flex-column min-vh-100">
 
-    {% include 'components/navbar.html' %}
+    <header class="flex-shrink-0">
+      {% include 'components/navbar.html' %}
+    </header>
+    
 
-    <main class="flex-grow-1 d-flex align-items-center">
+    <main class="flex-grow-1 d-flex align-items-center py-4">
 
       <div class="container">
 
@@ -48,67 +51,28 @@
 
     </main>
 
-    {% include 'components/footer.html' %}
+    <footer class="flex-shrink-0 mt-auto">
+      {% include 'components/footer.html' %}
+    </footer>
+
+    
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-    <script src="{{ url_for('static', filename='js/404.js') }}"></script>
+    <!---->
     <script>
       //show error code, error message and tab title ================================
       //[IMPORTANT MESSAGE!: VS CODE LIKES TO COMPLAIN ABOUT THE JINJA SYNTAX HERE: PLEASE DO NOT TWEAK. JINJA RENDERS INSIDE OF HTML FILES!]
-      const error = {{ error | tojson }};
-      const errorMessage = {{ error_message | tojson }};
-      const errorTitle =  {{ error_title | tojson }} ;
-      const catMemes = {{ image_list | tojson }};
-      const loggedIn = {{ (session.get('user_id') is not none) | tojson }};
-
-      document.title = errorTitle;
-
-
-      // Image load =================================================================
-      const memeImage = document.getElementById("meme_image");
-
-      if (!loggedIn && memeImage && catMemes.length>0) {
-        memeImage.src = catMemes[Math.floor(Math.random() * catMemes.length)];
-      }
       
-
-      //random function to pick image when image is clicked
-      if (memeImage && catMemes.length > 0) {
-        memeImage.addEventListener('click', () => {
-          let newIndex;
-          let current = memeImage.src;
-
-          do {
-            newIndex = Math.floor(Math.random() * catMemes.length);
-          } while (catMemes[newIndex] === current && catMemes.length > 1); // Ensure a different image is selected if there's more than one option
-
-          memeImage.src = catMemes[newIndex];
-          
-          //change little message to tell you to keep on clicking
-          const miniMsg = document.getElementById('miniMessage');
-          
-          if (miniMsg) {
-            miniMsg.innerText = "Keep clicking ;)"
-          }
-
-        });
-      }
-      
-
-      //hover animation for button ================================================================
-      const UsertoHome = document.getElementById('UsertoHome');
-
-      if (UsertoHome) {
-
-        UsertoHome.addEventListener('mouseenter', () => {
-          UsertoHome.innerText = "Ha, you suck! 67!";
-        });
-        UsertoHome.addEventListener('mouseleave', () => {
-          UsertoHome.innerText = "Go to Home";
-        });
-      }
+      window.appConfig = {
+        error : {{ error | tojson }},
+        errorMessage : {{ error_message | tojson }},
+        errorTitle :  {{ error_title | tojson }},
+        catMemes : {{ image_list | tojson }},
+        loggedIn : {{ (session.get('user_id') is not none) | tojson }}
+      };
 
     </script>
+    <script src="{{ url_for('static', filename='js/404.js') }}"></script>
   </body>
 </html>
