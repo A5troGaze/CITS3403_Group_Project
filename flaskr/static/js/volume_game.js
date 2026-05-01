@@ -54,6 +54,15 @@ class VolumeSlider {
     // release and fire based on charge
     release(charge) {
         this._charging = false;
+
+        const releaseSound = document.getElementById("release-sound");
+        releaseSound.pause();
+        releaseSound.currentTime = 0;
+
+        setTimeout(() => {
+            releaseSound.play();
+        }, 10);
+
         this.indicator.classList.remove("drop");
         this.indicator.style.opacity = "1";
         requestAnimationFrame(() => {
@@ -205,6 +214,8 @@ class VolumeSlider {
         winSound.pause();
         winSound.currentTime = 0;
 
+        winSound.volume = 0.4;
+
         setTimeout(() => {
             winSound.play();
         }, 10);
@@ -212,19 +223,24 @@ class VolumeSlider {
 }
 
 window.addEventListener('load', () => {
+    const popup = document.getElementById("volume-popup");
+    const startBtn = document.getElementById("start-button");
+
     const bgSound = document.getElementById("background-sound");
     const bgSound2 = document.getElementById("background-sound-2");
 
-    bgSound.volume = 1;
-    bgSound2.volume = 0.4;
+    bgSound.pause();
+    bgSound2.pause();
 
-    bgSound.play().catch(() => {
-        document.addEventListener("click", () => {
-            bgSound.play();
-            bgSound2.play();
-        }, { once: true });
+    startBtn.addEventListener("click", () => {
+        popup.style.display = "none";
+
+        bgSound.volume = 1;
+        bgSound2.volume = 0.4;
+
+        bgSound.play();
+        bgSound2.play();
     });
-    bgSound2.play().catch(() => { });
 
     new VolumeSlider();
 });

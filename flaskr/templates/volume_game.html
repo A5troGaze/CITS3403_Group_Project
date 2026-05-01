@@ -16,14 +16,18 @@
 
     {% include 'components/navbar.html' %}
 
+    <div id="volume-popup"
+        style="position: fixed; display: flex; flex-direction: column; align-items: center; justify-content: center; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 99999; pointer-events: auto;">
+        <div
+            style="background-color: white; color: black; padding: 30px; border-radius: 10px; text-align: center; pointer-events: auto;">
+            <h2>Volume check!!</h2>
+            <p>Make sure to turn up your volume for this one!</p>
+            <button type="button" id="start-button" class="btn btn-light hover-btn">Start Game</button>
+        </div>
+    </div>
 
     <div class="container-fluid"
         style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh;">
-        <div id="game-text"
-            style="max-width: 700px; margin-bottom: 20px; font-family: 'Consolas', monospace; font-size: small;">
-            Isn't that background music a bit annoying? Let's turn it down! (Hint: Click and hold the icon, then release
-            to get the dot as close to the end of the track as possible. You need to do this 5 times in a row to win!)
-        </div>
         <div id="volume-slider">
             <svg id="volume-icon" class="volume-icon" viewBox="-1 0 33 32">
                 <defs>
@@ -57,11 +61,15 @@
 
         </div>
 
+
         <audio id="background-sound" src="{{ url_for('static', filename='audio/mii-channel-music.mp3') }}"
             preload="auto" loop></audio>
 
         <audio id="background-sound-2" src="{{ url_for('static', filename='audio/iphone-alarm-radar.mp3') }}"
             loop></audio>
+
+        <audio id="release-sound" src="{{ url_for('static', filename='audio/luigi-here-we-go.mp3') }}"></audio>
+
         <audio id="miss-sound" src="{{ url_for('static', filename='audio/death_E1a7HAQ.mp3') }}"></audio>
 
         <audio id="win-sound" src="{{ url_for('static', filename='audio/mario-kart-wii-first-place.mp3') }}"></audio>
