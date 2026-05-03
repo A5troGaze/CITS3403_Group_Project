@@ -81,7 +81,7 @@ def home():
 
 @app.route('/maze')
 def maze():
-    return render_template('maze_game.html')
+    return render_template('maze.html')
 
 @app.route('/sign_in')
 def signin_page():
