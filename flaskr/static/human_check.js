@@ -149,7 +149,7 @@ const SURE_MESSAGES = [
 ];
 
 // Selectors that the random "are you sure?" interceptor must NOT eat, or the actual mechanic clicks would get swallowed.
-const MODAL_WHITELIST = '.captcha-tile, #captcha-submit, #captcha-refresh, #moving-checkbox, #slider-track, #logic-options, #floating-bicycle, #q1-give-up, #placeholder-restart, #sure-modal';
+const MODAL_WHITELIST = '.captcha-tile, #captcha-submit, #captcha-refresh, #moving-checkbox, #slider-track, #logic-options, #floating-bicycle, #q1-give-up, #sure-modal';
 
 function showModal(msg, cb) {
   document.getElementById('sure-modal-body').textContent = msg;
@@ -233,12 +233,9 @@ function advanceQ(from) {
 
       Quiz.current = from + 1;
       const nextCard = document.getElementById('q' + Quiz.current + '-card');
-
       if (nextCard) {
         nextCard.classList.remove('d-none');
         initCurrentQ();
-      } else {
-        document.getElementById('placeholder-card').classList.remove('d-none');
       }
     });
   }, 600);
@@ -249,11 +246,12 @@ function initCurrentQ() {
   if (fn) fn();
 }
 
+// Callable from the DevTools console (`restartQuiz()`) to wipe state
+// and start over from Q1 — handy for testing without reloading.
 function restartQuiz() {
   Quiz.clearAll();
   Quiz.current = 1;
   setProgress(0);
-  document.getElementById('placeholder-card').classList.add('d-none');
   document.getElementById('final-card').classList.add('d-none');
   document.getElementById('q2-card').classList.add('d-none');
   document.getElementById('q3-card').classList.add('d-none');
@@ -267,8 +265,6 @@ function restartQuiz() {
   document.getElementById('q1-card').classList.remove('d-none');
   initQ1();
 }
-
-document.getElementById('placeholder-restart').addEventListener('click', restartQuiz);
 
 
 // ── 9. Q1 — Moving checkbox ──────────────────
@@ -458,9 +454,7 @@ function initQ2() {
 
   fb.classList.add('d-none');
   fb.classList.remove('armed');
-  submitBtn.style.removeProperty('--peak-opacity');
 
-  moveVerifyButton();
   renderGrid();
 
   const onSubmit  = () => submitCaptcha();
@@ -485,29 +479,6 @@ function initQ2() {
   startTimerBar('q2-timer', 22000, () =>
     resetQ('q2', 'Verification timed out. Please complete the CAPTCHA again.')
   );
-}
-
-function moveVerifyButton() {
-  const btn  = document.getElementById('captcha-submit');
-  const card = document.getElementById('q2-card');
-  const cardW = card.offsetWidth  || 560;
-  const cardH = card.offsetHeight || 520;
-  const padding = 16;
-  const btnW = 80;
-  const btnH = 36;
-
-  // Constrain to bottom-right quadrant so the user has a search area,
-  // not the whole card.
-  const minX = Math.floor(cardW * 0.55);
-  const maxX = cardW - btnW - padding;
-  const minY = Math.floor(cardH * 0.75);
-  const maxY = cardH - btnH - padding;
-
-  btn.style.left   = (minX + Math.floor(Math.random() * Math.max(1, maxX - minX))) + 'px';
-  btn.style.top    = (minY + Math.floor(Math.random() * Math.max(1, maxY - minY))) + 'px';
-  btn.style.bottom = 'auto';
-  btn.style.right  = 'auto';
-  btn.style.zIndex = '10';
 }
 
 function renderGrid() {
@@ -558,17 +529,11 @@ function submitCaptcha() {
     ? 'Bicycle-adjacent feature detected — inconclusive'
     : 'Incorrect CAPTCHA submission #' + Quiz.q2.submits);
 
-  // Tier the verify-button hover opacity downward each retry.
-  const btn = document.getElementById('captcha-submit');
-  if (Quiz.q2.submits === 1)      btn.style.setProperty('--peak-opacity', '0.6');
-  else if (Quiz.q2.submits >= 2)  btn.style.setProperty('--peak-opacity', '0.35');
-
   if (Quiz.q2.submits >= 2) showFloatingBicycle();
 
   showStatus('q2-status', 'danger', 'Incorrect selection. Please try again.');
   Quiz.track(setTimeout(() => {
     hideStatus('q2-status');
-    moveVerifyButton();
     renderGrid();
     startTimerBar('q2-timer', 22000, () => resetQ('q2', 'Verification timed out.'));
   }, 1800));

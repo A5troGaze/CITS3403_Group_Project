@@ -186,11 +186,6 @@ body.hc-completed .navbar .nav-link {
 .captcha-tile:hover    { border-color: #aaa; }
 .captcha-tile.selected { border-color: #0d6efd; background: #eef4ff; }
 .captcha-tile svg      { width: 100%; height: 100%; padding: 10px; }
-/* ── Invisible verify button ── */
-/* Hidden by default; reveals on hover. 
-  The JS reduces --peak-opacity each retry (1 → 0.6 → 0.35) so the button is harder to find as you fail more. */
-#captcha-submit         { opacity: 0; transition: opacity 0.15s; }
-#captcha-submit:hover   { opacity: var(--peak-opacity, 1); }
 /* Sits in document flow (position: relative). Faint while un-armed; 
    sightly more visible once armed but still subtle so it's
    hard to find. */
