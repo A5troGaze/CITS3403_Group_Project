@@ -110,6 +110,10 @@ def comments():
 def faq():
     return render_template('FAQ.html')
 
+@app.route('/brightness_bug')
+def brightness_bug():
+    return render_template('brightnessBug.html')
+
 @app.route('/api/test')
 def test_route():
     return {"message": "Server and DB are connected!"}, 200

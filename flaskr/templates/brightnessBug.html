@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Brightness Bug</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='global.css') }}">
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+    <style>
+      /* The world is a fixed-height mid-gray strip with a single horizon line.
+         The bug sits on the left and "runs" via a small vertical bob; the world
+         appears to scroll past via the moving stripe pattern. */
+      #gameWorld {
+        position: relative;
+        height: 70vh;
+        background-color: #888;
+        overflow: hidden;
+      }
+      .horizon-line {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 1px;
+        background: #222;
+      }
+      /* Animated dashed stripe just above the horizon to fake forward motion. */
+      .scroll-stripes {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(50% - 4px);
+        height: 4px;
+        background-image: repeating-linear-gradient(
+          to right,
+          #444 0 24px,
+          transparent 24px 60px
+        );
+        animation: scrollLeft 0.6s linear infinite;
+      }
+      @keyframes scrollLeft {
+        from { background-position-x: 0; }
+        to   { background-position-x: -60px; }
+      }
+      .bug-character {
+        position: absolute;
+        left: 12%;
+        top: calc(50% - 3rem);
+        font-size: 4rem;
+        color: #1a1a1a;
+        transform: scaleX(-1); /* face right (direction of travel) */
+        transform-origin: center;
+        animation: bugBob 0.4s ease-in-out infinite alternate;
+      }
+      @keyframes bugBob {
+        from { transform: scaleX(-1) translateY(0); }
+        to   { transform: scaleX(-1) translateY(-6px); }
+      }
+      /* Small bounce when the player nails a confirm. */
+      .bug-bounce { animation: bugJump 0.35s ease-out !important; }
+      @keyframes bugJump {
+        0%   { transform: scaleX(-1) translateY(0); }
+        50%  { transform: scaleX(-1) translateY(-30px); }
+        100% { transform: scaleX(-1) translateY(0); }
+      }
+      /* Sun glow next to the bug during a flash obstacle. */
+      .bug-glow {
+        position: absolute;
+        left: 18%;
+        top: calc(50% - 2.5rem);
+        font-size: 3rem;
+        color: #ffd000;
+        text-shadow: 0 0 20px #fff8a8, 0 0 40px #fff;
+      }
+      /* Dim the bug during a blackout. */
+      .bug-dim { opacity: 0.25; }
+
+      /* Full-viewport overlay covering the whole page (navbar included)
+         so visibility is genuinely degraded. */
+      #obstacleOverlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      #obstacleOverlay.flash    { background: rgba(255, 255, 255, 0.92); }
+      #obstacleOverlay.blackout { background: rgba(0, 0, 0, 0.92); }
+      /* The flicker class is a placeholder — its background is toggled
+         imperatively from JS so the alternation rate is controllable. */
+      #obstacleOverlay.flicker  { background: rgba(255, 255, 255, 0.92); }
+      #obstacleOverlay.show { opacity: 1; }
+
+      /* Confirm button: mid-gray btn-secondary with a thick yellow border
+         so the outline pops on both white-out and black-out backgrounds. */
+      #confirmBtn {
+        border-width: 4px !important;
+        box-shadow: 0 0 0 2px #000, 0 0 24px rgba(255, 193, 7, 0.6);
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        animation: confirmPulse 0.9s ease-in-out infinite alternate;
+      }
+      @keyframes confirmPulse {
+        from { transform: translate(-50%, -50%) scale(1.0); }
+        to   { transform: translate(-50%, -50%) scale(1.08); }
+      }
+
+      /* The countdown bar sits below the button; it shrinks from 100% → 0%
+         via inline style.width updates from JS. */
+      #countdownBar {
+        transition: none;
+      }
+
+      /* Warning icon shown 1.5 s before the obstacle hits. */
+      #warningIcon {
+        position: fixed;
+        top: 70px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 50;
+        font-size: 5rem;
+        display: none;
+        text-shadow: 0 0 12px #fff;
+      }
+      #warningIcon.show { display: block; animation: warnPulse 0.4s ease-in-out infinite alternate; }
+      @keyframes warnPulse {
+        from { opacity: 0.6; transform: translateX(-50%) scale(1); }
+        to   { opacity: 1;   transform: translateX(-50%) scale(1.15); }
+      }
+
+      /* Score badge & distance bar stay below the overlay z-index so they
+         disappear during obstacles — keeps the spec's "degraded visibility"
+         feel honest. */
+      #scoreBadge {
+        position: fixed;
+        top: 70px;
+        right: 16px;
+        z-index: 40;
+        font-size: 1.25rem;
+      }
+      #distanceWrap {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 10px;
+        z-index: 40;
+      }
+
+      /* Hint icon inside the overlay — tells player which way to nudge brightness. */
+      .overlay-hint {
+        font-size: 2.5rem;
+        color: #ffc107;
+        text-shadow: 0 0 8px #000;
+      }
+    </style>
+  </head>
+
+  <body class="d-flex flex-column min-vh-100">
+
+    {% include 'components/navbar.html' %}
+
+    <!-- ===================== Instructions modal =====================
+         Shown first. Static backdrop so the player has to read it (or at
+         least click Continue) before the agreement modal appears. -->
+    <div class="modal fade" id="instructionsModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title"><i class="bi bi-bug-fill me-2"></i>How to Play</h5>
+          </div>
+          <div class="modal-body">
+            <p class="fw-semibold">A bug is running across your screen. Your job: keep it alive for 500 m
+              by physically adjusting your monitor's brightness in response to incoming obstacles.</p>
+
+            <h6 class="mt-3">The three obstacles</h6>
+            <ul class="list-unstyled">
+              <li class="mb-2">
+                <i class="bi bi-sun text-warning fs-4 me-2"></i>
+                <strong>Flash</strong> — the screen fills near-white. Turn your screen brightness
+                <em>down</em>, then hit Confirm.
+              </li>
+              <li class="mb-2">
+                <i class="bi bi-moon-stars text-primary fs-4 me-2"></i>
+                <strong>Blackout</strong> — the screen fills near-black. Turn your screen brightness
+                <em>up</em>, then hit Confirm.
+              </li>
+              <li class="mb-2">
+                <i class="bi bi-lightning-charge-fill text-danger fs-4 me-2"></i>
+                <strong>Flicker</strong> — rapid white/black alternation (late game only). Smash Confirm
+                <em>three times fast</em> to survive.
+              </li>
+            </ul>
+
+            <h6 class="mt-3">Confirming</h6>
+            <p class="mb-2">Two ways to confirm — both work:</p>
+            <ul>
+              <li>Click the centered <span class="badge bg-secondary border border-warning border-2">CONFIRM</span> button.</li>
+              <li>Press the <kbd>B</kbd> key.</li>
+            </ul>
+            <p class="text-muted small mb-0">We can't actually read your monitor's brightness, so this
+              runs on the honor system. Adjust your screen <em>and</em> hit confirm before the countdown
+              expires. Cheating only cheats yourself, etc.</p>
+
+            <h6 class="mt-3">Scoring</h6>
+            <p class="mb-0">Score is total time survived in seconds (lower is better, like a speedrun).
+              Each fast confirm shaves <strong>1 s</strong> off your time. Reach <strong>500 m</strong> to win.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="instructionsContinueBtn">I'm ready</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== Pre-game agreement modal =====================
+         Static backdrop + no-keyboard-dismiss so the player has to actually
+         engage the 5-second forced reading timer before the Agree button
+         enables. -->
+    <div class="modal fade" id="agreementModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Eye Safety Calibration Agreement</h5>
+          </div>
+          <div class="modal-body" style="font-size: 0.78rem; line-height: 1.4;">
+            <p>By proceeding, the undersigned (hereinafter "the Player") acknowledges and agrees that
+              the within-described interactive luminance-modulation experience may, without limitation,
+              cause transient retinal afterimage, mild ocular discomfort, an inflated sense of competitive
+              urgency, the spontaneous adjustment of one's surrounding ambient lighting, and/or a
+              persistent low-grade resentment toward the developers of this website.</p>
+            <p>The Player further represents and warrants that they are operating a display device
+              capable of producing both luminous and sub-luminous output via physical brightness
+              controls, that they are seated in a posturally neutral position, that they have not
+              consumed caffeine within the prior eleven (11) minutes, and that they have read and
+              understood the entirety of this agreement notwithstanding the impractical font size at
+              which it has been rendered for their convenience.</p>
+            <p>This agreement is governed by the unwritten conventions of annoying websites and shall
+              be interpreted in favor of whichever party finds it more inconvenient. The Player waives
+              any and all claims arising from but not limited to: bug-related anxiety, brightness-key
+              wear-and-tear, social embarrassment caused by frantic key-mashing in public spaces, and
+              the gradual realization that their best score is, in fact, also their worst score.</p>
+            <p class="text-muted">Please wait while the legal department finishes pretending to read this on your behalf.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success" id="agreeBtn" disabled>
+              Agree (<span id="agreeCountdown">5</span>)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== Game world =====================
+         The bug, horizon, and scrolling stripe live here. The score badge
+         and distance bar are siblings positioned via fixed coordinates. -->
+    <div id="gameWorld">
+      <div class="scroll-stripes"></div>
+      <div class="horizon-line"></div>
+      <i id="bug" class="bi bi-bug bug-character"></i>
+      <i id="bugGlow" class="bi bi-sun bug-glow d-none"></i>
+    </div>
+
+    <span id="scoreBadge" class="badge bg-dark">0.0 s</span>
+
+    <div id="distanceWrap" class="progress" style="--bs-progress-bar-bg: #0dcaf0;">
+      <div id="distanceBar" class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
+    </div>
+
+    <!-- Warning icon (sun for flash, moon-stars for blackout, lightning for flicker). -->
+    <i id="warningIcon" class="bi bi-sun"></i>
+
+    <!-- ===================== Obstacle overlay =====================
+         Hidden by default. JS adds a type class (flash/blackout/flicker) and
+         then the .show class to fade it in over 0.3 s. Confirm button +
+         countdown bar + directional hint live inside it. -->
+    <div id="obstacleOverlay">
+      <div class="position-absolute top-0 start-50 translate-middle-x mt-5 text-center">
+        <i id="hintIcon" class="bi bi-arrow-down-circle overlay-hint"></i>
+        <div id="hintText" class="fw-bold mt-2" style="text-shadow: 0 0 6px #000;"></div>
+      </div>
+
+      <button id="confirmBtn" type="button"
+              class="btn btn-secondary btn-lg border border-warning position-absolute top-50 start-50 translate-middle">
+        CONFIRM (B)
+      </button>
+
+      <div class="progress position-absolute bottom-0 start-0 w-100" style="height: 14px; border-radius: 0;">
+        <div id="countdownBar" class="progress-bar bg-warning" role="progressbar" style="width: 100%"></div>
+      </div>
+    </div>
+
+    <!-- ===================== End-of-run modals ===================== -->
+    <div class="modal fade" id="gameOverModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Game Over</h5>
+          </div>
+          <div class="modal-body text-center">
+            <i class="bi bi-bug-fill display-1 text-danger"></i>
+            <p id="gameOverMsg" class="fs-5 mt-3"></p>
+            <p class="text-muted">You survived <span id="finalTime">0.0</span> s and <span id="finalDistance">0</span> m.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="retryBtn">Try Again</button>
+            <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">Give Up</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="winModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title">You Won!</h5>
+          </div>
+          <div class="modal-body text-center">
+            <i class="bi bi-trophy-fill display-1 text-warning"></i>
+            <p class="fs-5 mt-3">YAAYYYYY, you helped keep the bug alive !!</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success" id="playAgainBtn">Play Again</button>
+            <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">Home</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% include 'components/footer.html' %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+    <script>
+    (function () {
+      // ====== DOM handles ======
+      const overlay      = document.getElementById('obstacleOverlay');
+      const confirmBtn   = document.getElementById('confirmBtn');
+      const countdownBar = document.getElementById('countdownBar');
+      const hintIcon     = document.getElementById('hintIcon');
+      const hintText     = document.getElementById('hintText');
+      const warningIcon  = document.getElementById('warningIcon');
+      const scoreBadge   = document.getElementById('scoreBadge');
+      const distanceBar  = document.getElementById('distanceBar');
+      const bug          = document.getElementById('bug');
+      const bugGlow      = document.getElementById('bugGlow');
+
+      // ====== Constants ======
+      const WIN_DISTANCE   = 500;   // metres to win
+      const BASE_SPEED_MPS = 2.5;   // metres per second at speedMul = 1.0
+      const WARNING_MS     = 1500;  // warning phase length before overlay hits
+      const FADE_MS        = 300;   // overlay fade-in duration (matches CSS)
+      const FLICKER_MS     = 80;    // flicker bg toggle interval
+
+      // ====== Mutable game state ======
+      // status: 'idle' | 'warning' | 'obstacle' | 'over' | 'won'
+      const S = {
+        status: 'idle',
+        startMs: 0,         // performance.now() when run started
+        bonusMs: 0,         // accumulated time-bonus from fast confirms
+        speedMul: 1.0,
+        nextObstacleAt: 0,  // performance.now() target for next warning
+        flickerInterval: null,
+        warningTimeout: null,
+        obstacle: null,     // { type, deadline, windowMs, confirmsNeeded, confirmsGot }
+      };
+
+      // ====== Difficulty curve (pure fns of elapsed seconds) ======
+      // Spec: 0–30s wide+slow, 30–60s mixed, 60–90s rapid+flicker, 90+s frantic.
+      function reactionWindowMs(elapsed) {
+        if (elapsed < 30) return 2500;
+        if (elapsed < 60) return 1800;
+        if (elapsed < 90) return 1200;
+        return 800;
+      }
+      function obstaclePool(elapsed) {
+        if (elapsed < 30) return ['flash'];
+        if (elapsed < 60) return ['flash', 'blackout'];
+        if (elapsed < 90) return ['flash', 'blackout', 'flicker'];
+        // 90+s: flicker bursts more common
+        return ['flash', 'blackout', 'flicker', 'flicker'];
+      }
+      function nextGapMs(elapsed) {
+        if (elapsed < 30) return 4000 + Math.random() * 1000;
+        if (elapsed < 60) return 2800 + Math.random() * 800;
+        if (elapsed < 90) return 1800 + Math.random() * 600;
+        return 1200 + Math.random() * 500;
+      }
+
+      // ====== Helpers ======
+      function elapsedSec() {
+        return (performance.now() - S.startMs - S.bonusMs) / 1000;
+      }
+
+      function setStatus(next) { S.status = next; }
+
+      // ====== Game lifecycle ======
+      function startGame() {
+        // Clear any leftover state from a previous run.
+        clearTimers();
+        hideOverlay(true);
+        hideWarning();
+        bug.classList.remove('bug-dim');
+        bugGlow.classList.add('d-none');
+
+        S.startMs = performance.now();
+        S.bonusMs = 0;
+        S.speedMul = 1.0;
+        S.obstacle = null;
+        S.nextObstacleAt = S.startMs + 2500; // first obstacle 2.5s in
+        setStatus('idle');
+        requestAnimationFrame(loop);
+      }
+
+      function endGame(reason, msg) {
+        setStatus(reason); // 'over' or 'won'
+        clearTimers();
+        hideOverlay(true);
+        hideWarning();
+
+        if (reason === 'over') {
+          document.getElementById('gameOverMsg').textContent = msg;
+          document.getElementById('finalTime').textContent = elapsedSec().toFixed(1);
+          document.getElementById('finalDistance').textContent = Math.floor(metresFromElapsed(elapsedSec()));
+          new bootstrap.Modal(document.getElementById('gameOverModal')).show();
+        } else {
+          new bootstrap.Modal(document.getElementById('winModal')).show();
+        }
+      }
+
+      function clearTimers() {
+        if (S.flickerInterval) { clearInterval(S.flickerInterval); S.flickerInterval = null; }
+        if (S.warningTimeout)  { clearTimeout(S.warningTimeout);   S.warningTimeout = null; }
+      }
+
+      // ====== The main loop ======
+      // Drives score, distance, speed bumps, and obstacle scheduling/timeout.
+      function loop() {
+        if (S.status === 'over' || S.status === 'won') return;
+
+        const now     = performance.now();
+        const elapsed = elapsedSec();
+        const metres  = metresFromElapsed(elapsed);
+
+        // Win condition
+        if (metres >= WIN_DISTANCE) { endGame('won'); return; }
+
+        // Speed multiplier bumps every 10 seconds (spec: "automatically every 10s").
+        S.speedMul = 1.0 + Math.floor(elapsed / 10) * 0.1;
+
+        // Update HUD
+        scoreBadge.textContent = elapsed.toFixed(1) + ' s';
+        distanceBar.style.width = (metres / WIN_DISTANCE * 100).toFixed(2) + '%';
+
+        // Schedule a new obstacle if we're idle and the gap has elapsed.
+        if (S.status === 'idle' && now >= S.nextObstacleAt) {
+          beginWarning(elapsed);
+        }
+
+        // Tick the active obstacle's countdown bar; time out if expired.
+        if (S.status === 'obstacle' && S.obstacle) {
+          const remain = S.obstacle.deadline - now;
+          if (remain <= 0) {
+            const failMsg = S.obstacle.type === 'flash'
+              ? 'The bug got zapped by the light!'
+              : S.obstacle.type === 'blackout'
+                ? 'The bug vanished into the dark!'
+                : 'The bug short-circuited from the flicker!';
+            endGame('over', failMsg);
+            return;
+          }
+          countdownBar.style.width = (remain / S.obstacle.windowMs * 100).toFixed(2) + '%';
+        }
+
+        requestAnimationFrame(loop);
+      }
+
+      function metresFromElapsed(sec) {
+        // Distance is integral of speed over time, but speedMul is piecewise
+        // constant per 10s bucket. A simple linear approximation using the
+        // current multiplier is close enough for a 500m total — the player
+        // doesn't notice a few metres' drift.
+        return sec * BASE_SPEED_MPS * S.speedMul;
+      }
+
+      // ====== Obstacle flow ======
+      function beginWarning(elapsed) {
+        const pool = obstaclePool(elapsed);
+        const type = pool[Math.floor(Math.random() * pool.length)];
+        const windowMs = reactionWindowMs(elapsed);
+
+        S.obstacle = { type, windowMs, deadline: 0, confirmsNeeded: type === 'flicker' ? 3 : 1, confirmsGot: 0 };
+        setStatus('warning');
+        showWarning(type);
+
+        // Visual cue near the bug during the warning phase.
+        if (type === 'flash') bugGlow.classList.remove('d-none');
+        if (type === 'blackout') bug.classList.add('bug-dim');
+
+        S.warningTimeout = setTimeout(() => triggerObstacle(type), WARNING_MS);
+      }
+
+      function triggerObstacle(type) {
+        if (S.status !== 'warning') return; // safety: aborted mid-warning
+        hideWarning();
+        showOverlay(type);
+
+        S.obstacle.deadline = performance.now() + S.obstacle.windowMs + FADE_MS;
+        setStatus('obstacle');
+
+        if (type === 'flicker') {
+          // Toggle bg between near-white and near-black at FLICKER_MS rate.
+          let on = false;
+          S.flickerInterval = setInterval(() => {
+            overlay.style.background = on ? 'rgba(0,0,0,0.95)' : 'rgba(255,255,255,0.95)';
+            on = !on;
+          }, FLICKER_MS);
+        }
+      }
+
+      function onConfirm() {
+        if (S.status !== 'obstacle' || !S.obstacle) return;
+        S.obstacle.confirmsGot++;
+        if (S.obstacle.confirmsGot < S.obstacle.confirmsNeeded) {
+          // Flicker needs 3 confirms — give a tiny visual nudge to the button.
+          confirmBtn.classList.remove('btn-secondary');
+          confirmBtn.classList.add('btn-warning');
+          setTimeout(() => {
+            confirmBtn.classList.add('btn-secondary');
+            confirmBtn.classList.remove('btn-warning');
+          }, 80);
+          return;
+        }
+
+        // Success: −1 s bonus, fade overlay out, bounce, schedule next gap.
+        S.bonusMs += 1000;
+        bug.classList.add('bug-bounce');
+        setTimeout(() => bug.classList.remove('bug-bounce'), 350);
+
+        bug.classList.remove('bug-dim');
+        bugGlow.classList.add('d-none');
+
+        hideOverlay();
+        S.obstacle = null;
+        setStatus('idle');
+        S.nextObstacleAt = performance.now() + nextGapMs(elapsedSec());
+      }
+
+      // ====== UI: overlays / warnings ======
+      function showOverlay(type) {
+        overlay.className = '';            // reset
+        overlay.classList.add(type);       // sets background
+        overlay.style.background = '';     // let CSS class set it (flicker overrides via JS)
+        overlay.style.display = 'block';
+        countdownBar.style.width = '100%';
+
+        // Directional hint: dim screen for flash, brighten for blackout, mash for flicker.
+        if (type === 'flash') {
+          hintIcon.className = 'bi bi-brightness-low overlay-hint';
+          hintText.textContent = 'TOO BRIGHT — dim your screen';
+          hintText.style.color = '#000';
+        } else if (type === 'blackout') {
+          hintIcon.className = 'bi bi-brightness-high overlay-hint';
+          hintText.textContent = 'TOO DARK — max your brightness';
+          hintText.style.color = '#fff';
+        } else {
+          hintIcon.className = 'bi bi-lightning-charge-fill overlay-hint';
+          hintText.textContent = 'FLICKER — confirm 3× fast!';
+          hintText.style.color = '#ffc107';
+        }
+
+        // Trigger fade-in next frame so the transition fires.
+        requestAnimationFrame(() => overlay.classList.add('show'));
+      }
+
+      function hideOverlay(immediate) {
+        if (S.flickerInterval) { clearInterval(S.flickerInterval); S.flickerInterval = null; }
+        overlay.classList.remove('show');
+        if (immediate) {
+          overlay.style.display = 'none';
+        } else {
+          setTimeout(() => { overlay.style.display = 'none'; }, FADE_MS);
+        }
+      }
+
+      function showWarning(type) {
+        warningIcon.className = 'bi ';
+        if (type === 'flash')         warningIcon.className += 'bi-sun';
+        else if (type === 'blackout') warningIcon.className += 'bi-moon-stars';
+        else                          warningIcon.className += 'bi-lightning-charge';
+        warningIcon.classList.add('show');
+      }
+      function hideWarning() {
+        warningIcon.classList.remove('show');
+      }
+
+      // ====== Inputs ======
+      confirmBtn.addEventListener('click', onConfirm);
+      // 'B' key as a failsafe shortcut (spec).
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'b' || e.key === 'B') onConfirm();
+      });
+
+      document.getElementById('retryBtn').addEventListener('click', () => {
+        bootstrap.Modal.getInstance(document.getElementById('gameOverModal')).hide();
+        startGame();
+      });
+      document.getElementById('playAgainBtn').addEventListener('click', () => {
+        bootstrap.Modal.getInstance(document.getElementById('winModal')).hide();
+        startGame();
+      });
+
+      // ====== Pre-game flow: instructions → agreement → start ======
+      // The 5-second forced-reading timer on the agreement modal starts only
+      // when that modal is actually shown — otherwise reading the instructions
+      // slowly would defeat the timer.
+      window.addEventListener('DOMContentLoaded', () => {
+        const instructionsEl = document.getElementById('instructionsModal');
+        const agreementEl    = document.getElementById('agreementModal');
+        const continueBtn    = document.getElementById('instructionsContinueBtn');
+        const agreeBtn       = document.getElementById('agreeBtn');
+        const cd             = document.getElementById('agreeCountdown');
+
+        const instructions = new bootstrap.Modal(instructionsEl);
+        const agreement    = new bootstrap.Modal(agreementEl);
+
+        // 1. Show instructions first.
+        instructions.show();
+
+        // 2. On Continue, swap to the agreement modal.
+        continueBtn.addEventListener('click', () => {
+          instructions.hide();
+          agreement.show();
+        });
+
+        // 3. When the agreement modal finishes opening, kick off the 5s countdown.
+        agreementEl.addEventListener('shown.bs.modal', () => {
+          let remaining = 5;
+          const tick = setInterval(() => {
+            remaining--;
+            if (remaining <= 0) {
+              clearInterval(tick);
+              agreeBtn.disabled = false;
+              agreeBtn.textContent = 'Agree';
+            } else {
+              cd.textContent = remaining;
+            }
+          }, 1000);
+        }, { once: true });
+
+        // 4. On Agree, the run starts.
+        agreeBtn.addEventListener('click', () => {
+          agreement.hide();
+          startGame();
+        });
+      });
+    })();
+    </script>
+  </body>
+</html>
