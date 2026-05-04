@@ -209,22 +209,30 @@ class VolumeSlider {
     }
 
     updateProgress(count, flash = true, color = "#00ff99") {
-        const progressCount = document.getElementById("progress-count");
-        const progressSuffix = document.getElementById("progress-suffix");
+        const circles = document.querySelectorAll(".progress-circle");
 
-        if (count === 5) {
-            progressCount.textContent = `${count} / 5`;
-            progressSuffix.style.visibility = "hidden";
-        } else {
-            progressCount.textContent = `${count}`;
-            progressSuffix.style.visibility = "visible";
+        if (count === 0 && color === "#ff4444") {
+            circles.forEach(circle => {
+                circle.classList.remove("win");
+                circle.style.background = "#ff4444";
+            });
+            setTimeout(() => {
+                circles.forEach(circle => circle.style.background = "#444");
+            }, 400);
+            return;
         }
-        if (flash) {
-            progressCount.style.setProperty("--flash-color", color);
-            progressCount.classList.remove("flash");
-            void progressCount.offsetWidth; // trigger reflow to restart animation
-            progressCount.classList.add("flash");
-        }
+
+        circles.forEach((circle, index) => {
+            if (index < count) {
+                circle.style.background = color;
+                if (count === 5) {
+                    circle.classList.add("win");
+                }
+            } else {
+                circle.classList.remove("win");
+                circle.style.background = "#444";
+            }
+        });
     }
 
     showMissPopup() {
@@ -260,21 +268,6 @@ class VolumeSlider {
         }, 1800);
     }
 
-    showAlert() {
-        document.getElementById("win-message").style.display = "block";
-
-        const bgSound = document.getElementById("background-sound");
-        const winSound = document.getElementById("win-sound");
-
-        winSound.pause();
-        winSound.currentTime = 0;
-
-        winSound.volume = 0.4;
-
-        setTimeout(() => {
-            winSound.play();
-        }, 10);
-    }
 }
 
 window.addEventListener('load', () => {
