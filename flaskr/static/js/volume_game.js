@@ -169,6 +169,7 @@ class VolumeSlider {
                     }, 10);
 
                     this.updateProgress(0, true, "#ff4444");
+                    this.showMissPopup();
                 }
 
             }
@@ -224,6 +225,39 @@ class VolumeSlider {
             void progressCount.offsetWidth; // trigger reflow to restart animation
             progressCount.classList.add("flash");
         }
+    }
+
+    showMissPopup() {
+        const numPoints = 9;
+        const outerTips = [60, 55, 63, 50, 62, 58, 64, 52, 59];
+        const outerValleys = [22, 20, 25, 18, 24, 21, 23, 19, 22];
+        const innerTips = [38, 24, 40, 32, 39, 36, 41, 33, 37];
+        const innerValleys = [14, 13, 16, 11, 15, 12, 14, 13, 15];
+
+        function buildStar(tips, valleys) {
+            let pts = [];
+            for (let i = 0; i < numPoints; i++) {
+                const tipAngle = (Math.PI * 2 / numPoints) * i - Math.PI / 2;
+                const valAngle = tipAngle + Math.PI / numPoints;
+                pts.push(`${(tips[i] * Math.cos(tipAngle)).toFixed(2)}, ${(tips[i] * Math.sin(tipAngle)).toFixed(2)}`);
+                pts.push(`${(valleys[i] * Math.cos(valAngle)).toFixed(2)}, ${(valleys[i] * Math.sin(valAngle)).toFixed(2)}`);
+            }
+            return pts.join(' ');
+        }
+        document.getElementById('burst-outer').setAttribute('points', buildStar(outerTips, outerValleys));
+        document.getElementById('burst-inner').setAttribute('points', buildStar(innerTips, innerValleys));
+
+        const popup = document.getElementById('miss-popup');
+        const svg = document.getElementById('burst-svg');
+
+        popup.style.display = 'flex';
+        svg.style.animation = 'none';
+        void svg.offsetWidth;
+        svg.style.animation = 'burstPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
+
+        setTimeout(() => {
+            popup.style.display = 'none';
+        }, 1800);
     }
 
     showAlert() {
