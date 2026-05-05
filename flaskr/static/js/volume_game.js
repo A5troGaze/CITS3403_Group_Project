@@ -61,7 +61,7 @@ class VolumeSlider {
             releaseSound.currentTime = 0;
 
             setTimeout(() => {
-                releaseSound.play();
+                releaseSound.play().catch(() => { });
             }, 10);
         }
 
@@ -135,7 +135,7 @@ class VolumeSlider {
                     hitSound.currentTime = 0;
 
                     setTimeout(() => {
-                        hitSound.play();
+                        hitSound.play().catch(() => { });
                     }, 10);
 
                     this.soundVolume -= 0.2;
@@ -165,7 +165,7 @@ class VolumeSlider {
                     missSound.currentTime = 0;
 
                     setTimeout(() => {
-                        missSound.play();
+                        missSound.play().catch(() => { });
                     }, 10);
 
                     this.updateProgress(0, true, "#ff4444");
@@ -266,6 +266,19 @@ class VolumeSlider {
         setTimeout(() => {
             popup.style.display = 'none';
         }, 1800);
+    }
+
+    showAlert() {
+        const winSound = document.getElementById("win-sound");
+
+        winSound.pause();
+        winSound.currentTime = 0;
+
+        winSound.volume = 0.4;
+
+        setTimeout(() => {
+            winSound.play().catch(() => { });
+        }, 10);
     }
 
 }
