@@ -22,6 +22,9 @@ class VolumeSlider {
         this._successCount = 0;
         this._counted = false;
 
+        this.track = this.slider.querySelector(".volume-track");
+        this.fullTrackWidth = this.track.offsetWidth;
+
     }
     /* begin charge cycle */
 
@@ -33,10 +36,6 @@ class VolumeSlider {
         this._charge = 0;
         this._charging = true;
         this._counted = false;
-
-        // hide indicator
-        // this.indicator.style.visibility = 'hidden';
-        // this.indicator.style.opacity = '0';
 
         let cycle = () => {
             if (this._charging && ++this._charge < 100) {
@@ -74,7 +73,7 @@ class VolumeSlider {
         // animation vars
         let y_cap = charge * 0.35,
             y_start = -0.3 * charge,
-            x_cap = (this.slider.querySelector('.volume-track').offsetWidth - this.indicator.offsetWidth) * (charge / 100),
+            x_cap = (this.slider.querySelector(".volume-track").offsetWidth - this.indicator.offsetWidth) * (charge / 100),
             x_start = -10,
             duration = 20 + (4 * charge),
             start = new Date().getTime(),
@@ -126,7 +125,11 @@ class VolumeSlider {
                 rotate = 0;
                 this._volume = charge;
 
-                if (charge >= 98 && !this._counted) {
+                const isFinalAttempt = this._successCount === 4;
+                const minCharge = isFinalAttempt ? 75 : 98;
+                const maxCharge = isFinalAttempt ? 85 : 100;
+
+                if (charge >= minCharge && charge <= maxCharge && !this._counted) {
                     this._counted = true;
                     this._successCount++;
 
@@ -152,7 +155,8 @@ class VolumeSlider {
                     if (this._successCount >= 5) {
                         this.showAlert();
                     }
-                } else if (charge < 98) {
+
+                } else {
                     this._successCount = 0;
                     this.soundVolume = 1;
 
