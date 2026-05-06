@@ -81,8 +81,7 @@
 
             </div>
 
-            <div id="progress-message" class="mt-3"
-                style="text-align: center; margin-top: 5px; color: white; font-family: 'Consolas', monospace;">
+            <div id="progress-message" class="mt-3" style="text-align: center; margin-top: 5px; color: white;">
                 <div id="progress-circles" style="display: flex; gap: 12px; justify-content: center;">
                     <span class="progress-circle"
                         style="width: 18px; height: 18px; border-radius: 50%; background: #444; border: 2px solid #666; display: inline-block;"></span>
@@ -96,6 +95,10 @@
                         style="width: 18px; height: 18px; border-radius: 50%; background: #444; border: 2px solid #666; display: inline-block;"></span>
                 </div>
             </div>
+            <button id="hint-btn" onclick="showHint()"
+                style="margin-top: 16px; background: #444; border: 1px solid #555; color: #aaa; font-size: 12px; padding: 6px 14px; border-radius: 6px; cursor: pointer;">
+                Click if dumb
+            </button>
         </div>
     </div>
 
@@ -113,6 +116,11 @@
     <audio id="win-sound" src="{{ url_for('static', filename='audio/win_sound.mp3') }}" preload="auto"></audio>
 
     <audio id="hit-sound" src="{{ url_for('static', filename='audio/hit_sound.mp3') }}" preload="auto"></audio>
+
+    <div id="hint-toast"
+        style="display: none; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 12px 20px; border-radius: 8px; font-size: 14px; z-index: 99999; ">
+        The dot doesn't need to reach the end every time!
+    </div>
 
 
     <script src="{{ url_for('static', filename='js/volume_game.js') }}"></script>

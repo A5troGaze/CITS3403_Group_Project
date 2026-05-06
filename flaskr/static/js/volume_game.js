@@ -287,15 +287,20 @@ class VolumeSlider {
 
 }
 
+function showHint() {
+    const toast = document.getElementById("hint-toast");
+    toast.style.display = "block";
+    setTimeout(() => {
+        toast.style.display = "none";
+    }, 3000);
+}
+
 window.addEventListener('load', () => {
     const popup = document.getElementById("volume-popup");
     const startBtn = document.getElementById("start-button");
 
     const bgSound = document.getElementById("background-sound");
     const bgSound2 = document.getElementById("background-sound-2");
-
-    bgSound.pause();
-    bgSound2.pause();
 
     startBtn.addEventListener("click", () => {
         popup.style.display = "none";
