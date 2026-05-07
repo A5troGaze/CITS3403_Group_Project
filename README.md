@@ -59,7 +59,6 @@ Answers: B, D, C, C, B
 Answer: Click the `Sign In` heading at the top of the page
 
 ### Human Check game
-```
 Q1: Are you a human checkbox
 - a simple checkbox that can't be clicked on too quickly or else it would raise a flag.
 Q2: CAPTCHA grid
@@ -73,7 +72,6 @@ Q5: Impossible math question
 - this task doesn't have a right answer.
 - after 2 attempts, the user will be given to choose between quitting or trying again.
 - if the user chooses to quit they pass but if they continue to tackle it, they'll be stuck in  a loop
-```
 
 ### Loading Screen game
 Answer: Click loading progress bar 3 times, or wait 30 seconds
@@ -85,23 +83,19 @@ Answer: Controls are inverted, and some walls appear when you reach 2 certain sp
 Answer: Reach the right-most spot 4 times in a row, then for the 5th time the dot has to land between 75-85%.
 
 ### Brightness game
-```
 WARNING: this game involves FLASHING lights
 This game requires you to save Bob the bug from the blazing heat and horrifying night.
 When a sun is displayed on the screen, dim your screen with your brightness keys during the confirm screen and press "confirm" or your "B" key to confirm your answer and the latter when a moon is displayed.
 For mobile users, the buttons on the screen are there to change the display brightness for you.
 During the late game, you will encounter the lightning icon (aka flash mode), just continuously click "continue" or "B" to pass.
-```
 
 ### Pop Ups game
 NOTE: There are two final resolutions for this level.
-```
 Passing this level is determined by a map of answers that lead you down either the correct or incorrect path.
 If you keep clicking the wrong answers the map will take you back to the start of the level and you will have to repeat the level to get the right answers.
 To get quick at this level you will have to memorise the questions.
 
 ALTERNATIVELY: if the first two options are 'Yes' and the second is 'No' -> the page will redirect to /secret.
 From there the user will have to continuously answer no to the following questions.
-```
 
 
