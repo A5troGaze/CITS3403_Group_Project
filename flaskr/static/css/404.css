@@ -1,0 +1,27 @@
+
+    #meme_image {
+      width: min(500px, 90vw);
+      height: min(500px, 90vw);
+      object-fit: cover;
+      border-radius: 50%;
+      cursor: pointer;
+      max-width: 100%;
+    }
+
+    #meme_image:hover {
+      transform: scale(1.03);
+    }
+
+    #UsertoHome {
+      font-size: 2rem; 
+      padding: 16px 40px; 
+      border-radius: 20px;
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 100%;
+      margin-top: 60px;
+    }

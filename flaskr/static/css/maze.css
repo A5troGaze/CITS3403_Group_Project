@@ -1,0 +1,107 @@
+/* */
+            #maze_card {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+        
+        /* ── Mode select overlay ── */
+            #mode-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.75);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            }
+ 
+            #mode-box {
+                background: #fff;
+                border-radius: 16px;
+                padding: 40px 50px;
+                text-align: center;
+                max-width: 380px;
+                width: 90%;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            }
+ 
+            #mode-box h2 {
+                font-size: 1.8rem;
+                font-weight: 800;
+                margin-bottom: 8px;
+            }
+ 
+            #mode-box p {
+                color: #666;
+                margin-bottom: 28px;
+                font-size: 0.95rem;
+            }
+ 
+            .mode-btn {
+                display: block;
+                width: 100%;
+                padding: 14px;
+                border: none;
+                border-radius: 10px;
+                font-size: 1.05rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: transform 0.1s, box-shadow 0.1s;
+                margin-bottom: 12px;
+            }
+
+            .mode-btn:active { 
+                transform: translateY(0); 
+            }
+ 
+        /* ── Taunt popup (easy mode) ── */
+            #taunt-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.6);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                z-index: 10001;
+            }
+ 
+            #taunt-box {
+                background: #fff;
+                border-radius: 16px;
+                padding: 36px 44px;
+                text-align: center;
+                max-width: 340px;
+                width: 90%;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            }
+ 
+            #taunt-box h3 {
+                font-size: 1.5rem;
+                font-weight: 800;
+                margin-bottom: 10px;
+                color: #dc3545;
+            }
+ 
+            #taunt-box p {
+                color: #444;
+                margin-bottom: 24px;
+            }
+ 
+            #taunt-ok {
+                color: #fff;
+                border: none;
+                border-radius: 10px;
+                padding: 12px 32px;
+                font-size: 1rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+
+        /* -- Mobile button style */
+            .mobile-btn {
+                width:60px;
+                height: 60px;
+                font-size: 1.2rem;
+            }
