@@ -80,6 +80,10 @@ api.add_resource(Logout, '/logout', endpoint='logout')
 def home():
     return render_template('landing.html')
 
+@app.route('/maze')
+def maze():
+    return render_template('maze.html')
+
 @app.route('/sign_in')
 def signin_page():
     if session.get('user_id'):
