@@ -136,9 +136,6 @@ body.hc-completed .navbar .nav-link {
 .log-verdict    { color: #dc3545; font-weight: 600; margin-top: 8px; }
 
 /* ------------------- Q1 are you human checkbox ------------------- */
-/* ── Moving checkbox ── */
-/* Position is driven entirely by `transform: translate(...)` from JS,
-   so the transition below eases the flee motion. */
 .moving-checkbox {
   position: absolute !important;
   left: 0;
@@ -146,11 +143,6 @@ body.hc-completed .navbar .nav-link {
   width: 17px;
   height: 17px;
   cursor: pointer;
-  transition: transform .18s cubic-bezier(.2,.7,.3,1), box-shadow .18s;
-  will-change: transform;
-}
-.moving-checkbox.fleeing {
-  box-shadow: 0 0 0 6px rgba(230,126,0,0.18);
 }
 .moving-checkbox:focus-visible {
   outline: 2px solid #0d6efd;

@@ -40,7 +40,6 @@ const Quiz = {
   q5: {},
   modal: null,
   modalCb: null,
-  reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
 };
 
 Quiz.track = (id) => { Quiz.scheduled.add(id); return id; };
@@ -52,10 +51,6 @@ Quiz.clearAll = () => {
   Quiz.handlers.forEach(([el, ev, fn]) => el && el.removeEventListener(ev, fn));
   Quiz.handlers = [];
 };
-
-matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
-  Quiz.reducedMotion = e.matches;
-});
 
 
 // ── 2. Progress bar ──────────────────────────
@@ -267,15 +262,9 @@ function restartQuiz() {
 }
 
 
-// ── 9. Q1 — Moving checkbox ──────────────────
-//  Fleeing behaviour: pointermove on the area pushes the checkbox in the
-//  opposite direction of the cursor when the cursor enters its proximity.
-//  Position is driven entirely by `transform: translate(...)` so the CSS
-//  transition handles the easing.
-//
-//  Anti-cheat: q1.startTime is set at initQ1() (not on first hover) so
-//  clicking the checkbox before any cursor movement still trips the
-//  too-fast guard.
+// ── 9. Q1 — Checkbox ─────────────────────────
+//  Anti-cheat: q1.startTime is set at initQ1() so clicking the checkbox
+//  before the minimum delay still trips the too-fast guard.
 //
 //  Surrender: after 60% of the timer, a "Give up" link fades in.
 
@@ -288,50 +277,14 @@ function initQ1() {
   const banner = document.getElementById('q1-reset-banner');
 
   cb.checked = false;
-  cb.classList.remove('fleeing');
   banner.classList.add('d-none');
   giveUp.classList.add('d-none');
 
   Quiz.q1.startTime = Date.now();
-  Quiz.q1.tx = 16;
-  Quiz.q1.ty = Math.max(8, area.offsetHeight / 2 - 8);
-  Quiz.q1.lastMove = 0;
 
-  cb.style.transition = 'none';
-  cb.style.transform  = `translate(${Quiz.q1.tx}px, ${Quiz.q1.ty}px)`;
-  void cb.offsetWidth;
-  cb.style.transition = '';
-
-  const onMove = (e) => {
-    const now = Date.now();
-    if (now - Quiz.q1.lastMove < 30) return;
-    Quiz.q1.lastMove = now;
-
-    const rect = area.getBoundingClientRect();
-    const px = e.clientX - rect.left;
-    const py = e.clientY - rect.top;
-    const cx = Quiz.q1.tx + 8;
-    const cy = Quiz.q1.ty + 8;
-    const dx = cx - px;
-    const dy = cy - py;
-    const dist = Math.hypot(dx, dy);
-
-    if (dist >= 60) return;
-
-    const ux = dist > 0 ? dx / dist : 1;
-    const uy = dist > 0 ? dy / dist : 0;
-    const fleeDist = 60 - dist + 12;
-
-    let nx = cx + ux * fleeDist - 8;
-    let ny = cy + uy * fleeDist - 8;
-    nx = Math.max(4, Math.min(area.offsetWidth  - 21, nx));
-    ny = Math.max(4, Math.min(area.offsetHeight - 21, ny));
-
-    Quiz.q1.tx = nx;
-    Quiz.q1.ty = ny;
-    cb.style.transform = `translate(${nx}px, ${ny}px)`;
-    cb.classList.add('fleeing');
-  };
+  // Park the absolutely-positioned input next to the label, which has
+  // ms-4 ps-2 margin to clear this offset.
+  cb.style.transform = `translate(16px, ${Math.max(8, area.offsetHeight / 2 - 8)}px)`;
 
   const onChange = () => {
     if (!cb.checked) return;
@@ -357,10 +310,8 @@ function initQ1() {
     });
   };
 
-  area.addEventListener('pointermove', onMove);
   cb.addEventListener('change', onChange);
   giveUp.addEventListener('click', onGiveUp);
-  Quiz.handlers.push([area, 'pointermove', onMove]);
   Quiz.handlers.push([cb, 'change', onChange]);
   Quiz.handlers.push([giveUp, 'click', onGiveUp]);
 
@@ -550,21 +501,17 @@ function showFloatingBicycle() {
 // ── 11. Q3 — Cat paws ────────────────────────
 //
 //  The "right" answer to "how many paws is this cat holding up" is 13,
-//  which is absurd — that's the joke. Three layered tricks make the
-//  buttons feel unstable:
+//  which is absurd — that's the joke. Two tricks remain:
 //
-//   1. Hovering a button cycles its text through random digits 1-9
-//      every 500ms (skipped under reduced-motion).
-//   2. Clicking the correct answer (13) flashes "99" with a red border
+//   1. Clicking the correct answer (13) flashes "99" with a red border
 //      for 220ms before advancing — looks like a glitch, not a smooth
 //      success.
-//   3. The cat image hue-rotates ±8° over 6s so re-counting doesn't
+//   2. The cat image hue-rotates ±8° over 6s so re-counting doesn't
 //      feel grounded (CSS animation, see global.css).
 
 const Q3_OPTIONS = [12, 13, 14, 20];
 const Q3_CORRECT = 13;
-const Q3_FLICKER_MS = 500;
-const Q3_GLITCH_MS  = 220;
+const Q3_GLITCH_MS = 220;
 
 function initQ3() {
   hideStatus('q3-status');
@@ -588,23 +535,7 @@ function renderAnswerBtns() {
     btn.textContent = n;
     btn.dataset.value = n;
 
-    const stopFlicker = () => {
-      if (btn._iv) { clearInterval(btn._iv); btn._iv = null; }
-    };
-    const onEnter = () => {
-      if (Quiz.reducedMotion) return;
-      const iv = setInterval(() => {
-        btn.textContent = Math.floor(Math.random() * 10) + 1;
-      }, Q3_FLICKER_MS);
-      btn._iv = iv;
-      Quiz.track(iv);
-    };
-    const onLeave = () => {
-      stopFlicker();
-      btn.textContent = n;
-    };
     const onClick = () => {
-      stopFlicker();
       if (n === Q3_CORRECT) {
         // Pretend to fail for a beat, then accept — feels like a glitch.
         btn.textContent = '99';
@@ -621,8 +552,6 @@ function renderAnswerBtns() {
       Quiz.track(setTimeout(() => hideStatus('q3-status'), 1800));
     };
 
-    btn.addEventListener('mouseenter', onEnter);
-    btn.addEventListener('mouseleave', onLeave);
     btn.addEventListener('click', onClick);
     // No need to track in Quiz.handlers — these buttons get wiped by
     // wrap.innerHTML='' on the next render, which detaches them with
