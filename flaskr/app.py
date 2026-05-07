@@ -80,10 +80,6 @@ api.add_resource(Logout, '/logout', endpoint='logout')
 def home():
     return render_template('landing.html')
 
-@app.route('/maze')
-def maze():
-    return render_template('maze.html')
-
 @app.route('/sign_in')
 def signin_page():
     if session.get('user_id'):
@@ -130,18 +126,6 @@ def comments():
 @app.route('/faq')
 def faq():
     return render_template('FAQ.html')
-
-@app.route('/popups')
-def popups():
-    return render_template('pop_ups.html')
-
-@app.route('/secret')
-def secret():
-    return render_template('secret_task.html')
-
-@app.route('/tnc1')
-def tnc1():
-    return render_template('tnc.html')
 
 # volume game route
 @app.route('/volume_game')
