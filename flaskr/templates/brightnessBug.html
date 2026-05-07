@@ -183,6 +183,69 @@
         padding: 0;
       }
       #brightnessControls .btn:active { transform: scale(0.92); }
+
+      /* ===================== Win celebration =====================
+         Played for ~2.5s after crossing 500m, before the win modal opens.
+         The world stops scrolling, the bug glows gold and dances in place,
+         a starburst of sparkles flies out around it, and a banner pops in. */
+
+      /* Pause the moving stripes so the world visually stops with the bug. */
+      .scroll-stripes.paused { animation-play-state: paused; }
+
+      /* Bug switches from running-bob to a rotating, jumping celebration.
+         !important so it overrides the default bugBob animation. The base
+         transform keeps scaleX(-1) so the bug stays facing right. */
+      .bug-happy {
+        animation: bugCelebrate 0.6s ease-in-out infinite alternate !important;
+        color: #ffc107 !important;
+        text-shadow: 0 0 20px #ffd700, 0 0 40px #fff8a8;
+      }
+      @keyframes bugCelebrate {
+        from { transform: scaleX(-1) translateY(0)    rotate(-15deg); }
+        to   { transform: scaleX(-1) translateY(-50px) rotate(15deg); }
+      }
+
+      /* Sparkle elements are JS-spawned around the bug; --dx/--dy are
+         per-sparkle so each flies out in a different direction. */
+      .victory-sparkle {
+        position: absolute;
+        font-size: 2rem;
+        color: #ffd700;
+        pointer-events: none;
+        text-shadow: 0 0 8px #fff;
+        animation: sparkleFloat 1.2s ease-out forwards;
+      }
+      @keyframes sparkleFloat {
+        0%   { transform: translate(0, 0) scale(0);          opacity: 0; }
+        20%  { transform: translate(0, 0) scale(1);          opacity: 1; }
+        100% { transform: translate(var(--dx), var(--dy)) scale(1.5); opacity: 0; }
+      }
+
+      /* Big banner over the game world. Single pop-in animation that lingers
+         for ~2s then fades — simpler than chaining two animations. */
+      #victoryBanner {
+        position: absolute;
+        top: 18%;
+        left: 50%;
+        transform: translateX(-50%) scale(0);
+        font-size: 3rem;
+        font-weight: 900;
+        color: #ffc107;
+        text-shadow: 0 0 12px #fff, 0 0 24px #ffd700;
+        letter-spacing: 0.08em;
+        z-index: 30;
+        pointer-events: none;
+        white-space: nowrap;
+        opacity: 0;
+      }
+      #victoryBanner.show { animation: bannerPop 2.5s ease-out forwards; }
+      @keyframes bannerPop {
+        0%   { transform: translateX(-50%) scale(0)   rotate(-8deg); opacity: 0; }
+        15%  { transform: translateX(-50%) scale(1.25) rotate(4deg); opacity: 1; }
+        30%  { transform: translateX(-50%) scale(1)   rotate(0deg); opacity: 1; }
+        85%  { transform: translateX(-50%) scale(1)   rotate(0deg); opacity: 1; }
+        100% { transform: translateX(-50%) scale(1.15) rotate(0deg); opacity: 0; }
+      }
     </style>
   </head>
 
@@ -289,6 +352,7 @@
       <div class="horizon-line"></div>
       <i id="bug" class="bi bi-bug bug-character"></i>
       <i id="bugGlow" class="bi bi-sun bug-glow d-none"></i>
+      <div id="victoryBanner">YOU SAVED THE BUG!</div>
     </div>
 
     <span id="scoreBadge" class="badge bg-dark">0.0 s</span>
@@ -346,7 +410,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-primary" id="retryBtn">Try Again</button>
-            <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">Give Up</a>
+            <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">Quit</a>
           </div>
         </div>
       </div>
@@ -444,8 +508,12 @@
         clearTimers();
         hideOverlay(true);
         hideWarning();
-        bug.classList.remove('bug-dim');
+        bug.classList.remove('bug-dim', 'bug-happy', 'bug-bounce');
         bugGlow.classList.add('d-none');
+        // Tear down win-celebration leftovers so a retry-after-win is clean.
+        document.querySelector('.scroll-stripes').classList.remove('paused');
+        document.getElementById('victoryBanner').classList.remove('show');
+        document.querySelectorAll('.victory-sparkle').forEach(s => s.remove());
 
         S.startMs = performance.now();
         S.bonusMs = 0;
@@ -470,8 +538,47 @@
           document.getElementById('finalDistance').textContent = Math.floor(metresFromElapsed(elapsedSec()));
           new bootstrap.Modal(document.getElementById('gameOverModal')).show();
         } else {
-          new bootstrap.Modal(document.getElementById('winModal')).show();
+          // Win path: play the celebration first, then open the modal so the
+          // player actually sees the bug's reaction before being pulled into UI.
+          playWinAnimation();
         }
+      }
+
+      // Plays for ~2.5s after a win. Pauses the scrolling world, switches the
+      // bug to its happy/dance animation, drops in a banner, and shoots sparkles
+      // outward in 8 directions from the bug's position. Then opens the win
+      // modal. startGame() is responsible for cleaning all of this up on reset.
+      function playWinAnimation() {
+        const stripes = document.querySelector('.scroll-stripes');
+        const banner  = document.getElementById('victoryBanner');
+        const world   = document.getElementById('gameWorld');
+
+        stripes.classList.add('paused');
+        bug.classList.remove('bug-dim', 'bug-bounce');
+        bugGlow.classList.add('d-none');
+        bug.classList.add('bug-happy');
+        banner.classList.add('show');
+
+        // 8 sparkles in a starburst. Each gets a unique --dx/--dy that the
+        // sparkleFloat keyframes consume to fly the sparkle outward.
+        const SPARKLE_COUNT = 8;
+        for (let i = 0; i < SPARKLE_COUNT; i++) {
+          const s = document.createElement('i');
+          s.className = 'bi bi-star-fill victory-sparkle';
+          const angle = (i / SPARKLE_COUNT) * Math.PI * 2;
+          const dist  = 90 + Math.random() * 40;
+          s.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+          s.style.setProperty('--dy', `${Math.sin(angle) * dist}px`);
+          // Anchor the sparkle on top of the bug (bug sits at left:12%, mid-height).
+          s.style.left = '13%';
+          s.style.top  = 'calc(50% - 1rem)';
+          world.appendChild(s);
+        }
+
+        // Modal opens after the banner's 2.5s animation completes.
+        setTimeout(() => {
+          new bootstrap.Modal(document.getElementById('winModal')).show();
+        }, 2500);
       }
 
       function clearTimers() {
