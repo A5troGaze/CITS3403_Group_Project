@@ -7,3 +7,4 @@ pip install flask-restful
 pip install flask-bcrypt
 pip install python-dotenv
 pip install sqlalchemy-serializer
+npm i bootstrap-icons
