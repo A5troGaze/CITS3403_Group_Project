@@ -48,3 +48,37 @@ python app.py
 ```
 
 (NOTE: if any migration/db errors occur, make sure you have made migrations for the db. Check note on how to do this in ```db.py```.)
+
+
+______
+## Cheatcode: how to pass all our games!
+### Terms and Conditions game
+Answers: B, D, C, C, B
+
+### Sign In Again game
+Answer: Click the `Sign In` heading at the top of the page
+
+### Human Check game
+```
+FOR JUVINCIA TO ADD INSTRUCTIONS ON HOW TO PASS THE GAME
+```
+
+### Loading Screen game
+Answer: Click loading progress bar 3 times, or wait 30 seconds
+
+### Maze game
+Answer: Controls are inverted, and some walls appear when you reach 2 certain spots
+
+### Volume game
+Answer: Reach the right-most spot 4 times in a row, then for the 5th time the dot has to land between 75-85%.
+
+### Brightness game
+```
+FOR JUVINCIA TO ADD INSTRUCTIONS ON HOW TO PASS THE GAME
+```
+
+### Pop Ups game
+NOTE: There are two final resolutions for this level.
+```
+FOR CHRISTO TO ADD INSTRUCTIONS ON HOW TO PASS THE GAME
+```
