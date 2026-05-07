@@ -60,7 +60,19 @@ Answer: Click the `Sign In` heading at the top of the page
 
 ### Human Check game
 ```
-FOR JUVINCIA TO ADD INSTRUCTIONS ON HOW TO PASS THE GAME
+Q1: Are you a human checkbox
+- a simple checkbox that can't be clicked on too quickly or else it would raise a flag.
+Q2: CAPTCHA grid
+- the user has to click on the bicycle icon that appears on the bottom left of the screen under the CAPTCHA card after 2 failed attempts to pass.
+Q3: Cat paws
+- the correct answer is 13
+Q4: Pain slider
+- 0-34 and 76-100 are invalid inputs
+- the slider has to be held down on for 3 seconds for validation
+Q5: Impossible math question
+- this task doesn't have a right answer.
+- after 2 attempts, the user will be given to choose between quitting or trying again.
+- if the user chooses to quit they pass but if they continue to tackle it, they'll be stuck in  a loop
 ```
 
 ### Loading Screen game
@@ -74,7 +86,11 @@ Answer: Reach the right-most spot 4 times in a row, then for the 5th time the do
 
 ### Brightness game
 ```
-FOR JUVINCIA TO ADD INSTRUCTIONS ON HOW TO PASS THE GAME
+WARNING: this game involves FLASHING lights
+This game requires you to save Bob the bug from the blazing heat and horrifying night.
+When a sun is displayed on the screen, dim your screen with your brightness keys during the confirm screen and press "confirm" or your "B" key to confirm your answer and the latter when a moon is displayed.
+For mobile users, the buttons on the screen are there to change the display brightness for you.
+During the late game, you will encounter the lightning icon (aka flash mode), just continuously click "continue" or "B" to pass.
 ```
 
 ### Pop Ups game
