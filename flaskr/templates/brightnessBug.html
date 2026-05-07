@@ -156,6 +156,33 @@
         color: #ffc107;
         text-shadow: 0 0 8px #000;
       }
+
+      /* Left-edge brightness controls for touch users who can't reach the
+         hardware brightness keys. Each tap softens the matching overlay's
+         alpha so the player can see the input register; Confirm still closes
+         the obstacle. z-index sits above #obstacleOverlay (9999) so the
+         buttons stay tappable while an obstacle is active. */
+      #brightnessControls {
+        position: fixed;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      #brightnessControls .btn {
+        width: 56px;
+        height: 56px;
+        font-size: 1.6rem;
+        border: 2px solid #ffc107;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+      }
+      #brightnessControls .btn:active { transform: scale(0.92); }
     </style>
   </head>
 
@@ -293,6 +320,18 @@
       </div>
     </div>
 
+    <!-- ===================== Mobile brightness controls =====================
+         Up = brighten (use against blackout). Down = dim (use against flash).
+         Hidden until the run starts so they don't overlap pre-game / end modals. -->
+    <div id="brightnessControls" class="d-none">
+      <button id="brightnessUpBtn" type="button" class="btn btn-dark" aria-label="Increase brightness">
+        <i class="bi bi-brightness-high-fill"></i>
+      </button>
+      <button id="brightnessDownBtn" type="button" class="btn btn-dark" aria-label="Decrease brightness">
+        <i class="bi bi-brightness-low-fill"></i>
+      </button>
+    </div>
+
     <!-- ===================== End-of-run modals ===================== -->
     <div class="modal fade" id="gameOverModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
       <div class="modal-dialog modal-dialog-centered">
@@ -331,8 +370,6 @@
       </div>
     </div>
 
-    {% include 'components/footer.html' %}
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 
     <script>
@@ -348,6 +385,9 @@
       const distanceBar  = document.getElementById('distanceBar');
       const bug          = document.getElementById('bug');
       const bugGlow      = document.getElementById('bugGlow');
+      const brightnessControls = document.getElementById('brightnessControls');
+      const brightnessUpBtn    = document.getElementById('brightnessUpBtn');
+      const brightnessDownBtn  = document.getElementById('brightnessDownBtn');
 
       // ====== Constants ======
       const WIN_DISTANCE   = 500;   // metres to win
@@ -412,6 +452,7 @@
         S.speedMul = 1.0;
         S.obstacle = null;
         S.nextObstacleAt = S.startMs + 2500; // first obstacle 2.5s in
+        brightnessControls.classList.remove('d-none');
         setStatus('idle');
         requestAnimationFrame(loop);
       }
@@ -421,6 +462,7 @@
         clearTimers();
         hideOverlay(true);
         hideWarning();
+        brightnessControls.classList.add('d-none');
 
         if (reason === 'over') {
           document.getElementById('gameOverMsg').textContent = msg;
@@ -604,6 +646,28 @@
       document.addEventListener('keydown', (e) => {
         if (e.key === 'b' || e.key === 'B') onConfirm();
       });
+
+      // Mobile brightness controls. dir = -1 means "dim" (helps vs flash);
+      // dir = +1 means "brighten" (helps vs blackout). Wrong direction is a
+      // no-op so the player can't cheese a flash by tapping brighten. Each
+      // matching tap softens the overlay alpha by a step, floored at 0.45 so
+      // the obstacle stays clearly visible. Confirm is still required to
+      // actually clear the obstacle — these buttons don't substitute for it.
+      // Flicker isn't handled here: its background is overwritten every
+      // FLICKER_MS by the interval, so any alpha tweak would just be clobbered.
+      function adjustBrightness(dir) {
+        if (S.status !== 'obstacle' || !S.obstacle) return;
+        const t = S.obstacle.type;
+        const matches = (dir === -1 && t === 'flash') ||
+                        (dir === +1 && t === 'blackout');
+        if (!matches) return;
+        S.obstacle.adjustTaps = (S.obstacle.adjustTaps || 0) + 1;
+        const alpha = Math.max(0.45, 0.92 - S.obstacle.adjustTaps * 0.12);
+        if (t === 'flash')         overlay.style.background = `rgba(255,255,255,${alpha})`;
+        else if (t === 'blackout') overlay.style.background = `rgba(0,0,0,${alpha})`;
+      }
+      brightnessUpBtn.addEventListener('click',   () => adjustBrightness(+1));
+      brightnessDownBtn.addEventListener('click', () => adjustBrightness(-1));
 
       document.getElementById('retryBtn').addEventListener('click', () => {
         bootstrap.Modal.getInstance(document.getElementById('gameOverModal')).hide();
