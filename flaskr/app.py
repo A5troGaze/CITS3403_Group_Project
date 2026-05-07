@@ -180,7 +180,7 @@ def update_name():
 
 @app.route('/popups')
 def popups():
-    return render_template('pop_ups.html')
+    return render_template('popups.html')
 
 @app.route('/secret')
 def secret():
