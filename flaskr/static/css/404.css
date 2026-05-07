@@ -1,10 +1,11 @@
 
     #meme_image {
-      width: 500px;
-      height: 500px;
+      width: min(500px, 90vw);
+      height: min(500px, 90vw);
       object-fit: cover;
       border-radius: 50%;
       cursor: pointer;
+      max-width: 100%;
     }
 
     #meme_image:hover {
@@ -22,4 +23,5 @@
       flex-direction: column;
       justify-content: center;
       min-height: 100%;
+      margin-top: 60px;
     }
