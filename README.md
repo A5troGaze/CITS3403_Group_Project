@@ -96,5 +96,7 @@ During the late game, you will encounter the lightning icon (aka flash mode), ju
 ### Pop Ups game
 NOTE: There are two final resolutions for this level.
 ```
-FOR CHRISTO TO ADD INSTRUCTIONS ON HOW TO PASS THE GAME
+Passing this level is determined by a map of answers that lead you down either the correct or incorrect path. If you keep clicking the wrong answers the map will take you back to the start of the level and you will have to repeat the level to get the right answers. To get quick at this level you will have to memorise the questions.
+
+ALTERNATIVELY: if the first two options are 'Yes' and the second is 'No' -> the page will redirect to /secret. From there the user will have to continuously answer no to the following questions. 
 ```
