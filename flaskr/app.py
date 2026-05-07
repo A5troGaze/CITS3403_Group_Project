@@ -121,6 +121,8 @@ def leaderboard():
 
 @app.route('/comments')
 def comments():
+    if not session.get('user_id'):
+        return redirect(url_for('signin_page'))
     return render_template('comments.html')
 
 @app.route('/faq')
