@@ -178,9 +178,5 @@ def update_name():
 
     return redirect(url_for('profile'))
 
-@app.route('/human_check')
-def human_check():
-    return render_template('/human_check.html')
-
 if __name__ == '__main__':
     app.run(debug=True)
