@@ -278,3 +278,9 @@
 .small-text {
     font-size: 5px;
 }
+
+/* css for comments page */
+@keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+      }

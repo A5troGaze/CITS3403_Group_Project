@@ -3,7 +3,7 @@ from flask import request, make_response, session, render_template, redirect, ur
 from flask_restful import Resource
 from flask_migrate import Migrate
 from flask_login import current_user 
-from db import db, User, Score
+from db import db, User, Score, Comment
 from config import *
 import os
 from werkzeug.utils import secure_filename
@@ -121,6 +121,8 @@ def leaderboard():
 
 @app.route('/comments')
 def comments():
+    if not session.get('user_id'):
+        return redirect(url_for('signin_page'))
     return render_template('comments.html')
 
 @app.route('/faq')
@@ -433,6 +435,52 @@ def forbidden(e):
     ]
 
     return render_template('404.html', image_list=image_list, error='403', error_message='Forbidden!', error_title='403: Forbidden'), 403
+
+
+# comments page routing
+@app.route('/api/add_comment', methods=['POST'])
+def api_add_comment():
+    user_id = session.get('user_id')
+    username = session.get('username')
+    
+    if not user_id:
+        return {"success": False, "error": "Unauthorized. You must be logged in to comment."}, 401
+
+    data = request.get_json()
+    comment_text = data.get('comment_text')
+
+    try:
+        new_comment = Comment(user_id=user_id, text=comment_text)
+        
+        db.session.add(new_comment)
+        db.session.commit()
+        
+        return {
+            "success": True, 
+            "username": username,
+            "comment_text": comment_text
+        }, 200
+        
+    except Exception as e:
+        db.session.rollback() 
+        print("Database Error:", e)
+        return {"success": False, "error": "Failed to save comment to the database."}, 500
+
+@app.route('/api/get_comments')
+def api_get_comments():
+    all_comments = Comment.query.order_by(Comment.timestamp.desc()).all()
+    
+    comments_data = []
+    for c in all_comments:
+        comments_data.append({
+            "username": c.user.username,
+            "text": c.text,
+            "timestamp": c.timestamp.strftime('%Y-%m-%d %H:%M'),
+            "avatar": url_for('static', filename='images/' + c.user.profile_image)
+        })
+        
+    return jsonify(comments_data)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
