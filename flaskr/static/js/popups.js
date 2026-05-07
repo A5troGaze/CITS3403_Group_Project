@@ -114,13 +114,17 @@
 
       //load next level
       if (id === "NEXT_LEVEL") {
-        window.location.href = "next_level.html";
+        modal.hide();
+        stopTimerAndSave('standard_ending');
+        window.location.href = "ending_page.html"; // load ending page if did not manage to get secret ending
         return;
       }
 
       //load secret level page
       if (id === "SECRET") {
-        window.location.href = "/secret";
+        modal.hide();
+        stopTimerAndSave('secret_ending');
+        window.location.href = "/secret"; // load secret ending
         return;
       }
 
@@ -146,4 +150,41 @@
       }
 
       modal.show();
+    }
+
+    let startTime = performance.now();
+
+    // ----------------------------
+    //
+    // ----------------------------
+
+    function stopTimerAndSave(taskName) {
+      if (!startTime) return;
+
+      const endTime = performance.now();
+      const timeTakenSec = ((endTime - startTime) / 1000).toFixed(2); // in seconds
+
+      /*const resultText = document.getElementById('result-text'); // THIS OBJECT DOES NOT EXIST
+      if (resultText) {
+        resultText.innerText = `You finished the ${taskName} in ${timeTakenSec} seconds! Saving...`;
+      }*/
+
+      fetch('/save_time', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+            time: timeTakenSec,
+            task_name: taskName 
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert(`Score saved! You reached the ${taskName} in ${timeTakenSec}s.`);
+        } else {
+          alert('Error saving time!');
+        }
+      });
     }
