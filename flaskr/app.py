@@ -139,6 +139,10 @@ def secret():
 def tnc1():
     return render_template('tnc.html')
 
+# volume game route
+@app.route('/volume_game')
+def volume_game():
+    return render_template('volume_game.html')
 
 
 # routing for profile page functionality
