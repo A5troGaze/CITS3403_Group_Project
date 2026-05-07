@@ -14,7 +14,116 @@
 
     {% include 'components/navbar.html' %}
 
-    <h1>Hello, world!</h1>
+    <div class="container mt-5">
+      <div class="row d-flex justify-content-center">
+          <div class="col-md-10 col-lg-8">
+
+              <div class="card shadow-sm border mb-5">
+                  <div class="card-body p-4">
+                      <h4 class="mb-3">Leave a Review</h4>
+                      <form id="commentForm">
+                          <div class="form-floating mb-3">
+                              <textarea class="form-control" id="commentText" placeholder="Leave a comment here" style="height: 100px" required></textarea>
+                              <label for="commentText">What do you think?</label>
+                          </div>
+                          <button type="submit" class="btn btn-dark float-end">Post Comment</button>
+                      </form>
+                  </div>
+              </div>
+
+              <h4 class="mb-3">Recent Reviews</h4>
+              
+              <div id="liveCommentFeed">
+              </div>
+    <script>
+        const commentForm = document.getElementById('commentForm');
+        const commentFeed = document.getElementById('liveCommentFeed');
+        const commentInput = document.getElementById('commentText');
+
+        // --- NEW: The Auto-Loader Function ---
+        async function loadLiveComments() {
+            try {
+                // 1. Ask Flask for the latest comments
+                const response = await fetch('/api/get_comments');
+                const comments = await response.json();
+                
+                // 2. Clear the current feed completely
+                commentFeed.innerHTML = ''; 
+                
+                // 3. Loop through the JSON data and build a card for everyone
+                comments.forEach(comment => {
+                    const cardHTML = `
+                        <div class="card mb-3 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex flex-start">
+                                    <img class="rounded-circle shadow-sm me-3"
+                                        src="${comment.avatar}" alt="avatar" width="50" height="50" />
+                                    <div class="w-100">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <h6 class="text-primary fw-bold mb-0">
+                                                ${comment.username}
+                                            </h6>
+                                            <p class="mb-0 text-muted" style="font-size: 0.85rem;">${comment.timestamp}</p>
+                                        </div>
+                                        <p class="text-dark mb-0 mt-2">
+                                            ${comment.text}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    commentFeed.insertAdjacentHTML('beforeend', cardHTML);
+                });
+
+                // Optional: If no comments exist yet
+                if (comments.length === 0) {
+                    commentFeed.innerHTML = '<p class="text-muted">No reviews yet. Be the first to comment!</p>';
+                }
+
+            } catch (error) {
+                console.error("Error fetching live comments:", error);
+            }
+        }
+
+        // --- Run the loader immediately, then every 3 seconds (3000ms) ---
+        loadLiveComments();
+        setInterval(loadLiveComments, 3000);
+
+        // --- UPDATED: The Submit Form ---
+        commentForm.addEventListener('submit', async function(event) {
+            event.preventDefault(); 
+            
+            const freshCommentText = commentInput.value;
+
+            try {
+                // Send the new comment to Flask
+                const response = await fetch('/api/add_comment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ comment_text: freshCommentText })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    commentInput.value = ''; 
+                    
+                    loadLiveComments(); 
+                } else {
+                    alert(result.error); 
+                }
+            } catch (error) {
+                alert("Something went wrong connecting to the server.");
+            }
+        });
+    </script>
+    <style>
+      @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+    </style>
 
     {% include 'components/footer.html' %}
 

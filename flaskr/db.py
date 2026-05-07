@@ -66,6 +66,7 @@ class User(db.Model, SerializerMixin):
     serialize_rules = ('-password_hash', '-_password_hash', '-scores.user')
 
     scores = db.relationship('Score', backref='user', cascade="all, delete-orphan")
+    comments = db.relationship('Comment', backref='user', cascade="all, delete-orphan")
 
     @property
     def total_time(self):
@@ -95,3 +96,14 @@ class Score(db.Model, SerializerMixin):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     task_name = db.Column(db.String(50), nullable=False) 
     best_time = db.Column(db.Float, nullable=False)
+
+class Comment(db.Model, SerializerMixin):
+    __tablename__ = 'comments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    text = db.Column(db.String(500), nullable=False)
+    
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow) 
+    
+    serialize_rules = ('-user.comments',)
