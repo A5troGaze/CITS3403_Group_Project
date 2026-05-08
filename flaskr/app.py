@@ -8,7 +8,6 @@ from config import *
 import os
 from werkzeug.utils import secure_filename
 
-
 # sign in logic
 class CheckSession(Resource):
     def get(self):
@@ -128,6 +127,7 @@ def comments():
 @app.route('/faq')
 def faq():
     return render_template('FAQ.html')
+
 
 # volume game route
 @app.route('/volume_game')
