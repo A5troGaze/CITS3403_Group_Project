@@ -6,7 +6,7 @@ NOTE: All the following code only works in Unix/Linux shell. If using Windows, c
 ## How to run this game:
 
 ### 1. Set up virtual environment:
-Make sure you are in the flaskr directory, then copy and paste the following code into your terminal:
+Make sure you are in the ```flaskr``` directory, then copy and paste the following code into your terminal:
 ```
 python3 -m venv .venv  (only do this first command if you don't already have .venv)
 source .venv/bin/activate
@@ -42,12 +42,20 @@ FLASK_SECRET_KEY= [your_super_secret_key]
 (NOTE: Remember to leave ```.env``` inside ```.gitignore``` so Git doesn't track your super secret hash code.)
 
 ### To run the game:
+First navigate to ```flaskr```'s parent directory using
+```
+cd ..
+```
 Inside your terminal, run:
 ```
-python app.py
+python run.py
+```
+OR for unit testing, run:
+```
+python runtest.py
 ```
 
-(NOTE: if any migration/db errors occur, make sure you have made migrations for the db. Check note on how to do this in ```db.py```.)
+(NOTE: if any migration/db errors occur, make sure you have made migrations for the db. Check note on how to do this in ```zmodels.py```.)
 
 
 ______
@@ -69,7 +77,12 @@ Q5: Impossible math question (this task doesn't have a right answer, after 2 att
 Answer: Click loading progress bar 3 times, or wait 30 seconds
 
 ### Maze game
-Answer: Controls are inverted, and some walls appear when you reach 2 certain spots
+Answer:
+- Controls are inverted
+- Obstructive walls appear when you reach 2 predetermined spots. When this happens other walls will disappear to open a new way through.
+- Complete the maze and reach the `goal` (target) without the `avatar` (trolley) touching the walls.
+- When the screen is too narrow (like mobile users) direction buttons appear below the maze for use.
+- If a player touches the walls they will be sent back to the start
 
 ### Volume game
 Answer: Reach the right-most spot 4 times in a row, then for the 5th time the dot has to land between 75-85%.
@@ -84,10 +97,58 @@ During the late game, you will encounter the lightning icon (aka flash mode), ju
 ### Pop Ups game
 NOTE: There are two final resolutions for this level.
 Passing this level is determined by a map of answers that lead you down either the correct or incorrect path.
-If you keep clicking the wrong answers the map will take you back to the start of the level and you will have to repeat the level to get the right answers.
-To get quick at this level you will have to memorise the questions.
 
-ALTERNATIVELY: if the first two options are 'Yes' and the second is 'No' -> the page will redirect to /secret.
-From there the user will have to continuously answer no to the following questions.
+`Q1`: "Time to try again! Do you want to go to the next level?"
+    yes: "Q3"
+    no: "Q2"
+      
+`Q2`: "Are you procrastinating?"
+    yes: "Q4"
+    no: "Q5"
+
+`Q3`: "Do you enjoy games of chance?"
+    yes: "Q4"
+    no: "Q5"
+
+`Q4`: "Do you like surprises?"
+    yes: "Q8"
+    no: `REDIRECT TO SECRET ENDING`
+      
+`Q5`: "Haha... there is no escape. Are you ready?"
+    yes: "Q6"
+    no: "Q11"
+
+`Q6`: "There is no game... You are part of an experiment. Would you like to enter your details for a chance to win an iPad?"
+    yes: "Q7"
+    no: "Q9"
+
+`Q7`: "You said you don't like games of chance. Liar. Back to the start for you."
+    yes: "Q1"
+    no: "Q12"
+      
+`Q8`: "Do you want to play some russian roulette?"
+    yes: "Q13"
+    no: "Q9"
+
+`Q9`: "You're missing out... But okay. Do you want to go to the next level now?"
+    yes: `REDIRECT TO ENDING`
+    no: "Q10"
+
+`Q10`: "That was a rhetorical question... Wisdom has been chasing you for a long time, but you have always been faster, huh?"
+    yes: `REDIRECT TO ENDING`
+      
+`Q11`: "That was rhetorical..."
+    yes: "Q6"
+
+`Q12`: "No is not an option."
+    yes: "Q1"
+
+`Q13`: "Damn, you freaky... Back to the start for you."
+    yes: "Q1"
+
+If you keep clicking the wrong answers the map will take you back to the start of the level and you will have to repeat the level to get the right answers.
+
+ALTERNATIVELY: if the first options are `Yes`, `Yes` and then `No` the page will redirect to /secret.
+From there the user will have to continuously answer `No` to the presented questions.
 
 
