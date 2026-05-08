@@ -135,6 +135,12 @@ def volume_game():
     return render_template('volume_game.html')
 
 
+# human check route
+@app.route('/human_check')
+def human_check():
+    return render_template('human_check.html')
+
+
 # routing for profile page functionality
 @app.route('/api/test')
 def test_route():
