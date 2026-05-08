@@ -26,7 +26,6 @@ IN TERMINAL:
 flask db current
 """
 
-# ============ EVERYTHING IN FILE to zmodels.py ============
 
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.ext.hybrid import hybrid_property

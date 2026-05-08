@@ -1,16 +1,19 @@
-# all imports
-from flask import request, make_response, session, render_template, redirect, url_for, flash, jsonify #
-from flask_restful import Resource #
-from flask_migrate import Migrate #
-from flask_login import current_user #
-from db import db, User, Score, Comment #
-from config import * #
-import os #
-from werkzeug.utils import secure_filename #
+# ====== IMPORTS ======
+from flask import Blueprint, current_app, request, make_response, session, render_template, redirect, url_for, flash, jsonify
+from flask_restful import Resource
+from flask_login import current_user
+from flaskr.zmodels import *
+import os
+from werkzeug.utils import secure_filename
 
 
-# sign in logic
-class CheckSession(Resource): # to zroutes.py
+
+main = Blueprint('main', __name__) #group routes
+
+
+
+# ====== SIGN IN / SIGN UP / LOG OUT ======
+class CheckSession(Resource):
     def get(self):
         user = User.query.filter(User.id == session.get('user_id')).first()
         if not user:
@@ -18,9 +21,7 @@ class CheckSession(Resource): # to zroutes.py
         else:
             return make_response(user.to_dict(), 200)
 
-api.add_resource(CheckSession, '/check_session', endpoint='check_session') # to z__init__.py
-
-class Signup(Resource): # to zroutes.py
+class Signup(Resource):
     def post(self):
         json = request.get_json()
         try:
@@ -39,9 +40,7 @@ class Signup(Resource): # to zroutes.py
         except Exception as e:
             return make_response({'errors': str(e)}, 422)
 
-api.add_resource(Signup, '/signup', endpoint='signup') # to z__init__.py
-
-class Login(Resource): # to zroutes.py
+class Login(Resource):
     def post(self):
         username = request.get_json()['username']
 
@@ -62,132 +61,73 @@ class Login(Resource): # to zroutes.py
                 status = 401
         return make_response(response_body, status)
 
-api.add_resource(Login, '/login', endpoint='login') # to z__init__.py
-
-class Logout(Resource): # to zroutes.py
+class Logout(Resource):
     
     def delete(self):
         session['user_id'] = None
         session['username'] = None
         return {}, 204
-    
-api.add_resource(Logout, '/logout', endpoint='logout') # to z__init__.py
 
 
 
-# app page routing
-@app.route('/') # to zroutes.py
-def home():
-    return render_template('landing.html')
 
-@app.route('/sign_in') # to zroutes.py
-def signin_page():
-    if session.get('user_id'):
-        return redirect(url_for('home'))
-    return render_template('sign_in.html')
 
-@app.route('/sign_up') # to zroutes.py
-def signup_page():
-    if session.get('user_id'):
-        return redirect(url_for('home'))
-    return render_template('sign_up.html')
+# -----+++++++====== ROUTES ======+++++++-----
 
-@app.route('/profile') # to zroutes.py
-def profile():
-    if not session.get('user_id'):
-        return redirect(url_for('signin_page'))
-    current_user = db.session.get(User, session.get('user_id'))
-    return render_template('profile.html', user=current_user)
-
-@app.route('/leaderboard') # to zroutes.py
-def leaderboard():
-    all_users = User.query.all()
-    finished_users = [user for user in all_users if user.total_time > 0]
-    sorted_users = sorted(finished_users, key=lambda u: u.total_time, reverse=False)
-    
-    for index, user in enumerate(sorted_users):
-        user.real_rank = index + 1 
-        
-    display_users = sorted_users[:20]
-    
-    if current_user.is_authenticated and current_user.total_time > 0:
-        if current_user not in display_users:
-            for user in sorted_users:
-                if user.id == current_user.id:
-                    display_users.append(user) 
-                    break
-                    
-    return render_template('leaderboard.html', users=display_users)
-
-@app.route('/comments') # to zroutes.py
-def comments():
-    if not session.get('user_id'):
-        return redirect(url_for('signin_page'))
-    return render_template('comments.html')
-
-@app.route('/faq') # to zroutes.py
-def faq():
-    return render_template('FAQ.html')
-
-# volume game route
-@app.route('/volume_game') # to zroutes.py
-def volume_game():
-    return render_template('volume_game.html')
-
-# routing for profile page functionality
-@app.route('/api/test') # to zroutes.py
+# ====== PROFILE PAGE FUNCTIONALITY ROUTES ======
+@main.route('/api/test')
 def test_route():
     return {"message": "Server and DB are connected!"}, 200
 
-@app.route('/upload_photo', methods=['POST']) # to zroutes.py
+@main.route('/upload_photo', methods=['POST'])
 def upload_photo():
     user_id = session.get('user_id')
     if not user_id:
-        return redirect(url_for('signin_page'))
+        return redirect(url_for('main.signin_page'))
 
     if 'profile_pic' not in request.files:
-        return redirect(url_for('profile'))
+        return redirect(url_for('main.profile'))
         
     file = request.files['profile_pic']
 
     if file.filename != '':
         filename = secure_filename(file.filename)
         unique_filename = f"user_{user_id}_{filename}"
-        save_path = os.path.join(app.root_path, 'static', 'images', unique_filename)
+        save_path = os.path.join(main.root_path, 'static', 'images', unique_filename)
         file.save(save_path)
 
         user = db.session.get(User, user_id)
         user.profile_image = unique_filename
         db.session.commit()
-    return redirect(url_for('profile'))
+    return redirect(url_for('main.profile'))
 
-@app.route('/upload_banner', methods=['POST']) # to zroutes.py
+@main.route('/upload_banner', methods=['POST'])
 def upload_banner():
     user_id = session.get('user_id')
     if not user_id:
-        return redirect(url_for('signin_page'))
+        return redirect(url_for('main.signin_page'))
 
     if 'banner_pic' not in request.files:
-        return redirect(url_for('profile'))
+        return redirect(url_for('main.profile'))
         
     file = request.files['banner_pic']
 
     if file.filename != '':
         filename = secure_filename(file.filename)
         unique_filename = f"user_{user_id}_{filename}"
-        save_path = os.path.join(app.root_path, 'static', 'images', unique_filename)
+        save_path = os.path.join(main.root_path, 'static', 'images', unique_filename)
         file.save(save_path)
 
         user = db.session.get(User, user_id)
         user.banner_image = unique_filename
         db.session.commit()
-    return redirect(url_for('profile'))
+    return redirect(url_for('main.profile'))
 
-@app.route('/update_username', methods=['POST']) # to zroutes.py
+@main.route('/update_username', methods=['POST'])
 def update_username():
     user_id = session.get('user_id')
     if not user_id:
-        return redirect(url_for('signin_page'))
+        return redirect(url_for('main.signin_page'))
 
     new_username = request.form.get('username')
     
@@ -204,13 +144,13 @@ def update_username():
             db.session.rollback()
             flash("Error: Don't steal other people's usernames! Try another one.", "danger")
 
-    return redirect(url_for('profile'))
+    return redirect(url_for('main.profile'))
 
-@app.route('/update_name', methods=['POST']) # to zroutes.py
+@main.route('/update_name', methods=['POST'])
 def update_name():
     user_id = session.get('user_id')
     if not user_id:
-        return redirect(url_for('signin_page'))
+        return redirect(url_for('main.signin_page'))
 
     new_name = request.form.get('name')
     
@@ -227,13 +167,13 @@ def update_name():
             db.session.rollback()
             flash("Error: Could not update your name in the database, maybe it's just a bad name.", "danger")
 
-    return redirect(url_for('profile'))
+    return redirect(url_for('main.profile'))
 
-@app.route('/update_password', methods=['POST']) # to zroutes.py
+@main.route('/update_password', methods=['POST'])
 def update_password():
     user_id = session.get('user_id')
     if not user_id:
-        return redirect(url_for('signin_page'))
+        return redirect(url_for('main.signin_page'))
 
     current_password = request.form.get('current_password')
     new_password = request.form.get('new_password')
@@ -243,11 +183,11 @@ def update_password():
 
     if not user.authenticate(current_password):
         flash("Error: Incorrect current password. Do you even know your own password?", "danger")
-        return redirect(url_for('profile'))
+        return redirect(url_for('main.profile'))
 
     if new_password != confirm_password:
         flash("Error: New passwords do not match. Don't be silly, do it properly.", "danger")
-        return redirect(url_for('profile'))
+        return redirect(url_for('main.profile'))
 
     try:
         user.password_hash = new_password 
@@ -258,13 +198,13 @@ def update_password():
         db.session.rollback()
         flash("Error: Could not update password.", "danger")
 
-    return redirect(url_for('profile'))
+    return redirect(url_for('main.profile'))
 
-@app.route('/delete_account', methods=['POST']) # to zroutes.py
+@main.route('/delete_account', methods=['POST'])
 def delete_account():
     user_id = session.get('user_id')
     if not user_id:
-        return redirect(url_for('signin_page'))
+        return redirect(url_for('main.signin_page'))
 
     user = db.session.get(User, user_id)
 
@@ -274,22 +214,24 @@ def delete_account():
             db.session.commit()
             session.clear() 
             
-            return redirect(url_for('boom'))
+            return redirect(url_for('main.boom'))
             
         except Exception as e:
             db.session.rollback()
             flash("Error: You can't escape us that easily. Something went wrong.", "danger")
             print("Deletion Error:", e)
-            return redirect(url_for('profile'))
+            return redirect(url_for('main.profile'))
 
-    return redirect(url_for('signin_page'))
+    return redirect(url_for('main.signin_page'))
 
-@app.route('/boom') # to zroutes.py
+@main.route('/boom')
 def boom():
     return render_template('boom.html')
 
-# routing for leaderboard/timing functionality
-@app.route('/save_time', methods=['POST']) # to zroutes.py
+
+
+# ===== LEADERBOARD / COMMENT / TIMING FUNCTIONALITY ROUTES ======
+@main.route('/save_time', methods=['POST'])
 def save_time():
     user_id = session.get('user_id')
     if not user_id:
@@ -325,7 +267,7 @@ def save_time():
 
     return {"success": False, "error": "Invalid request"}, 400
 
-@app.route('/api/search') # to zroutes.py
+@main.route('/api/search')
 def api_search():
     query = request.args.get('q', '').lower()
     all_users = User.query.all()
@@ -347,94 +289,7 @@ def api_search():
         
     return jsonify(results)
 
-#app route for 404 page
-@app.route('/404') # to zroutes.py
-def not_found():
-
-    #folder location meme_images are located
-    folder = os.path.join(app.static_folder, 'images/404_images')
-    
-    #list of meme_images in folder
-    files = os.listdir(folder)
-
-    #filter to only 'compatible' files
-    image_files = [
-        f for f in files
-        if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))
-    ]
-
-    #create url_for()'s for each file in the folder
-    image_list = [
-        url_for('static', filename=f'images/404_images/{file}')
-        for file in image_files
-    ]
-
-    #render template with dynamic image list, error code, error message, tab title
-    return render_template('404.html', image_list=image_list, error='404', error_message='Oops... Page not found!', error_title='404: Page Not Found'), 404
-
-#page not found error handler -> redirects to '404' page
-@app.errorhandler(404) # to z__init__.py
-def page_not_found(e):
-
-    folder = os.path.join(app.static_folder, 'images/404_images')
-    
-    files = os.listdir(folder)
-
-    image_files = [
-        f for f in files
-        if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))
-    ]
-
-    image_list = [
-        url_for('static', filename=f'images/404_images/{file}')
-        for file in image_files
-    ]
-
-    #return with image list, correct error code, message & title
-    return render_template('404.html', image_list=image_list, error='404', error_message='Oops... Page not found!', error_title='404: Page Not Found'), 404
-
-#bad request error handler -> redirects to '404' page
-@app.errorhandler(400) # to z__init__.py
-def bad_request(e):
-    
-    folder = os.path.join(app.static_folder, 'images/404_images')
-    
-    files = os.listdir(folder)
-
-    image_files = [
-        f for f in files
-        if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))
-    ]
-
-    image_list = [
-        url_for('static', filename=f'images/404_images/{file}')
-        for file in image_files
-    ]
-
-    return render_template('404.html', image_list=image_list, error='400', error_message='Bad request!', error_title='400: Bad Request'), 400
-
-#forbidden error handler -> redirects to '404' page
-@app.errorhandler(403) # to z__init__.py
-def forbidden(e):
-
-    folder = os.path.join(app.static_folder, 'images/404_images')
-    
-    files = os.listdir(folder)
-
-    image_files = [
-        f for f in files
-        if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))
-    ]
-
-    image_list = [
-        url_for('static', filename=f'images/404_images/{file}')
-        for file in image_files
-    ]
-
-    return render_template('404.html', image_list=image_list, error='403', error_message='Forbidden!', error_title='403: Forbidden'), 403
-
-# comments page routing
-@app.route('/api/add_comment', methods=['POST']) # to zroutes.py
+@main.route('/api/add_comment', methods=['POST'])
 def api_add_comment():
     user_id = session.get('user_id')
     username = session.get('username')
@@ -462,7 +317,7 @@ def api_add_comment():
         print("Database Error:", e)
         return {"success": False, "error": "Failed to save comment to the database."}, 500
 
-@app.route('/api/get_comments') # to zroutes.py
+@main.route('/api/get_comments')
 def api_get_comments():
     all_comments = Comment.query.order_by(Comment.timestamp.desc()).all()
     
@@ -478,5 +333,85 @@ def api_get_comments():
     return jsonify(comments_data)
 
 
-if __name__ == '__main__': #to run.py / testrun.py
-    app.run(debug=True)
+
+# ====== PAGE ROUTES ======
+@main.route('/')
+def home():
+    return render_template('landing.html')
+
+@main.route('/sign_in')
+def signin_page():
+    if session.get('user_id'):
+        return redirect(url_for('main.home'))
+    return render_template('sign_in.html')
+
+@main.route('/sign_up')
+def signup_page():
+    if session.get('user_id'):
+        return redirect(url_for('main.home'))
+    return render_template('sign_up.html')
+
+@main.route('/profile')
+def profile():
+    if not session.get('user_id'):
+        return redirect(url_for('main.signin_page'))
+    current_user = db.session.get(User, session.get('user_id'))
+    return render_template('profile.html', user=current_user)
+
+@main.route('/leaderboard')
+def leaderboard():
+    all_users = User.query.all()
+    finished_users = [user for user in all_users if user.total_time > 0]
+    sorted_users = sorted(finished_users, key=lambda u: u.total_time, reverse=False)
+    
+    for index, user in enumerate(sorted_users):
+        user.real_rank = index + 1 
+        
+    display_users = sorted_users[:20]
+    
+    if current_user.is_authenticated and current_user.total_time > 0:
+        if current_user not in display_users:
+            for user in sorted_users:
+                if user.id == current_user.id:
+                    display_users.append(user) 
+                    break
+                    
+    return render_template('leaderboard.html', users=display_users)
+
+@main.route('/comments')
+def comments():
+    if not session.get('user_id'):
+        return redirect(url_for('main.signin_page'))
+    return render_template('comments.html')
+
+@main.route('/faq')
+def faq():
+    return render_template('FAQ.html')
+
+@main.route('/404')
+def not_found():
+
+    #folder location meme_images are located
+    folder = os.path.join(current_app.static_folder, 'images/404_images')
+    
+    #list of meme_images in folder
+    files = os.listdir(folder)
+
+    #filter to only 'compatible' files
+    image_files = [
+        f for f in files
+        if f.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.webp'))
+    ]
+
+    #create url_for()'s for each file in the folder
+    image_list = [
+        url_for('static', filename=f'images/404_images/{file}')
+        for file in image_files
+    ]
+
+    #render template with dynamic image list, error code, error message, tab title
+    return render_template('404.html', image_list=image_list, error='404', error_message='Oops... Page not found!', error_title='404: Page Not Found'), 404
+
+@main.route('/volume_game')
+def volume_game():
+        return render_template('volume_game.html')

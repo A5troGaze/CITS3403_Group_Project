@@ -9,34 +9,34 @@ import os
 from dotenv import load_dotenv
 from db import db, bcrypt, User
 
-load_dotenv()
-app = Flask(__name__)
+load_dotenv() #to z__init__.py
+app = Flask(__name__) #to z__init__.py
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///user_database.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.json.compact = False
-app.secret_key = os.getenv('FLASK_SECRET_KEY')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///user_database.db' #to zconfig.py
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False #to zconfig.py
+app.json.compact = False #to z__init__.py
+app.secret_key = os.getenv('FLASK_SECRET_KEY') #to zconfig.py
 
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = 'login'
+login_manager = LoginManager() #to z__init__.py
+login_manager.init_app(app) #to z__init__.py
+login_manager.login_view = 'login' #to z__init__.py
 
-@login_manager.user_loader
+@login_manager.user_loader #to z__init__.py
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-try:
+try: #to z__init__.py
     os.makedirs(app.instance_path)
 except OSError:
     pass
 
-db.init_app(app)
-migrate = Migrate(app, db)
-bcrypt = Bcrypt(app)
-api = Api(app)
-bcrypt.init_app(app)
+db.init_app(app) #to z__init__.py
+migrate = Migrate(app, db) #to z__init__.py
+bcrypt = Bcrypt(app) #to z__init__.py
+api = Api(app) #to z__init__.py
+bcrypt.init_app(app) #to z__init__.py
 
-@app.context_processor
+@app.context_processor #to z__init__.py
 def inject_user():
     if session.get('user_id'):
         user = User.query.get(session.get('user_id'))
