@@ -38,7 +38,7 @@ class Signup(Resource):
             return make_response(user.to_dict(), 201)
 
         except Exception as e:
-            return make_response({'errors': str(e)}, 422)
+            return make_response({'errors': 'An unexpected error occurred. Please try again.'}, 422)
 
 class Login(Resource):
     def post(self):
@@ -334,6 +334,68 @@ def api_get_comments():
 
 
 
+# game routes
+@main.route('/submit_quiz', methods=['POST'])
+def submit_quiz():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'}), 401
+
+    # 2. Get data
+    data = request.get_json()
+    task_name = data.get('task_name', 'tnc_quiz')
+    user_answers = data.get('answers', {})
+    
+    # JavaScript sends the time as a string (e.g., "12.45"), so we must cast it to a Float for your database
+    try:
+        time_taken = float(data.get('time'))
+    except (TypeError, ValueError):
+        return jsonify({'success': False, 'error': 'Invalid time format'})
+
+    # 3. Grade it
+    correct_answers = {'q1': 'B', 'q2': 'D', 'q3': 'C', 'q4': 'C', 'q5': 'B'}
+
+    if user_answers == correct_answers:
+        
+        # --- DATABASE SAVE LOGIC ---
+        try:
+            # Check if this user already has a score for this specific task
+            existing_score = Score.query.filter_by(
+                user_id=session['user_id'], 
+                task_name=task_name
+            ).first()
+            
+            if existing_score:
+                # If they already have a score, only update it if the new time is faster!
+                if time_taken < existing_score.best_time:
+                    existing_score.best_time = time_taken
+                    print(f"User {session['user_id']} got a new best time: {time_taken}s!")
+                else:
+                    print(f"User {session['user_id']} passed, but {time_taken}s wasn't a personal best.")
+            else:
+                # If they don't have a score for this task yet, create a new one
+                new_score = Score(
+                    user_id=session['user_id'],
+                    task_name=task_name,
+                    best_time=time_taken
+                )
+                db.session.add(new_score)
+                print(f"First time pass! Saved {time_taken}s for user {session['user_id']}.")
+            
+            # Commit the changes to the database
+            db.session.commit()
+            
+            return jsonify({'success': True})
+            
+        except Exception as e:
+            print("Database error:", e)
+            db.session.rollback() # Undo any pending changes to prevent database locking
+            return jsonify({'success': False, 'error': 'Database failed to save'})
+            
+    else:
+        return jsonify({'success': False, 'error': 'Incorrect answers'})
+
+
+
 # ====== PAGE ROUTES ======
 @main.route('/')
 def home():
@@ -415,3 +477,11 @@ def not_found():
 @main.route('/volume_game')
 def volume_game():
         return render_template('volume_game.html')
+
+@main.route('/terms_and_conditions')
+def terms_and_conditions():
+    return render_template('tnc.html')
+
+@main.route('/signin')
+def sign_in_again():
+    return render_template('sign_in_again.html')

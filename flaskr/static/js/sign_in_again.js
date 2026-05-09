@@ -40,3 +40,40 @@ const header = document.getElementById("signInHeader");
 header.addEventListener("click", function () {
     showAlert("You passed the level!");
 });
+
+
+let startTime;
+
+function startTimer() {
+    startTime = performance.now();
+    console.log("Timer started!");
+}
+
+function stopTimerAndSave(taskName) {
+    if (!startTime) return; 
+
+    const endTime = performance.now();
+    const timeTakenMs = endTime - startTime;
+    const timeTakenSec = (timeTakenMs / 1000).toFixed(2); 
+    
+    console.log(`Task completed in ${timeTakenSec} seconds. Saving...`);
+
+    fetch('/save_time', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+            time: timeTakenSec,
+            task_name: taskName 
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            console.error("Failed to save time:", data.error);
+        }
+    });
+}
+
+startTimer();
