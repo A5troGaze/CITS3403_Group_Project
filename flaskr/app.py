@@ -128,6 +128,10 @@ def comments():
 def faq():
     return render_template('FAQ.html')
 
+@app.route('/brightness_bug')
+def brightness_bug():
+    return render_template('brightnessBug.html')
+
 
 # volume game route
 @app.route('/volume_game')
