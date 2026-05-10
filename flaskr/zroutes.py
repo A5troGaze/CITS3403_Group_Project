@@ -10,6 +10,16 @@ from werkzeug.utils import secure_filename
 
 main = Blueprint('main', __name__) #group routes
 
+from functools import wraps
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash("You need to be logged in to access the game!", "danger")
+            return redirect(url_for('main.signin_page'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 # ====== SIGN IN / SIGN UP / LOG OUT ======
@@ -546,6 +556,36 @@ def submit_volume():
         print(f"Error saving volume game data: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@main.route('/submit_brightness_bug', methods=['POST'])
+def submit_brightness_bug():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'User not logged in'}), 401
+
+    try:
+        data = request.get_json()
+        time_taken = data.get('time')
+        task_name = data.get('task_name')
+        
+        if time_taken is None:
+             return jsonify({'success': False, 'error': 'No time provided'}), 400
+
+        new_score = Score(
+            user_id=session['user_id'],
+            task_name=task_name,
+            best_time=float(time_taken)
+        )
+
+        db.session.add(new_score)
+        db.session.commit()
+        
+        print(f"SUCCESS: Saved {task_name} time of {time_taken}s for User ID {session['user_id']}")
+
+        return jsonify({'success': True})
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error saving Brightness Bug data: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 # ====== PAGE ROUTES ======
@@ -627,37 +667,56 @@ def not_found():
     return render_template('404.html', image_list=image_list, error='404', error_message='Oops... Page not found!', error_title='404: Page Not Found'), 404
 
 @main.route('/terms_and_conditions')
+@login_required
 def terms_and_conditions():
     return render_template('tnc.html')
 
 @main.route('/signin')
+@login_required
 def sign_in_again():
     return render_template('sign_in_again.html')
 
 @main.route('/CAPTCHA')
+@login_required
 def captcha():
     return render_template('human_check.html')
 
 @main.route('/loading')
+@login_required
 def loading():
     return render_template('loading_screen.html')
 
 @main.route('/maze_game')
+@login_required
 def maze_game():
     return render_template('maze.html')
 
 @main.route('/volume_check')
+@login_required
 def volume_check():
     return render_template('volume_game.html')
 
 @main.route('/brightness_bug')
+@login_required
 def brightness_bug():
     return render_template('brightnessBug.html')
 
 @main.route('/questionnaire')
+@login_required
 def questionnair():
     return render_template('popups.html')
 
 @main.route('/secret')
+@login_required
 def secret():
     return render_template('secret.html')
+
+@main.route('/ending')
+@login_required
+def ending():
+    return render_template('ending_page.html')  
+
+@main.route('/play_again')
+@login_required
+def play_again():
+    return redirect(url_for('main.terms_and_conditions'))

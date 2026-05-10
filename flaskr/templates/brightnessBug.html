@@ -15,9 +15,6 @@
 
     {% include 'components/navbar.html' %}
 
-    <!-- ===================== Instructions modal =====================
-         Shown first. Static backdrop so the player has to read it (or at
-         least click Continue) before the agreement modal appears. -->
     <div class="modal fade" id="instructionsModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -32,30 +29,17 @@
             <ul class="list-unstyled">
               <li class="mb-2">
                 <i class="bi bi-sun text-warning fs-4 me-2"></i>
-                <strong>Flash</strong> — the screen fills near-white. Turn your screen brightness
-                <em>down</em>, then hit Confirm.
+                <strong>Flash</strong> — the screen fills near-white. Tap the on-screen <strong>Dim</strong> button 3 times.
               </li>
               <li class="mb-2">
                 <i class="bi bi-moon-stars text-primary fs-4 me-2"></i>
-                <strong>Blackout</strong> — the screen fills near-black. Turn your screen brightness
-                <em>up</em>, then hit Confirm.
+                <strong>Blackout</strong> — the screen fills near-black. Tap the on-screen <strong>Brighten</strong> button 3 times.
               </li>
               <li class="mb-2">
                 <i class="bi bi-lightning-charge-fill text-danger fs-4 me-2"></i>
-                <strong>Flicker</strong> — rapid white/black alternation (late game only). Smash Confirm
-                <em>three times fast</em> to survive.
+                <strong>Flicker</strong> — rapid white/black alternation (late game only). Smash the <kbd>B</kbd> key three times fast to survive.
               </li>
             </ul>
-
-            <h6 class="mt-3">Confirming</h6>
-            <p class="mb-2">Two ways to confirm — both work:</p>
-            <ul>
-              <li>Click the centered <span class="badge bg-secondary border border-warning border-2">CONFIRM</span> button.</li>
-              <li>Press the <kbd>B</kbd> key.</li>
-            </ul>
-            <p class="text-muted small mb-0">We can't actually read your monitor's brightness, so this
-              runs on the honor system. Adjust your screen <em>and</em> hit confirm before the countdown
-              expires. Cheating only cheats yourself, etc.</p>
 
             <h6 class="mt-3">Scoring</h6>
             <p class="mb-0">Score is total time survived in seconds (lower is better, like a speedrun).
@@ -68,10 +52,6 @@
       </div>
     </div>
 
-    <!-- ===================== Pre-game agreement modal =====================
-         Static backdrop + no-keyboard-dismiss so the player has to actually
-         engage the 5-second forced reading timer before the Agree button
-         enables. -->
     <div class="modal fade" id="agreementModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -106,9 +86,6 @@
       </div>
     </div>
 
-    <!-- ===================== Game world =====================
-         The bug, horizon, and scrolling stripe live here. The score badge
-         and distance bar are siblings positioned via fixed coordinates. -->
     <div id="gameWorld">
       <div class="scroll-stripes"></div>
       <div class="horizon-line"></div>
@@ -117,38 +94,23 @@
       <div id="victoryBanner">YOU SAVED THE BUG!</div>
     </div>
 
-    <span id="scoreBadge" class="badge bg-dark">0.0 s</span>
-
     <div id="distanceWrap" class="progress" style="--bs-progress-bar-bg: #0dcaf0;">
       <div id="distanceBar" class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
     </div>
 
-    <!-- Warning icon (sun for flash, moon-stars for blackout, lightning for flicker). -->
     <i id="warningIcon" class="bi bi-sun"></i>
 
-    <!-- ===================== Obstacle overlay =====================
-         Hidden by default. JS adds a type class (flash/blackout/flicker) and
-         then the .show class to fade it in over 0.3 s. Confirm button +
-         countdown bar + directional hint live inside it. -->
     <div id="obstacleOverlay">
       <div class="position-absolute top-0 start-50 translate-middle-x mt-5 text-center">
         <i id="hintIcon" class="bi bi-arrow-down-circle overlay-hint"></i>
         <div id="hintText" class="fw-bold mt-2" style="text-shadow: 0 0 6px #000;"></div>
       </div>
 
-      <button id="confirmBtn" type="button"
-              class="btn btn-secondary btn-lg border border-warning position-absolute top-50 start-50 translate-middle">
-        CONFIRM (B)
-      </button>
-
       <div class="progress position-absolute bottom-0 start-0 w-100" style="height: 14px; border-radius: 0;">
         <div id="countdownBar" class="progress-bar bg-warning" role="progressbar" style="width: 100%"></div>
       </div>
     </div>
 
-    <!-- ===================== Mobile brightness controls =====================
-         Up = brighten (use against blackout). Down = dim (use against flash).
-         Hidden until the run starts so they don't overlap pre-game / end modals. -->
     <div id="brightnessControls" class="d-none">
       <button id="brightnessUpBtn" type="button" class="btn btn-dark" aria-label="Increase brightness">
         <i class="bi bi-brightness-high-fill"></i>
@@ -156,26 +118,6 @@
       <button id="brightnessDownBtn" type="button" class="btn btn-dark" aria-label="Decrease brightness">
         <i class="bi bi-brightness-low-fill"></i>
       </button>
-    </div>
-
-    <!-- ===================== End-of-run modals ===================== -->
-    <div class="modal fade" id="gameOverModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Game Over</h5>
-          </div>
-          <div class="modal-body text-center">
-            <i class="bi bi-bug-fill display-1 text-danger"></i>
-            <p id="gameOverMsg" class="fs-5 mt-3"></p>
-            <p class="text-muted">You survived <span id="finalTime">0.0</span> s and <span id="finalDistance">0</span> m.</p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" id="retryBtn">Try Again</button>
-            <a href="{{ url_for('main.home') }}" class="btn btn-outline-secondary">Quit</a>
-          </div>
-        </div>
-      </div>
     </div>
 
     <div class="modal fade" id="winModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -189,7 +131,10 @@
             <p class="fs-5 mt-3">YAAYYYYY, you helped keep the bug alive !!</p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-success" id="playAgainBtn">Play Again</button>
+            <button type="button" class="btn btn-success" id="nextGameBtn">
+              <span class="spinner-border spinner-border-sm d-none me-2" id="nextGameSpinner" role="status" aria-hidden="true"></span>
+              Next Game
+            </button>
             <a href="{{ url_for('main.home') }}" class="btn btn-outline-secondary">Home</a>
           </div>
         </div>
@@ -198,6 +143,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 
-    <script src="{{ url_for('static', filename='brightnessBug.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/brightnessBug.js') }}"></script>
   </body>
 </html>

@@ -32,7 +32,7 @@
                 {% if session.get('user_id') %}
                 <a type="button" class="btn btn-dark btn-lg hover-btn" href={{ url_for('main.terms_and_conditions') }}>Play</a>
                 {% else %}
-                <a type="button" class="btn btn-dark btn-lg hover-btn" href={{ url_for('main.terms_and_conditions') }}>Play as Guest</a>
+                <a type="button" class="btn btn-dark btn-lg hover-btn" href={{ url_for('main.signin_page') }}>Sign In</a>
                 {% endif %}
             </div>
         </div>
