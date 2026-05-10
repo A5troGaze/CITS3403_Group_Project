@@ -283,9 +283,20 @@ function initQ1() {
 
   Quiz.q1.startTime = Date.now();
 
-  // Park the absolutely-positioned input next to the label, which has
-  // ms-4 ps-2 margin to clear this offset.
-  cb.style.transform = `translate(16px, ${Math.max(8, area.offsetHeight / 2 - 8)}px)`;
+  const onHover = () => {
+    const containerRect = area.getBoundingClientRect();
+    const checkboxRect = cb.getBoundingClientRect();
+
+    const maxX = containerRect.width - checkboxRect.width - 10;
+    const maxY = containerRect.height - checkboxRect.height - 10;
+
+    const randomX = Math.max(10, Math.floor(Math.random() * maxX));
+    const randomY = Math.max(10, Math.floor(Math.random() * maxY));
+
+    cb.style.left = `${randomX}px`;
+    cb.style.top = `${randomY}px`;
+    cb.style.transform = "none"; // Remove initial offset
+  };
 
   const onChange = () => {
     if (!cb.checked) return;
@@ -311,8 +322,10 @@ function initQ1() {
     });
   };
 
+  cb.addEventListener('pointerenter', onHover);
   cb.addEventListener('change', onChange);
   giveUp.addEventListener('click', onGiveUp);
+  Quiz.handlers.push([cb, 'pointerenter', onHover]);
   Quiz.handlers.push([cb, 'change', onChange]);
   Quiz.handlers.push([giveUp, 'click', onGiveUp]);
 

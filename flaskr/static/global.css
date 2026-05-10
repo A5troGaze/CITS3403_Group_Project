@@ -362,3 +362,28 @@
 
 .custom-slider-fill.danger { background-color: #dc3545; } 
 .custom-slider-thumb.danger { border-color: #dc3545; }
+
+#checkbox-area {
+  position: relative; 
+  overflow: hidden; 
+}
+
+#checkbox-area .form-check {
+  position: static !important; 
+}
+
+.moving-checkbox {
+  position: absolute !important;
+  margin: 0 !important; 
+  transition: top 0.15s ease-out, left 0.15s ease-out, transform 0.15s ease-out; 
+  z-index: 10;
+  
+  left: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#checkbox-area .form-check-label {
+  pointer-events: none; 
+  margin-left: 1.5rem; 
+}

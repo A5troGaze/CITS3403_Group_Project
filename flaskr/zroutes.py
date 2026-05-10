@@ -653,3 +653,11 @@ def volume_check():
 @main.route('/brightness_bug')
 def brightness_bug():
     return render_template('brightnessBug.html')
+
+@main.route('/questionnaire')
+def questionnair():
+    return render_template('popups.html')
+
+@main.route('/secret')
+def secret():
+    return render_template('secret.html')
