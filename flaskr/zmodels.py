@@ -14,7 +14,7 @@ HOW TO GET INTO VIRTUAL ENVIRONMENT (VENV): check the README file
 .venv should be in flaskr directory 
 
 
-IN TERMINAL:
+IN TERMINAL INSIDE ROOT FOLDER (CITS3403_Group_Project):
 export FLASK_APP=app.py
 flask db migrate -m "[message describing the migration a.k.a. the change you made to the database models]"
 flask db upgrade

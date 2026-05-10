@@ -12,11 +12,11 @@ login_manager = LoginManager()
 
 def create_app(config):
     # Create Flask app and set the instance path to a folder named 'instance' inside the 'flaskr' folder
-    app = Flask(__name__, instance_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance'))
+    app = Flask(__name__) #, instance_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance'))
     app.config.from_object(config) # load Config class
     app.json.compact = False
 
-    # Check instance folder exists
+    # Check instance folder exists -> if not create it
     try:
         os.makedirs(app.instance_path)
     except OSError:
@@ -28,21 +28,23 @@ def create_app(config):
     bcrypt.init_app(app) #bind bcrypt to this app
 
     login_manager.init_app(app) #bind login_manager to this app
-    login_manager.login_view = 'login'
+    login_manager.login_view = 'main.login' # -----> changed from 'login' to 'main.login' to reflect blueprint registration
 
-    from flaskr.zroutes import main, CheckSession, Signup, Login, Logout # register routes here to avoid circular imports
+    from flaskr.zroutes import CheckSession, Signup, Login, Logout
     api = Api(app) #bind API to this app
     api.add_resource(CheckSession, '/check_session', endpoint='check_session')
     api.add_resource(Signup, '/signup', endpoint='signup')
     api.add_resource(Login, '/login', endpoint='login')
     api.add_resource(Logout, '/logout', endpoint='logout')
-    app.register_blueprint(main) #register routes#
+
+    from flaskr.zblueprints import main #import blueprint
+    app.register_blueprint(main) #register routes
 
     @login_manager.user_loader # register user_loader
     def load_user(user_id):
         return User.query.get(int(user_id)) # if user_id valid -> return user_id
 
-    @app.context_processor # unnecessary? already handled by load_user?
+    @app.context_processor # not unnecessary -> trust
     def inject_user():
         if session.get('user_id'):
             user = User.query.get(session.get('user_id'))

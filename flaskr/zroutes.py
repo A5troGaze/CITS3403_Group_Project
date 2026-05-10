@@ -1,14 +1,15 @@
 # ====== IMPORTS ======
-from flask import Blueprint, current_app, request, make_response, session, render_template, redirect, url_for, flash, jsonify
+from flask import current_app, request, make_response, session, render_template, redirect, url_for, flash, jsonify
 from flask_restful import Resource
 from flask_login import current_user
 from flaskr.zmodels import *
 import os
 from werkzeug.utils import secure_filename
+from flaskr.zblueprints import main
 
 
 
-main = Blueprint('main', __name__) #group routes
+#main = Blueprint('main', __name__)  -----> moved to zblueprints.py
 
 
 
