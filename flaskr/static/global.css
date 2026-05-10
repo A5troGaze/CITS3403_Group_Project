@@ -284,3 +284,29 @@
           from { opacity: 0; transform: translateY(-10px); }
           to { opacity: 1; transform: translateY(0); }
       }
+
+/* human check captcha css */
+.captcha-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px; 
+  justify-content: center;
+}
+
+.captcha-tile {
+  aspect-ratio: 1 / 1;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.captcha-tile.selected {
+  border-color: #0d6efd; 
+  background-color: #e9ecef;
+}
+
+.captcha-tile svg {
+  width: 100%;
+  height: 100%;
+}

@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     startTime = null; 
                     
                     setTimeout(() => {
-                        window.location.href = "/next-level-url"; // CHANGE THIS to your next page
+                        window.location.href = "/CAPTCHA"; // CHANGE THIS to your next page
                     }, 2500); 
 
                 } else {
