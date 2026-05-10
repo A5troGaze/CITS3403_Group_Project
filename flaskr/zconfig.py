@@ -1,13 +1,3 @@
-'''from flask import Flask, render_template, request, make_response, session
-from flask_login import LoginManager
-from flask_migrate import Migrate
-from flask_cors import CORS
-from flask_restful import Api, Resource
-from flask_sqlalchemy import SQLAlchemy
-from flask_bcrypt import Bcrypt
-#from dotenv import load_dotenv
-#from db import db, bcrypt, User'''
-
 import os
 
 # === BASE CONFIG ===

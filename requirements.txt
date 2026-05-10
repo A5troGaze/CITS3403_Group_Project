@@ -1,0 +1,9 @@
+flask
+flask-sqlalchemy
+Flask-Migrate
+flask-login
+flask-cors
+flask-restful
+flask-bcrypt
+python-dotenv
+sqlalchemy-serializer
