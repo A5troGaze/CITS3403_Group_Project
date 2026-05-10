@@ -4,6 +4,7 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 import os
+from flaskr.zmodels import db
 
 migrate = Migrate()
 load_dotenv()
@@ -12,7 +13,7 @@ login_manager = LoginManager()
 
 def create_app(config):
     # Create Flask app and set the instance path to a folder named 'instance' inside the 'flaskr' folder
-    app = Flask(__name__) #, instance_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance'))
+    app = Flask(__name__) #
     app.config.from_object(config) # load Config class
     app.json.compact = False
 
@@ -22,7 +23,7 @@ def create_app(config):
     except OSError:
         pass
 
-    from flaskr.zmodels import db, bcrypt, User # register models here to avoid circular imports
+    from flaskr.zmodels import bcrypt, User # register models here to avoid circular imports
     db.init_app(app) #bind db to this app
     migrate.init_app(app, db) #bind migrate to db
     bcrypt.init_app(app) #bind bcrypt to this app
@@ -113,5 +114,5 @@ def create_app(config):
 
         return render_template('404.html', image_list=image_list, error='403', error_message='Forbidden!', error_title='403: Forbidden'), 403
 
-    print(app.url_map)
+    #print(app.url_map)
     return app

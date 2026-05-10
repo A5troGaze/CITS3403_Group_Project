@@ -15,7 +15,7 @@ HOW TO GET INTO VIRTUAL ENVIRONMENT (VENV): check the README file
 
 
 IN TERMINAL INSIDE ROOT FOLDER (CITS3403_Group_Project):
-export FLASK_APP=app.py
+export FLASK_APP=run.py
 flask db migrate -m "[message describing the migration a.k.a. the change you made to the database models]"
 flask db upgrade
 
@@ -48,7 +48,7 @@ class User(db.Model, SerializerMixin):
 
     @hybrid_property
     def password_hash(self):
-        raise Exception("Password hashes may not be viewed.")
+        raise AttributeError("Password hashes may not be viewed.")
     
     @password_hash.setter
     def password_hash(self, password):
