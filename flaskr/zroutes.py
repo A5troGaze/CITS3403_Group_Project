@@ -484,6 +484,38 @@ def submit_loading_screen():
         print(f"Error saving loading screen data: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@main.route('/submit_maze', methods=['POST'])
+def submit_maze():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'User not logged in'}), 401
+
+    try:
+        data = request.get_json()
+        time_taken = data.get('time')
+        task_name = data.get('task_name') 
+        
+        if time_taken is None:
+             return jsonify({'success': False, 'error': 'No time provided'}), 400
+
+        new_score = Score(
+            user_id=session['user_id'],
+            task_name=task_name,
+            best_time=float(time_taken)
+        )
+
+        db.session.add(new_score)
+        db.session.commit()
+        
+        print(f"SUCCESS: Saved {task_name} time of {time_taken}s for User ID {session['user_id']}")
+
+        return jsonify({'success': True})
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error saving maze data: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 
 # ====== PAGE ROUTES ======
 @main.route('/')
@@ -578,3 +610,11 @@ def captcha():
 @main.route('/loading')
 def loading():
     return render_template('loading_screen.html')
+
+@main.route('/maze_game')
+def maze_game():
+    return render_template('maze.html')
+
+@main.route('/volume_check')
+def volume_check():
+    return render_template('volume_game.html')

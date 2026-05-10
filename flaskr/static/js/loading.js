@@ -64,13 +64,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (!data.success) console.error("Error saving time:", data.error);
                     
                     setTimeout(() => {
-                        window.location.href = "/your-next-page"; 
+                        window.location.href = "/maze_game"; 
                     }, 2500);
                 })
                 .catch(error => {
                     console.error("Fetch Error:", error);
                     setTimeout(() => {
-                        window.location.href = "/your-next-page"; 
+                        window.location.href = "/maze_game"; 
                     }, 2500);
                 });
             }
