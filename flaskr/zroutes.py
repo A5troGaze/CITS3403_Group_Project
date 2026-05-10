@@ -515,6 +515,37 @@ def submit_maze():
         print(f"Error saving maze data: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@main.route('/submit_volume', methods=['POST'])
+def submit_volume():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'User not logged in'}), 401
+
+    try:
+        data = request.get_json()
+        time_taken = data.get('time')
+        task_name = data.get('task_name')
+        
+        if time_taken is None:
+             return jsonify({'success': False, 'error': 'No time provided'}), 400
+
+        new_score = Score(
+            user_id=session['user_id'],
+            task_name=task_name,
+            best_time=float(time_taken)
+        )
+
+        db.session.add(new_score)
+        db.session.commit()
+        
+        print(f"SUCCESS: Saved {task_name} time of {time_taken}s for User ID {session['user_id']}")
+
+        return jsonify({'success': True})
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error saving volume game data: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 
 
 # ====== PAGE ROUTES ======
@@ -618,3 +649,7 @@ def maze_game():
 @main.route('/volume_check')
 def volume_check():
     return render_template('volume_game.html')
+
+@main.route('/brightness_bug')
+def brightness_bug():
+    return render_template('brightnessBug.html')
