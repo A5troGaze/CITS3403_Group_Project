@@ -925,16 +925,16 @@ function showFinal() {
   .then(data => {
     if (data.success) {
       setTimeout(() => {
-        window.location.href = "/your-next-page"; 
+        window.location.href = "/loading"; 
       }, 3500);
     } else {
       console.error("Error saving time:", data.error);
-      setTimeout(() => { window.location.href = "/your-next-page"; }, 3500);
+      setTimeout(() => { window.location.href = "/loading"; }, 3500);
     }
   })
   .catch(error => {
     console.error("Fetch Error:", error);
-    setTimeout(() => { window.location.href = "/your-next-page"; }, 3500);
+    setTimeout(() => { window.location.href = "/loading"; }, 3500);
   });
 }
 

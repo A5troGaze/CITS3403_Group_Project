@@ -430,22 +430,17 @@ def submit_human_check():
         return jsonify({'success': False, 'error': 'User not logged in'}), 401
 
     try:
-        # 2. Grab the JSON data sent from the JavaScript fetch()
         data = request.get_json()
         time_taken = data.get('time')
-        task_name = data.get('task_name') # This will be 'human_check'
+        task_name = data.get('task_name') 
         
-        # Note: We are ignoring data.get('flags') because your Score model 
-        # doesn't have a 'flags' column, which is totally fine!
 
-        # 3. Create the new score entry
         new_score = Score(
             user_id=session['user_id'],
             task_name=task_name,
             best_time=float(time_taken)
         )
 
-        # 4. Save it to the database
         db.session.add(new_score)
         db.session.commit()
         
@@ -454,8 +449,39 @@ def submit_human_check():
         return jsonify({'success': True})
 
     except Exception as e:
-        db.session.rollback() # Rollback in case of an error
+        db.session.rollback() 
         print(f"Error saving human check data: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@main.route('/submit_loading_screen', methods=['POST'])
+def submit_loading_screen():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'User not logged in'}), 401
+
+    try:
+        data = request.get_json()
+        time_taken = data.get('time')
+        task_name = data.get('task_name') 
+        
+        if time_taken is None:
+             return jsonify({'success': False, 'error': 'No time provided'}), 400
+
+        new_score = Score(
+            user_id=session['user_id'],
+            task_name=task_name,
+            best_time=float(time_taken)
+        )
+
+        db.session.add(new_score)
+        db.session.commit()
+        
+        print(f"SUCCESS: Saved {task_name} time of {time_taken}s for User ID {session['user_id']}")
+
+        return jsonify({'success': True})
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error saving loading screen data: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
@@ -548,3 +574,7 @@ def sign_in_again():
 @main.route('/CAPTCHA')
 def captcha():
     return render_template('human_check.html')
+
+@main.route('/loading')
+def loading():
+    return render_template('loading_screen.html')
