@@ -40,6 +40,7 @@ const Quiz = {
   q5: {},
   modal: null,
   modalCb: null,
+  startTime: null
 };
 
 Quiz.track = (id) => { Quiz.scheduled.add(id); return id; };
@@ -282,9 +283,20 @@ function initQ1() {
 
   Quiz.q1.startTime = Date.now();
 
-  // Park the absolutely-positioned input next to the label, which has
-  // ms-4 ps-2 margin to clear this offset.
-  cb.style.transform = `translate(16px, ${Math.max(8, area.offsetHeight / 2 - 8)}px)`;
+  const onHover = () => {
+    const containerRect = area.getBoundingClientRect();
+    const checkboxRect = cb.getBoundingClientRect();
+
+    const maxX = containerRect.width - checkboxRect.width - 10;
+    const maxY = containerRect.height - checkboxRect.height - 10;
+
+    const randomX = Math.max(10, Math.floor(Math.random() * maxX));
+    const randomY = Math.max(10, Math.floor(Math.random() * maxY));
+
+    cb.style.left = `${randomX}px`;
+    cb.style.top = `${randomY}px`;
+    cb.style.transform = "none"; // Remove initial offset
+  };
 
   const onChange = () => {
     if (!cb.checked) return;
@@ -310,8 +322,10 @@ function initQ1() {
     });
   };
 
+  cb.addEventListener('pointerenter', onHover);
   cb.addEventListener('change', onChange);
   giveUp.addEventListener('click', onGiveUp);
+  Quiz.handlers.push([cb, 'pointerenter', onHover]);
   Quiz.handlers.push([cb, 'change', onChange]);
   Quiz.handlers.push([giveUp, 'click', onGiveUp]);
 
@@ -894,7 +908,6 @@ function showFinal() {
   document.body.classList.add('hc-completed');
   document.querySelectorAll('.hc-card:not(.d-none)').forEach(c => c.classList.add('d-none'));
 
-  // Populate the summary so the user sees the cost of "passing."
   const summary = document.getElementById('final-summary');
   if (summary) {
     summary.innerHTML = `
@@ -907,9 +920,39 @@ function showFinal() {
   }
 
   document.getElementById('final-card').classList.remove('d-none');
+
+  const endTime = performance.now();
+  const timeTakenSec = ((endTime - Quiz.startTime) / 1000).toFixed(2);
+  console.log(`Human check completed in ${timeTakenSec} seconds.`);
+
+  fetch('/submit_human_check', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      time: timeTakenSec,
+      task_name: 'human_check',
+      flags: Quiz.flags 
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      setTimeout(() => {
+        window.location.href = "/loading"; 
+      }, 3500);
+    } else {
+      console.error("Error saving time:", data.error);
+      setTimeout(() => { window.location.href = "/loading"; }, 3500);
+    }
+  })
+  .catch(error => {
+    console.error("Fetch Error:", error);
+    setTimeout(() => { window.location.href = "/loading"; }, 3500);
+  });
 }
 
 
 // ── 15. Boot ─────────────────────────────────
 
+Quiz.startTime = performance.now();
 initQ1();

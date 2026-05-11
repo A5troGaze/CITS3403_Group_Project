@@ -1,19 +1,17 @@
 let startTime;
 
-// Call this when the task/game begins
 function startTimer() {
     startTime = performance.now();
     console.log("Timer started!");
 }
 
-// Call this when they finish the task
 function stopTimerAndSave() {
-    if (!startTime) return; // Prevent stopping before starting
+    if (!startTime) return; 
 
     const endTime = performance.now();
     
     const timeTakenMs = endTime - startTime;
-    const timeTakenSec = (timeTakenMs / 1000).toFixed(2); // e.g., 14.52
+    const timeTakenSec = (timeTakenMs / 1000).toFixed(2); 
     
     console.log(`Task completed in ${timeTakenSec} seconds. Saving...`);
 

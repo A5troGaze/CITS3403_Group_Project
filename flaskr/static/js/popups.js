@@ -116,7 +116,7 @@
       if (id === "NEXT_LEVEL") {
         modal.hide();
         stopTimerAndSave('standard_ending');
-        window.location.href = "ending_page.html"; // load ending page if did not manage to get secret ending
+        window.location.href = "/ending"; // load ending page if did not manage to get secret ending
         return;
       }
 

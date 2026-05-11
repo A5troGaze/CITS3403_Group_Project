@@ -27,7 +27,6 @@ flask db current
 """
 
 
-
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.ext.hybrid import hybrid_property
 from flask_sqlalchemy import SQLAlchemy
@@ -75,7 +74,7 @@ class User(db.Model, SerializerMixin):
         if secret_times:
             return min(secret_times) 
             
-        REQUIRED_TASKS = 1  # change this value depending on how many games we have
+        REQUIRED_TASKS = 8  # change this value depending on how many games we have
         
         best_task_times = {}
         for score in self.scores:

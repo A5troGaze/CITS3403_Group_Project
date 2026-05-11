@@ -25,6 +25,8 @@ class VolumeSlider {
         this.track = this.slider.querySelector(".volume-track");
         this.fullTrackWidth = this.track.offsetWidth;
 
+        this.startTime = performance.now();
+
     }
     /* begin charge cycle */
 
@@ -273,16 +275,44 @@ class VolumeSlider {
     }
 
     showAlert() {
-        const winSound = document.getElementById("win-sound");
+        // --- 2. STOP TIMER IMMEDIATELY ---
+        const endTime = performance.now();
+        const timeTakenSec = ((endTime - this.startTime) / 1000).toFixed(2);
+        console.log(`Volume game beaten in ${timeTakenSec} seconds.`);
 
+        const winSound = document.getElementById("win-sound");
         winSound.pause();
         winSound.currentTime = 0;
-
         winSound.volume = 0.4;
 
         setTimeout(() => {
             winSound.play().catch(() => { });
         }, 10);
+
+
+        // --- 3. SEND TO BACKEND ---
+        fetch('/submit_volume', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                time: timeTakenSec,
+                task_name: 'volume_game' 
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) console.error("Error saving time:", data.error);
+            
+            setTimeout(() => {
+                window.location.href = "/brightness_bug"; 
+            }, 2500);
+        })
+        .catch(error => {
+            console.error("Fetch Error:", error);
+            setTimeout(() => {
+                window.location.href = "/brightness_bug"; 
+            }, 2500);
+        });
     }
 
 }
