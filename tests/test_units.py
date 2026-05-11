@@ -31,7 +31,6 @@ class Testing(TestCase):
         user2 = User(
             name='Jan',
             username='Janofferson'
-
         )
         user2.password_hash='5678'
 
