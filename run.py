@@ -1,4 +1,4 @@
-from flaskr.z__init__ import create_app
+from flaskr import create_app
 from flaskr.zconfig import DeploymentConfig
 
 app = create_app(DeploymentConfig)

@@ -1,7 +1,9 @@
-from flaskr.z__init__ import create_app
-from flaskr.zconfig import TestingConfig
-
-app = create_app(TestingConfig)
+from unittest import TestLoader, TextTestRunner
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    #discovers and runs all the tests within the tests folder
+    test_loader = TestLoader()
+    test_folder = test_loader.discover('tests')
+
+    test_runner = TextTestRunner(verbosity=2) # verbosity -> gives detailed output showing test name & result
+    test_runner.run(test_folder)
