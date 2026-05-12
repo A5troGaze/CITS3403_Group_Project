@@ -182,7 +182,7 @@
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          alert(`Score saved! You reached the ${taskName} in ${timeTakenSec}s.`);
+          /*alert(`Score saved! You reached the ${taskName} in ${timeTakenSec}s.`);*/
         } else {
           alert('Error saving time!');
         }
