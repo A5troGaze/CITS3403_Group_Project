@@ -12,3 +12,4 @@ class DeploymentConfig(Config):
 class TestingConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     TESTING = True
+    SECRET_KEY = 'test-secret-key-not-for-production'  # tests need a stable key for session signing
