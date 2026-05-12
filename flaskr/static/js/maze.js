@@ -1,20 +1,67 @@
+// --- 1. SETUP TIMER VARIABLE ---
+            let startTime = null;
+
             // --- Mode Select Taunt --------------------------------------------------
             document.getElementById("btn-easy").addEventListener("click", () => {
-                //hide mode select -> taunt user
                 document.getElementById("mode-overlay").style.display = "none";
                 const taunt = document.getElementById("taunt-overlay");
                 taunt.style.display = "flex";
             });
 
             document.getElementById("btn-hard").addEventListener("click", () => {
-                //hide mode select -> start game
                 document.getElementById("mode-overlay").style.display = "none";
+                startTime = performance.now(); 
             });
 
             document.getElementById("taunt-ok").addEventListener("click", () => {
                 document.getElementById("taunt-overlay").style.display = "none";
-                //hard either way -> start game
+                startTime = performance.now();
             });
+
+            // --- Check for Win -------------------------------------------------------
+            function checkWin() {
+                if (
+                    player.x < goal.x + goal.size &&
+                    player.x + player.size > goal.x &&
+                    player.y < goal.y + goal.size &&
+                    player.y + player.size > goal.y
+                ) {
+                    // --- 3. STOP TIMER IMMEDIATELY ---
+                    const endTime = performance.now();
+                    const timeTakenSec = ((endTime - startTime) / 1000).toFixed(2);
+                    console.log(`Maze beaten in ${timeTakenSec} seconds.`);
+
+                    // Move player off-screen instantly so this function doesn't trigger 100 times
+                    player.x = -1000; 
+
+                    // Show a quick success message using your existing showMessage function
+                    showMessage(`You escaped! Redirecting...`, 3000);
+
+                    // --- 4. SEND TO BACKEND ---
+                    fetch('/submit_maze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            time: timeTakenSec,
+                            task_name: 'maze' 
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) console.error("Error saving time:", data.error);
+                        
+                        setTimeout(() => {
+                            window.location.href = "/volume_check"; 
+                        }, 2500);
+                    })
+                    .catch(error => {
+                        console.error("Fetch Error:", error);
+                        setTimeout(() => {
+                            window.location.href = "/volume_check"; 
+                        }, 2500);
+                    });
+                }
+            }
 
 
 
@@ -248,22 +295,6 @@
                 }
                 return false;
             }
-
-
-
-            // --- Check for Win -------------------------------------------------------
-            function checkWin() {
-                if (
-                    player.x < goal.x + goal.size &&
-                    player.x + player.size > goal.x &&
-                    player.y < goal.y + goal.size &&
-                    player.y + player.size > goal.y
-                ) {
-                    //change this to load the next page
-                    window.location.href = "landing.html";
-                }
-            }
-
 
 
             // --- Dynamic Wall Triggers -----------------------------------------------

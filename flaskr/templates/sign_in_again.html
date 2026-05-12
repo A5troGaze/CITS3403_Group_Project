@@ -45,6 +45,10 @@
         </div>
     </div>
 
+    <script>
+        const isLoggedIn = {{ 'true' if session.get('user_id') else 'false' }};
+    </script>
+    
     <script src="{{ url_for('static', filename='js/sign_in_again.js') }}"></script>
 
 

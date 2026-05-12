@@ -11,6 +11,16 @@ from flaskr.zblueprints import main
 
 #main = Blueprint('main', __name__)  -----> moved to zblueprints.py
 
+from functools import wraps
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash("You need to be logged in to access the game!", "danger")
+            return redirect(url_for('main.signin_page'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 # ====== SIGN IN / SIGN UP / LOG OUT ======
@@ -39,7 +49,7 @@ class Signup(Resource):
             return make_response(user.to_dict(), 201)
 
         except Exception as e:
-            return make_response({'errors': str(e)}, 422)
+            return make_response({'errors': 'An unexpected error occurred. Please try again.'}, 422)
 
 class Login(Resource):
     def post(self):
@@ -335,6 +345,250 @@ def api_get_comments():
 
 
 
+# game routes
+@main.route('/submit_quiz', methods=['POST'])
+def submit_quiz():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'}), 401
+
+    data = request.get_json()
+    task_name = data.get('task_name', 'tnc_quiz')
+    user_answers = data.get('answers', {})
+    
+    try:
+        time_taken = float(data.get('time'))
+    except (TypeError, ValueError):
+        return jsonify({'success': False, 'error': 'Invalid time format'})
+
+    correct_answers = {'q1': 'B', 'q2': 'D', 'q3': 'C', 'q4': 'C', 'q5': 'B'}
+
+    if user_answers == correct_answers:
+        
+        try:
+            existing_score = Score.query.filter_by(
+                user_id=session['user_id'], 
+                task_name=task_name
+            ).first()
+            
+            if existing_score:
+                if time_taken < existing_score.best_time:
+                    existing_score.best_time = time_taken
+                    print(f"User {session['user_id']} got a new best time: {time_taken}s!")
+                else:
+                    print(f"User {session['user_id']} passed, but {time_taken}s wasn't a personal best.")
+            else:
+                new_score = Score(
+                    user_id=session['user_id'],
+                    task_name=task_name,
+                    best_time=time_taken
+                )
+                db.session.add(new_score)
+                print(f"First time pass! Saved {time_taken}s for user {session['user_id']}.")
+            
+            db.session.commit()
+            
+            return jsonify({'success': True})
+            
+        except Exception as e:
+            print("Database error:", e)
+            db.session.rollback() 
+            return jsonify({'success': False, 'error': 'Database failed to save'})
+            
+    else:
+        return jsonify({'success': False, 'error': 'Incorrect answers'})
+
+@main.route('/submit_fake_signin', methods=['POST'])
+def submit_fake_signin():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'}), 401
+
+    data = request.get_json()
+    task_name = data.get('task_name', 'fake_signin')
+    
+    try:
+        time_taken = float(data.get('time'))
+    except (TypeError, ValueError):
+        return jsonify({'success': False, 'error': 'Invalid time format'})
+
+    try:
+        existing_score = Score.query.filter_by(
+            user_id=session['user_id'], 
+            task_name=task_name
+        ).first()
+        
+        if existing_score:
+            if time_taken < existing_score.best_time:
+                existing_score.best_time = time_taken
+        else:
+            new_score = Score(
+                user_id=session['user_id'],
+                task_name=task_name,
+                best_time=time_taken
+            )
+            db.session.add(new_score)
+        
+        db.session.commit()
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        print("Database error:", e)
+        db.session.rollback()
+        return jsonify({'success': False, 'error': 'Database failed to save'})
+
+@main.route('/submit_human_check', methods=['POST'])
+def submit_human_check():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'User not logged in'}), 401
+
+    try:
+        data = request.get_json()
+        time_taken = data.get('time')
+        task_name = data.get('task_name') 
+        
+
+        new_score = Score(
+            user_id=session['user_id'],
+            task_name=task_name,
+            best_time=float(time_taken)
+        )
+
+        db.session.add(new_score)
+        db.session.commit()
+        
+        print(f"SUCCESS: Saved {task_name} time of {time_taken}s for User ID {session['user_id']}")
+
+        return jsonify({'success': True})
+
+    except Exception as e:
+        db.session.rollback() 
+        print(f"Error saving human check data: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@main.route('/submit_loading_screen', methods=['POST'])
+def submit_loading_screen():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'User not logged in'}), 401
+
+    try:
+        data = request.get_json()
+        time_taken = data.get('time')
+        task_name = data.get('task_name') 
+        
+        if time_taken is None:
+             return jsonify({'success': False, 'error': 'No time provided'}), 400
+
+        new_score = Score(
+            user_id=session['user_id'],
+            task_name=task_name,
+            best_time=float(time_taken)
+        )
+
+        db.session.add(new_score)
+        db.session.commit()
+        
+        print(f"SUCCESS: Saved {task_name} time of {time_taken}s for User ID {session['user_id']}")
+
+        return jsonify({'success': True})
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error saving loading screen data: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@main.route('/submit_maze', methods=['POST'])
+def submit_maze():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'User not logged in'}), 401
+
+    try:
+        data = request.get_json()
+        time_taken = data.get('time')
+        task_name = data.get('task_name') 
+        
+        if time_taken is None:
+             return jsonify({'success': False, 'error': 'No time provided'}), 400
+
+        new_score = Score(
+            user_id=session['user_id'],
+            task_name=task_name,
+            best_time=float(time_taken)
+        )
+
+        db.session.add(new_score)
+        db.session.commit()
+        
+        print(f"SUCCESS: Saved {task_name} time of {time_taken}s for User ID {session['user_id']}")
+
+        return jsonify({'success': True})
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error saving maze data: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@main.route('/submit_volume', methods=['POST'])
+def submit_volume():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'User not logged in'}), 401
+
+    try:
+        data = request.get_json()
+        time_taken = data.get('time')
+        task_name = data.get('task_name')
+        
+        if time_taken is None:
+             return jsonify({'success': False, 'error': 'No time provided'}), 400
+
+        new_score = Score(
+            user_id=session['user_id'],
+            task_name=task_name,
+            best_time=float(time_taken)
+        )
+
+        db.session.add(new_score)
+        db.session.commit()
+        
+        print(f"SUCCESS: Saved {task_name} time of {time_taken}s for User ID {session['user_id']}")
+
+        return jsonify({'success': True})
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error saving volume game data: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@main.route('/submit_brightness_bug', methods=['POST'])
+def submit_brightness_bug():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'User not logged in'}), 401
+
+    try:
+        data = request.get_json()
+        time_taken = data.get('time')
+        task_name = data.get('task_name')
+        
+        if time_taken is None:
+             return jsonify({'success': False, 'error': 'No time provided'}), 400
+
+        new_score = Score(
+            user_id=session['user_id'],
+            task_name=task_name,
+            best_time=float(time_taken)
+        )
+
+        db.session.add(new_score)
+        db.session.commit()
+        
+        print(f"SUCCESS: Saved {task_name} time of {time_taken}s for User ID {session['user_id']}")
+
+        return jsonify({'success': True})
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error saving Brightness Bug data: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 # ====== PAGE ROUTES ======
 @main.route('/')
 def home():
@@ -413,6 +667,57 @@ def not_found():
     #render template with dynamic image list, error code, error message, tab title
     return render_template('404.html', image_list=image_list, error='404', error_message='Oops... Page not found!', error_title='404: Page Not Found'), 404
 
-@main.route('/volume_game')
-def volume_game():
-        return render_template('volume_game.html')
+@main.route('/terms_and_conditions')
+@login_required
+def terms_and_conditions():
+    return render_template('tnc.html')
+
+@main.route('/signin')
+@login_required
+def sign_in_again():
+    return render_template('sign_in_again.html')
+
+@main.route('/CAPTCHA')
+@login_required
+def captcha():
+    return render_template('human_check.html')
+
+@main.route('/loading')
+@login_required
+def loading():
+    return render_template('loading_screen.html')
+
+@main.route('/maze_game')
+@login_required
+def maze_game():
+    return render_template('maze.html')
+
+@main.route('/volume_check')
+@login_required
+def volume_check():
+    return render_template('volume_game.html')
+
+@main.route('/brightness_bug')
+@login_required
+def brightness_bug():
+    return render_template('brightnessBug.html')
+
+@main.route('/questionnaire')
+@login_required
+def questionnair():
+    return render_template('popups.html')
+
+@main.route('/secret')
+@login_required
+def secret():
+    return render_template('secret.html')
+
+@main.route('/ending')
+@login_required
+def ending():
+    return render_template('ending_page.html')  
+
+@main.route('/play_again')
+@login_required
+def play_again():
+    return redirect(url_for('main.terms_and_conditions'))

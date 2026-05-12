@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Brightness Bug</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='global.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='brightnessBug.css') }}">
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+  </head>
+
+  <body class="d-flex flex-column min-vh-100">
+
+    {% include 'components/navbar.html' %}
+
+    <div class="modal fade" id="instructionsModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-dark text-white">
+            <h5 class="modal-title"><i class="bi bi-bug-fill me-2"></i>How to Play</h5>
+          </div>
+          <div class="modal-body">
+            <p class="fw-semibold">A bug is running across your screen. Your job: keep it alive for 500 m
+              by physically adjusting your monitor's brightness in response to incoming obstacles.</p>
+
+            <h6 class="mt-3">The three obstacles</h6>
+            <ul class="list-unstyled">
+              <li class="mb-2">
+                <i class="bi bi-sun text-warning fs-4 me-2"></i>
+                <strong>Flash</strong> — the screen fills near-white. Tap the on-screen <strong>Dim</strong> button 3 times.
+              </li>
+              <li class="mb-2">
+                <i class="bi bi-moon-stars text-primary fs-4 me-2"></i>
+                <strong>Blackout</strong> — the screen fills near-black. Tap the on-screen <strong>Brighten</strong> button 3 times.
+              </li>
+              <li class="mb-2">
+                <i class="bi bi-lightning-charge-fill text-danger fs-4 me-2"></i>
+                <strong>Flicker</strong> — rapid white/black alternation (late game only). Smash the <kbd>B</kbd> key three times fast to survive.
+              </li>
+            </ul>
+
+            <h6 class="mt-3">Scoring</h6>
+            <p class="mb-0">Score is total time survived in seconds (lower is better, like a speedrun).
+              Each fast confirm shaves <strong>1 s</strong> off your time. Reach <strong>500 m</strong> to win.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="instructionsContinueBtn">I'm ready</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="agreementModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Eye Safety Calibration Agreement</h5>
+          </div>
+          <div class="modal-body" style="font-size: 0.78rem; line-height: 1.4;">
+            <p>By proceeding, the undersigned (hereinafter "the Player") acknowledges and agrees that
+              the within-described interactive luminance-modulation experience may, without limitation,
+              cause transient retinal afterimage, mild ocular discomfort, an inflated sense of competitive
+              urgency, the spontaneous adjustment of one's surrounding ambient lighting, and/or a
+              persistent low-grade resentment toward the developers of this website.</p>
+            <p>The Player further represents and warrants that they are operating a display device
+              capable of producing both luminous and sub-luminous output via physical brightness
+              controls, that they are seated in a posturally neutral position, that they have not
+              consumed caffeine within the prior eleven (11) minutes, and that they have read and
+              understood the entirety of this agreement notwithstanding the impractical font size at
+              which it has been rendered for their convenience.</p>
+            <p>This agreement is governed by the unwritten conventions of annoying websites and shall
+              be interpreted in favor of whichever party finds it more inconvenient. The Player waives
+              any and all claims arising from but not limited to: bug-related anxiety, brightness-key
+              wear-and-tear, social embarrassment caused by frantic key-mashing in public spaces, and
+              the gradual realization that their best score is, in fact, also their worst score.</p>
+            <p class="text-muted">Please wait while the legal department finishes pretending to read this on your behalf.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success" id="agreeBtn" disabled>
+              Agree (<span id="agreeCountdown">5</span>)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="gameWorld">
+      <div class="scroll-stripes"></div>
+      <div class="horizon-line"></div>
+      <i id="bug" class="bi bi-bug bug-character"></i>
+      <i id="bugGlow" class="bi bi-sun bug-glow d-none"></i>
+      <div id="victoryBanner">YOU SAVED THE BUG!</div>
+    </div>
+
+    <div id="distanceWrap" class="progress" style="--bs-progress-bar-bg: #0dcaf0;">
+      <div id="distanceBar" class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
+    </div>
+
+    <i id="warningIcon" class="bi bi-sun"></i>
+
+    <div id="obstacleOverlay">
+      <div class="position-absolute top-0 start-50 translate-middle-x mt-5 text-center">
+        <i id="hintIcon" class="bi bi-arrow-down-circle overlay-hint"></i>
+        <div id="hintText" class="fw-bold mt-2" style="text-shadow: 0 0 6px #000;"></div>
+      </div>
+
+      <div class="progress position-absolute bottom-0 start-0 w-100" style="height: 14px; border-radius: 0;">
+        <div id="countdownBar" class="progress-bar bg-warning" role="progressbar" style="width: 100%"></div>
+      </div>
+    </div>
+
+    <div id="brightnessControls" class="d-none">
+      <button id="brightnessUpBtn" type="button" class="btn btn-dark" aria-label="Increase brightness">
+        <i class="bi bi-brightness-high-fill"></i>
+      </button>
+      <button id="brightnessDownBtn" type="button" class="btn btn-dark" aria-label="Decrease brightness">
+        <i class="bi bi-brightness-low-fill"></i>
+      </button>
+    </div>
+
+    <div class="modal fade" id="winModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title">You Won!</h5>
+          </div>
+          <div class="modal-body text-center">
+            <i class="bi bi-trophy-fill display-1 text-warning"></i>
+            <p class="fs-5 mt-3">YAAYYYYY, you helped keep the bug alive !!</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success" id="nextGameBtn">
+              <span class="spinner-border spinner-border-sm d-none me-2" id="nextGameSpinner" role="status" aria-hidden="true"></span>
+              Next Game
+            </button>
+            <a href="{{ url_for('main.home') }}" class="btn btn-outline-secondary">Home</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+
+    <script src="{{ url_for('static', filename='js/brightnessBug.js') }}"></script>
+  </body>
+</html>
