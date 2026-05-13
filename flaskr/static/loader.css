@@ -23,9 +23,8 @@
 }
 
 .loading-gif {
-    width: 500px;
     max-width: 80vw;
     height: auto;
     display: block;
-    margin-bottom: 20px;
+    border-radius: 30px;
 }
