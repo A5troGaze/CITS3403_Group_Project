@@ -10,6 +10,7 @@ class Testing(TestCase):
         testApp=create_app(TestingConfig) #create test app with testing config
         self.app_context=testApp.app_context() #create app context
         self.app_context.push() #push context
+        self.client = testApp.test_client() #fake HTTP client for route tests
         db.create_all() #create tables in test db (in memory)
         self.add_user_data_to_db()
 
@@ -51,7 +52,28 @@ class Testing(TestCase):
         db.session.commit()
     
     def add_score_data_to_db(self):
-        pass
+        # Look up the seeded users so we can attach scores to them by id
+        chris = User.query.filter_by(username='Christofferson').first()
+        jan   = User.query.filter_by(username='Janofferson').first()
+        juv   = User.query.filter_by(username='Juvofferson').first()
+        # Khal is intentionally left with zero scores so we can test the "no scores -> 0.0" branch
+
+        scores = [
+            # Chris: two volume_game attempts. Best = 7.5
+            Score(user_id=chris.id, task_name='volume_game',    best_time=10.0),
+            Score(user_id=chris.id, task_name='volume_game',    best_time=7.5),
+
+            # Jan: one volume_game AND two secret_endings.
+            # The total_time property should short-circuit and return min(secret_endings) = 2.5
+            Score(user_id=jan.id,   task_name='volume_game',    best_time=20.0),
+            Score(user_id=jan.id,   task_name='secret_ending',  best_time=3.0),
+            Score(user_id=jan.id,   task_name='secret_ending',  best_time=2.5),
+
+            # Juv: simple single score. Best = 5.0
+            Score(user_id=juv.id,   task_name='volume_game',    best_time=5.0),
+        ]
+        db.session.add_all(scores)
+        db.session.commit()
 
     def add_comment_data_to_db(self):
         pass
@@ -76,6 +98,125 @@ class Testing(TestCase):
         with self.assertRaises(Exception): #commit() should raise exception at un-nullable columns
             db.session.commit()
 
+    # ===================== SECTION 1: More User model tests =====================
 
-    
-    
+    # ----++++ Check that authenticate() returns True when the password is correct ++++----
+    def test_authenticate_returns_true_on_correct_password(self):
+        user = User.query.filter_by(username='Christofferson').first()
+        # In setUp we set Chris's password to '1234' (then it was bcrypt-hashed by the setter)
+        # authenticate() should hash the input the same way and confirm a match
+        self.assertTrue(user.authenticate('1234'))
+
+    # ----++++ Check that authenticate() returns False when the password is wrong ++++----
+    def test_authenticate_returns_false_on_wrong_password(self):
+        user = User.query.filter_by(username='Christofferson').first()
+        self.assertFalse(user.authenticate('definitely_not_my_password'))
+
+    # ----++++ Check that two users cannot share the same username ++++----
+    def test_username_must_be_unique(self):
+        # Christofferson already exists (added in setUp). Adding a second one must fail.
+        duplicate = User(name='Imposter', username='Christofferson')
+        duplicate.password_hash = 'pw'
+        db.session.add(duplicate)
+        with self.assertRaises(Exception): #IntegrityError gets raised by the unique=True constraint
+            db.session.commit()
+
+    # ----++++ Check that name cannot be null on creation ++++----
+    def test_name_cannot_be_null(self):
+        # 'name' is nullable=False. Creating a user without one should fail at commit time.
+        user = User(username='Nameless')
+        user.password_hash = 'pw'
+        db.session.add(user)
+        with self.assertRaises(Exception):
+            db.session.commit()
+
+    # ----++++ Check that profile_image and banner_image fall back to their server defaults ++++----
+    def test_default_profile_and_banner_images(self):
+        # We don't set profile_image or banner_image. The server_default in the column definition
+        # should kick in when the row is inserted by the database.
+        user = User(name='Defaults', username='DefaultsUser')
+        user.password_hash = 'pw'
+        db.session.add(user)
+        db.session.commit()
+
+        # Re-query so we see what the DB actually stored (server defaults are filled on insert, not in Python)
+        refreshed = User.query.filter_by(username='DefaultsUser').first()
+        self.assertEqual(refreshed.profile_image, 'icon_head.jpg')
+        self.assertEqual(refreshed.banner_image, 'default_banner.png')
+
+    # ----++++ Check that reassigning password_hash invalidates the old password ++++----
+    def test_password_can_be_updated(self):
+        user = User.query.filter_by(username='Christofferson').first()
+        user.password_hash = 'new_secret'   # setter re-hashes with bcrypt
+        db.session.commit()
+
+        self.assertTrue(user.authenticate('new_secret'))
+        self.assertFalse(user.authenticate('1234'))  # old password no longer works
+
+    # ===================== SECTION 2: total_time property tests =====================
+
+    # ----++++ Check that finding the secret task lowers a user's total_time ++++----
+    def test_secret_task_lowers_user_total_time(self):
+        jan = User.query.filter_by(username='Janofferson').first()
+
+        # Phase 1: Jan has only completed the normal task. Capture her baseline total_time.
+        db.session.add(Score(user_id=jan.id, task_name='volume_game', best_time=20.0))
+        db.session.commit()
+        time_before_secret = jan.total_time
+
+        # Phase 2: Jan discovers the secret_ending and posts a faster time.
+        # In the current model, having any secret_ending score replaces her total_time
+        # with the fastest secret time -> her displayed total drops.
+        db.session.add(Score(user_id=jan.id, task_name='secret_ending', best_time=2.5))
+        db.session.commit()
+        time_after_secret = jan.total_time
+
+        # The "deduction" the player sees: finding the secret strictly lowers their total_time.
+        self.assertLess(time_after_secret, time_before_secret)
+
+    # ----++++ Check that a user with no completed tasks has total_time == 0.0 ++++----
+    def test_user_with_no_completions_has_zero_total_time(self):
+        # Khal was seeded in setUp but never received any scores -> his scores relationship is empty.
+        # The total_time property should return 0.0 (hitting the "len(best_task_times) < REQUIRED_TASKS" branch),
+        # which is the contract the /api/search and /leaderboard routes rely on to hide unfinished players.
+        khal = User.query.filter_by(username='Khalofferson').first()
+        self.assertEqual(khal.total_time, 0.0)
+
+    # ===================== SECTION 3: Auth flow tests (signup / login / logout) =====================
+
+    # ----++++ Check that signing up with an already-taken username is rejected with 422 ++++----
+    def test_signup_duplicate_username_returns_422(self):
+        # 'Christofferson' already exists (added in setUp). The route should catch the
+        # IntegrityError raised by the unique=True constraint and return 422.
+        response = self.client.post('/signup', json={
+            'username': 'Christofferson',
+            'name': 'Imposter',
+            'password': 'pw'
+        })
+
+        # Status: 422 Unprocessable Entity -> the except branch ran
+        self.assertEqual(response.status_code, 422)
+
+        # Body shape: route returns {'errors': str(e)} on failure -> key 'errors' should exist
+        self.assertIn('errors', response.get_json())
+
+        # Strongest guarantee: no ghost row was created. Still exactly one Christofferson in the DB.
+        matching = User.query.filter_by(username='Christofferson').count()
+        self.assertEqual(matching, 1)
+
+    # ----++++ Check that logging in with the wrong password is rejected with 401 (and session stays empty) ++++----
+    def test_login_wrong_password_returns_401(self):
+        # Chris's real password is '1234'. We deliberately send the wrong one.
+        response = self.client.post('/login', json={
+            'username': 'Christofferson',
+            'password': 'totally_wrong_password'
+        })
+
+        # Status: 401 Unauthorized -> the authenticate() check failed and the else branch ran
+        self.assertEqual(response.status_code, 401)
+
+        # Security guarantee: a failed login MUST NOT set session['user_id'].
+        # session_transaction() lets us peek at the session as if we were inside a request.
+        with self.client.session_transaction() as sess:
+            self.assertIsNone(sess.get('user_id'))
+
