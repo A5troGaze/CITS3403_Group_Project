@@ -116,7 +116,7 @@
       if (id === "NEXT_LEVEL") {
         modal.hide();
         stopTimerAndSave('standard_ending');
-        window.location.href = "ending_page.html"; // load ending page if did not manage to get secret ending
+        window.location.href = "/ending"; // load ending page if did not manage to get secret ending
         return;
       }
 
@@ -182,7 +182,7 @@
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          alert(`Score saved! You reached the ${taskName} in ${timeTakenSec}s.`);
+          /*alert(`Score saved! You reached the ${taskName} in ${timeTakenSec}s.`);*/
         } else {
           alert('Error saving time!');
         }

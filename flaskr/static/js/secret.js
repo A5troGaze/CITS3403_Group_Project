@@ -37,7 +37,16 @@ const questions = [
             const feedback = document.getElementById("feedback");
             const btnYes = document.getElementById("btn-yes");
             const btnNo = document.getElementById("btn-no");
-            const overlay = document.getElementById("goodbye-msg");
+            const goodbye_overlay = document.getElementById("goodbye-msg");
+            const greeting_overlay = document.getElementById("greeting-msg");
+            const yt_vid = document.getElementById("yt-vid");
+
+            greeting_overlay.style.display = "flex";
+            setTimeout(() => {
+                greeting_overlay.style.display = "none";
+                //trigger autoplay on the video after the greeting overlay is gone
+                yt_vid.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
+            }, 4000);
 
             function loadQuestion() {
                 questionText.innerText = questions[current].text;
@@ -54,7 +63,7 @@ const questions = [
 
                     if (current >= questions.length) {
                         // show goodbye popup then redirect
-                        overlay.style.display = "flex";
+                        goodbye_overlay.style.display = "flex";
                         setTimeout(() => {
                             window.location.href = "/"; // change to your next page
                         }, 4000);

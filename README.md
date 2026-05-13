@@ -1,6 +1,21 @@
 # CITS3403_Group_Project
 Group Project for CITS3403. Semester 1, 2026, UWA.
 
+CONTRIBUTORS:
+|UWA ID  |NAME            |GITHUB USERNAME       |
+|--------|----------------|----------------------|
+|24432207|Christo Wesseloo|A5troGaze             |
+|24003508|Juvincia Riadi  |juvinciariadi         |
+|23788447|Kahlea Aslanis  |kahleaa               |
+|24272501|Janelle Lee     |little-jan, iroha     |
+|--------|----------------|----------------------|
+
+
+
+
+
+
+
 NOTE: All the following code only works in Unix/Linux shell. If using Windows, change to WSL.
 
 ## How to run this game:
@@ -99,10 +114,10 @@ Answer:
 Answer: Reach the right-most spot 4 times in a row, then for the 5th time the dot has to land between 75-85%.
 
 ### Brightness game
-WARNING: this game involves FLASHING lights
-This game requires you to save Bob the bug from the blazing heat and horrifying night.
-When a sun is displayed on the screen, dim your screen with your brightness keys during the confirm screen and press "confirm" or your "B" key to confirm your answer and the latter when a moon is displayed.
-For mobile users, the buttons on the screen are there to change the display brightness for you.
+WARNING: this game involves FLASHING lights \
+This game requires you to save Bob the bug from the blazing heat and horrifying night. \
+When a sun is displayed on the screen, dim your screen with your brightness keys during the confirm screen and press "confirm" or your "B" key to confirm your answer and the latter when a moon is displayed. \
+For mobile users, the buttons on the screen are there to change the display brightness for you. \
 During the late game, you will encounter the lightning icon (aka flash mode), just continuously click "continue" or "B" to pass.
 
 ### Pop Ups game

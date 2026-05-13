@@ -1,0 +1,237 @@
+/* The world is a fixed-height mid-gray strip with a single horizon line.
+   The bug sits on the left and "runs" via a small vertical bob; the world
+   appears to scroll past via the moving stripe pattern. */
+#gameWorld {
+  position: relative;
+  height: 70vh;
+  background-color: #888;
+  overflow: hidden;
+}
+.horizon-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: #222;
+}
+/* Animated dashed stripe just above the horizon to fake forward motion. */
+.scroll-stripes {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% - 4px);
+  height: 4px;
+  background-image: repeating-linear-gradient(
+    to right,
+    #444 0 24px,
+    transparent 24px 60px
+  );
+  animation: scrollLeft 0.6s linear infinite;
+}
+@keyframes scrollLeft {
+  from { background-position-x: 0; }
+  to   { background-position-x: -60px; }
+}
+.bug-character {
+  position: absolute;
+  left: 12%;
+  top: calc(50% - 3rem);
+  font-size: 4rem;
+  color: #1a1a1a;
+  transform: scaleX(-1); /* face right (direction of travel) */
+  transform-origin: center;
+  animation: bugBob 0.4s ease-in-out infinite alternate;
+}
+@keyframes bugBob {
+  from { transform: scaleX(-1) translateY(0); }
+  to   { transform: scaleX(-1) translateY(-6px); }
+}
+/* Small bounce when the player nails a confirm. */
+.bug-bounce { animation: bugJump 0.35s ease-out !important; }
+@keyframes bugJump {
+  0%   { transform: scaleX(-1) translateY(0); }
+  50%  { transform: scaleX(-1) translateY(-30px); }
+  100% { transform: scaleX(-1) translateY(0); }
+}
+/* Sun glow next to the bug during a flash obstacle. */
+.bug-glow {
+  position: absolute;
+  left: 18%;
+  top: calc(50% - 2.5rem);
+  font-size: 3rem;
+  color: #ffd000;
+  text-shadow: 0 0 20px #fff8a8, 0 0 40px #fff;
+}
+/* Dim the bug during a blackout. */
+.bug-dim { opacity: 0.25; }
+
+/* Full-viewport overlay covering the whole page (navbar included)
+   so visibility is genuinely degraded. */
+#obstacleOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+#obstacleOverlay.flash    { background: rgba(255, 255, 255, 0.92); }
+#obstacleOverlay.blackout { background: rgba(0, 0, 0, 0.92); }
+/* The flicker class is a placeholder — its background is toggled
+   imperatively from JS so the alternation rate is controllable. */
+#obstacleOverlay.flicker  { background: rgba(255, 255, 255, 0.92); }
+#obstacleOverlay.show { opacity: 1; }
+
+/* Confirm button: mid-gray btn-secondary with a thick yellow border
+   so the outline pops on both white-out and black-out backgrounds. */
+#confirmBtn {
+  border-width: 4px !important;
+  box-shadow: 0 0 0 2px #000, 0 0 24px rgba(255, 193, 7, 0.6);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  animation: confirmPulse 0.9s ease-in-out infinite alternate;
+}
+@keyframes confirmPulse {
+  from { transform: translate(-50%, -50%) scale(1.0); }
+  to   { transform: translate(-50%, -50%) scale(1.08); }
+}
+
+/* The countdown bar sits below the button; it shrinks from 100% → 0%
+   via inline style.width updates from JS. */
+#countdownBar {
+  transition: none;
+}
+
+/* Warning icon shown 1.5 s before the obstacle hits. */
+#warningIcon {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  font-size: 5rem;
+  display: none;
+  text-shadow: 0 0 12px #fff;
+}
+#warningIcon.show { display: block; animation: warnPulse 0.4s ease-in-out infinite alternate; }
+@keyframes warnPulse {
+  from { opacity: 0.6; transform: translateX(-50%) scale(1); }
+  to   { opacity: 1;   transform: translateX(-50%) scale(1.15); }
+}
+
+/* Score badge & distance bar stay below the overlay z-index so they
+   disappear during obstacles — keeps the spec's "degraded visibility"
+   feel honest. */
+#scoreBadge {
+  position: fixed;
+  top: 70px;
+  right: 16px;
+  z-index: 40;
+  font-size: 1.25rem;
+}
+#distanceWrap {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 10px;
+  z-index: 40;
+}
+
+/* Hint icon inside the overlay — tells player which way to nudge brightness. */
+.overlay-hint {
+  font-size: 2.5rem;
+  color: #ffc107;
+  text-shadow: 0 0 8px #000;
+}
+
+/* Left-edge brightness controls for touch users who can't reach the
+   hardware brightness keys. Each tap softens the matching overlay's
+   alpha so the player can see the input register; Confirm still closes
+   the obstacle. z-index sits above #obstacleOverlay (9999) so the
+   buttons stay tappable while an obstacle is active. */
+#brightnessControls {
+  position: fixed;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+#brightnessControls .btn {
+  width: 56px;
+  height: 56px;
+  font-size: 1.6rem;
+  border: 2px solid #ffc107;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+#brightnessControls .btn:active { transform: scale(0.92); }
+
+/* ===================== Win celebration =====================
+   Played for ~2.5s after crossing 500m, before the win modal opens.
+   The world stops scrolling, the bug glows gold and dances in place,
+   a starburst of sparkles flies out around it, and a banner pops in. */
+
+/* Pause the moving stripes so the world visually stops with the bug. */
+.scroll-stripes.paused { animation-play-state: paused; }
+
+/* Bug switches from running-bob to a rotating, jumping celebration.
+   !important so it overrides the default bugBob animation. The base
+   transform keeps scaleX(-1) so the bug stays facing right. */
+.bug-happy {
+  animation: bugCelebrate 0.6s ease-in-out infinite alternate !important;
+  color: #ffc107 !important;
+  text-shadow: 0 0 20px #ffd700, 0 0 40px #fff8a8;
+}
+@keyframes bugCelebrate {
+  from { transform: scaleX(-1) translateY(0)    rotate(-15deg); }
+  to   { transform: scaleX(-1) translateY(-50px) rotate(15deg); }
+}
+
+/* Sparkle elements are JS-spawned around the bug; --dx/--dy are
+   per-sparkle so each flies out in a different direction. */
+.victory-sparkle {
+  position: absolute;
+  font-size: 2rem;
+  color: #ffd700;
+  pointer-events: none;
+  text-shadow: 0 0 8px #fff;
+  animation: sparkleFloat 1.2s ease-out forwards;
+}
+@keyframes sparkleFloat {
+  0%   { transform: translate(0, 0) scale(0);          opacity: 0; }
+  20%  { transform: translate(0, 0) scale(1);          opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(1.5); opacity: 0; }
+}
+
+/* Big banner over the game world. Single pop-in animation that lingers
+   for ~2s then fades — simpler than chaining two animations. */
+#victoryBanner {
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  transform: translateX(-50%) scale(0);
+  font-size: 3rem;
+  font-weight: 900;
+  color: #ffc107;
+  text-shadow: 0 0 12px #fff, 0 0 24px #ffd700;
+  letter-spacing: 0.08em;
+  z-index: 30;
+  pointer-events: none;
+  white-space: nowrap;
+  opacity: 0;
+}
+#victoryBanner.show { animation: bannerPop 2.5s ease-out forwards; }
+@keyframes bannerPop {
+  0%   { transform: translateX(-50%) scale(0)   rotate(-8deg); opacity: 0; }
+  15%  { transform: translateX(-50%) scale(1.25) rotate(4deg); opacity: 1; }
+  30%  { transform: translateX(-50%) scale(1)   rotate(0deg); opacity: 1; }
+  85%  { transform: translateX(-50%) scale(1)   rotate(0deg); opacity: 1; }
+  100% { transform: translateX(-50%) scale(1.15) rotate(0deg); opacity: 0; }
+}

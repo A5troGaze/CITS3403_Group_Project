@@ -42,7 +42,7 @@ pip list
 ```
 
 ## Step 8:
-CHECK the dependencies where installed under `.venv/bin/pip`:
+CHECK the dependencies were installed under `.venv/bin/pip`:
 ```
 which pip
 ```
