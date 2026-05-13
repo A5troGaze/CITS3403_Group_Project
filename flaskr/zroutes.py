@@ -39,6 +39,7 @@ class Signup(Resource):
             return make_response(user.to_dict(), 201)
 
         except Exception as e:
+            db.session.rollback() #cleanup the poisoned session -> matches the pattern of every other route in this file
             return make_response({'errors': str(e)}, 422)
 
 class Login(Resource):

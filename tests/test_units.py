@@ -153,4 +153,70 @@ class Testing(TestCase):
         self.assertTrue(user.authenticate('new_secret'))
         self.assertFalse(user.authenticate('1234'))  # old password no longer works
 
+    # ===================== SECTION 2: total_time property tests =====================
+
+    # ----++++ Check that finding the secret task lowers a user's total_time ++++----
+    def test_secret_task_lowers_user_total_time(self):
+        jan = User.query.filter_by(username='Janofferson').first()
+
+        # Phase 1: Jan has only completed the normal task. Capture her baseline total_time.
+        db.session.add(Score(user_id=jan.id, task_name='volume_game', best_time=20.0))
+        db.session.commit()
+        time_before_secret = jan.total_time
+
+        # Phase 2: Jan discovers the secret_ending and posts a faster time.
+        # In the current model, having any secret_ending score replaces her total_time
+        # with the fastest secret time -> her displayed total drops.
+        db.session.add(Score(user_id=jan.id, task_name='secret_ending', best_time=2.5))
+        db.session.commit()
+        time_after_secret = jan.total_time
+
+        # The "deduction" the player sees: finding the secret strictly lowers their total_time.
+        self.assertLess(time_after_secret, time_before_secret)
+
+    # ----++++ Check that a user with no completed tasks has total_time == 0.0 ++++----
+    def test_user_with_no_completions_has_zero_total_time(self):
+        # Khal was seeded in setUp but never received any scores -> his scores relationship is empty.
+        # The total_time property should return 0.0 (hitting the "len(best_task_times) < REQUIRED_TASKS" branch),
+        # which is the contract the /api/search and /leaderboard routes rely on to hide unfinished players.
+        khal = User.query.filter_by(username='Khalofferson').first()
+        self.assertEqual(khal.total_time, 0.0)
+
+    # ===================== SECTION 3: Auth flow tests (signup / login / logout) =====================
+
+    # ----++++ Check that signing up with an already-taken username is rejected with 422 ++++----
+    def test_signup_duplicate_username_returns_422(self):
+        # 'Christofferson' already exists (added in setUp). The route should catch the
+        # IntegrityError raised by the unique=True constraint and return 422.
+        response = self.client.post('/signup', json={
+            'username': 'Christofferson',
+            'name': 'Imposter',
+            'password': 'pw'
+        })
+
+        # Status: 422 Unprocessable Entity -> the except branch ran
+        self.assertEqual(response.status_code, 422)
+
+        # Body shape: route returns {'errors': str(e)} on failure -> key 'errors' should exist
+        self.assertIn('errors', response.get_json())
+
+        # Strongest guarantee: no ghost row was created. Still exactly one Christofferson in the DB.
+        matching = User.query.filter_by(username='Christofferson').count()
+        self.assertEqual(matching, 1)
+
+    # ----++++ Check that logging in with the wrong password is rejected with 401 (and session stays empty) ++++----
+    def test_login_wrong_password_returns_401(self):
+        # Chris's real password is '1234'. We deliberately send the wrong one.
+        response = self.client.post('/login', json={
+            'username': 'Christofferson',
+            'password': 'totally_wrong_password'
+        })
+
+        # Status: 401 Unauthorized -> the authenticate() check failed and the else branch ran
+        self.assertEqual(response.status_code, 401)
+
+        # Security guarantee: a failed login MUST NOT set session['user_id'].
+        # session_transaction() lets us peek at the session as if we were inside a request.
+        with self.client.session_transaction() as sess:
+            self.assertIsNone(sess.get('user_id'))
 
