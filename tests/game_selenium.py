@@ -6,6 +6,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 from flaskr.zconfig import TestingConfig
 from flaskr.zmodels import db, User
 from flaskr import create_app
@@ -26,7 +27,12 @@ class SeleniumTests(TestCase):
         self.server_thread.start()
         time.sleep(1) # wait for server to start before opening browser
 
-        self.driver = webdriver.Chrome() # open chrome
+        options = webdriver.ChromeOptions()
+        options.add_argument("--headless=new")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--window-size=1920,1080")
+        self.driver = webdriver.Chrome(options=options)
         self.driver.get(localHost) # navigate to localHost in chrome
         self.wait = WebDriverWait(self.driver, 10) # wait up to 10 seconds for element to appear
 
