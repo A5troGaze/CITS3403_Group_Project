@@ -37,7 +37,7 @@
               </li>
               <li class="mb-2">
                 <i class="bi bi-lightning-charge-fill text-danger fs-4 me-2"></i>
-                <strong>Flicker</strong> — rapid white/black alternation (late game only). Smash the <kbd>B</kbd> key three times fast to survive.
+                <strong>Flicker</strong> — rapid white/black alternation (late game only). Smash the <kbd>B</kbd> key or tap the screen (for mobile users) three times fast to survive.
               </li>
             </ul>
 
@@ -46,7 +46,7 @@
               Each fast confirm shaves <strong>1 s</strong> off your time. Reach <strong>500 m</strong> to win.</p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" id="instructionsContinueBtn">I'm ready</button>
+            <button type="button" class="btn btn-dark" id="instructionsContinueBtn">I'm ready</button>
           </div>
         </div>
       </div>
@@ -78,7 +78,7 @@
             <p class="text-muted">Please wait while the legal department finishes pretending to read this on your behalf.</p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-success" id="agreeBtn" disabled>
+            <button type="button" class="btn btn-dark" id="agreeBtn" disabled>
               Agree (<span id="agreeCountdown">5</span>)
             </button>
           </div>
@@ -123,15 +123,15 @@
     <div class="modal fade" id="winModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header bg-success text-white">
+          <div class="modal-header bg-dark text-white">
             <h5 class="modal-title">You Won!</h5>
           </div>
           <div class="modal-body text-center">
             <i class="bi bi-trophy-fill display-1 text-warning"></i>
-            <p class="fs-5 mt-3">YAAYYYYY, you helped keep the bug alive !!</p>
+            <p class="fs-5 mt-3">YAAYYYYY, you helped keep the bug alive!!</p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-success" id="nextGameBtn">
+            <button type="button" class="btn btn-dark" id="nextGameBtn">
               <span class="spinner-border spinner-border-sm d-none me-2" id="nextGameSpinner" role="status" aria-hidden="true"></span>
               Next Game
             </button>
