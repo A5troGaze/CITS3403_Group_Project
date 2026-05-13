@@ -13,7 +13,7 @@ from flaskr import create_app
 
 localHost = "http://127.0.0.1:5000/"
 
-class SeleniumTests(TestCase):
+class GameSeleniumTests(TestCase):
 # =========== SETUP AND TEARDOWN METHODS ===========   
 
     def setUp(self):
