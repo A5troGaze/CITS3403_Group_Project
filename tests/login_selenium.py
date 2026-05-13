@@ -1,56 +1,75 @@
-import pytest
-import uuid
+from unittest import TestCase
+import multiprocessing
+multiprocessing.set_start_method('fork', force=True)
+import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
+from flaskr.zconfig import TestingConfig
+from flaskr.zmodels import db, User
+from flaskr import create_app
 
-unique_username = f"testuser_{uuid.uuid4().hex[:8]}"
-test_password = "securepassword123"
+localHost = "http://127.0.0.1:5000/"
 
-@pytest.fixture
-def driver():
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
+class AuthSeleniumTests(TestCase):
 
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=chrome_options)
-    
-    yield driver 
-    driver.quit()
+    def setUp(self):
+        self.testApp = create_app(TestingConfig)
+        self.app_context = self.testApp.app_context()
+        self.app_context.push()
+        db.create_all()
 
-def test_signup_success(driver):
-    driver.get("http://localhost:5000/sign_up")
-    driver.find_element(By.NAME, "username").send_keys(unique_username)
-    driver.find_element(By.NAME, "name").send_keys("Automated Tester")
-    driver.find_element(By.NAME, "password").send_keys(test_password)
-    submit_button = driver.find_element(By.XPATH, "//button[@type='submit']")
-    submit_button.click()
-    WebDriverWait(driver, 10).until(EC.alert_is_present())
-    alert = driver.switch_to.alert
-    assert alert.text == "Account created successfully!"
-    alert.accept()
-    WebDriverWait(driver, 10).until(EC.url_changes("http://localhost:5000/sign_up"))
+        test_user = User(name="Test User", username="valid_testuser")
+        test_user.password_hash = "valid_testpassword" 
+        db.session.add(test_user)
+        db.session.commit()
+        self.server_thread = multiprocessing.Process(target=self.testApp.run)
+        self.server_thread.start()
+        time.sleep(1) 
+        options = webdriver.ChromeOptions()
+        options.add_argument("--headless=new")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--window-size=1920,1080")
+        self.driver = webdriver.Chrome(options=options)
+        self.wait = WebDriverWait(self.driver, 10)
 
-def test_login_success(driver):
-    driver.get("http://localhost:5000/sign_in")
-    driver.find_element(By.NAME, "username").send_keys(unique_username)
-    driver.find_element(By.NAME, "password").send_keys(test_password)
-    driver.find_element(By.XPATH, "//button[@type='submit']").click()
-    WebDriverWait(driver, 10).until(EC.url_changes("http://localhost:5000/sign_in"))
-    assert driver.current_url == "http://localhost:5000/"
+    def tearDown(self):
+        self.server_thread.terminate()
+        self.server_thread.join()
+        self.driver.quit()
+        db.session.remove()
+        db.drop_all()
+        self.app_context.pop()
 
-def test_login_failure(driver):
-    driver.get("http://localhost:5000/sign_in")
-    driver.find_element(By.NAME, "username").send_keys("totally_fake_user_123")
-    driver.find_element(By.NAME, "password").send_keys("wrong_password")
-    driver.find_element(By.XPATH, "//button[@type='submit']").click()
-    WebDriverWait(driver, 10).until(EC.alert_is_present())
-    alert = driver.switch_to.alert
-    assert alert.text == "Invalid username or password!"
-    alert.accept()
+    def test_signup_success(self):
+        self.driver.get(localHost + "sign_up")
+        
+        self.driver.find_element(By.NAME, "username").send_keys("brand_new_user")
+        self.driver.find_element(By.NAME, "name").send_keys("New User")
+        self.driver.find_element(By.NAME, "password").send_keys("securepassword123")
+        self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
+        self.wait.until(EC.alert_is_present())
+        alert = self.driver.switch_to.alert
+        self.assertEqual(alert.text, "Account created successfully!")
+        alert.accept()
+
+    def test_login_success(self):
+        self.driver.get(localHost + "sign_in")
+        self.driver.find_element(By.NAME, "username").send_keys("valid_testuser")
+        self.driver.find_element(By.NAME, "password").send_keys("valid_testpassword")
+        self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
+        self.wait.until(EC.url_changes(localHost + "sign_in"))
+        self.assertEqual(self.driver.current_url, localHost)
+
+    def test_login_failure(self):
+        self.driver.get(localHost + "sign_in")
+        self.driver.find_element(By.NAME, "username").send_keys("wrong_user")
+        self.driver.find_element(By.NAME, "password").send_keys("wrong_password")
+        self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
+        self.wait.until(EC.alert_is_present())
+        alert = self.driver.switch_to.alert
+        self.assertEqual(alert.text, "Invalid username or password!")
+        alert.accept()
