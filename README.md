@@ -21,20 +21,35 @@ NOTE: All the following code only works in Unix/Linux shell. If using Windows, c
 ## How to run this game:
 
 ### 1. Set up virtual environment:
-Make sure you are in the ```flaskr``` directory, then copy and paste the following code into your terminal:
+Make sure you are in the ```root``` directory ```(CITS3403_Group_Project)```, then copy and paste the following code into your terminal:
 ```
 python3 -m venv .venv  (only do this first command if you don't already have .venv)
 source .venv/bin/activate
 ```
-This activates the virtual environment. Once you have ```.venv```, install all dependencies from ```requirements.txt```.
+This activates the virtual environment.
+
+Once you have ```.venv```, install all dependencies from ```requirements.txt``` by copying the following into the terminal:
+```
+pip install -r requirements.txt
+```
+
+You can check what was installed using:
+```
+pip list
+```
+
+And where it was installed using:
+```
+which pip
+```
+It should have installed under ```CITS3403_Group_Project/.venv/bin/pip```
 
 (Note: if you are installing any other libraries, please make sure you are installing it within the virtual environment, and update the dependency in ```requirements.txt```.)
 
-Leave your ```.venv``` file in ```.gitignore``` so Git does not track it.
+Leave your ```.venv``` folder in ```.gitignore``` so Git does not track it.
 
 ### To exit VENV:
 Paste the following code into your terminal:
-
 ```
 deactivate
 ```
@@ -50,18 +65,14 @@ python -c 'import os; print(os.urandom(16))'
 ```
 This is to generate the secret key to hash passwords.
 
-Copy and paste the generated result into the ```.env``` file in the following format:
+Copy and paste the generated result into the ```flaskr/.env``` file in the following format:
 ```
 FLASK_SECRET_KEY= [your_super_secret_key]
 ```
 (NOTE: Remember to leave ```.env``` inside ```.gitignore``` so Git doesn't track your super secret hash code.)
 
 ### To run the game:
-First navigate to ```flaskr```'s parent directory using
-```
-cd ..
-```
-Inside your terminal, run:
+Inside your terminal (and inside the root folder), run:
 ```
 python run.py
 ```
