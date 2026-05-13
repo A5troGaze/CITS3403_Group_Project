@@ -9,4 +9,4 @@ flask-bcrypt
 python-dotenv
 sqlalchemy-serializer
 selenium
-selenium webdriver-manager pytest
+pytest selenium webdriver-manager
