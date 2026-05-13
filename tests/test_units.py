@@ -13,6 +13,8 @@ class Testing(TestCase):
         self.client = testApp.test_client() #fake HTTP client for route tests
         db.create_all() #create tables in test db (in memory)
         self.add_user_data_to_db()
+        self.add_score_data_to_db()
+        self.add_comment_data_to_db()
 
     def tearDown(self):
         #RUN AFTER EACH TEST
@@ -76,9 +78,27 @@ class Testing(TestCase):
         db.session.commit()
 
     def add_comment_data_to_db(self):
-        pass
+        #
+        chris = User.query.filter_by(username='Christofferson').first()
+        jan   = User.query.filter_by(username='Janofferson').first()
+        juv   = User.query.filter_by(username='Juvofferson').first()
+        #kahl  = User.query.filter_by(username='Khalofferson').first()
+
+        comments = [
+            Comment(user_id=chris.id,   text='Never'),
+            Comment(user_id=jan.id,     text='gonna give'),
+            Comment(user_id=juv.id,     text='you up.')
+        ]
+
+        db.session.add_all(comments)
+        db.session.commit()
+
+
 
 # =========== UNIT TEST FUNCTIONS ===========
+
+    # ===================== SECTION 1: User model tests =====================
+
     # ----++++ Check that if the password hash tries to be viewed and AttributeError gets raised ++++----
     def test_hashed_password_cannot_be_viewed_by_public_getter(self):
         user = User.query.filter_by(username='Christofferson').first()
@@ -97,8 +117,6 @@ class Testing(TestCase):
         db.session.add(user)
         with self.assertRaises(Exception): #commit() should raise exception at un-nullable columns
             db.session.commit()
-
-    # ===================== SECTION 1: More User model tests =====================
 
     # ----++++ Check that authenticate() returns True when the password is correct ++++----
     def test_authenticate_returns_true_on_correct_password(self):
@@ -153,6 +171,7 @@ class Testing(TestCase):
         self.assertTrue(user.authenticate('new_secret'))
         self.assertFalse(user.authenticate('1234'))  # old password no longer works
 
+
     # ===================== SECTION 2: total_time property tests =====================
 
     # ----++++ Check that finding the secret task lowers a user's total_time ++++----
@@ -181,6 +200,7 @@ class Testing(TestCase):
         # which is the contract the /api/search and /leaderboard routes rely on to hide unfinished players.
         khal = User.query.filter_by(username='Khalofferson').first()
         self.assertEqual(khal.total_time, 0.0)
+
 
     # ===================== SECTION 3: Auth flow tests (signup / login / logout) =====================
 
@@ -220,3 +240,49 @@ class Testing(TestCase):
         with self.client.session_transaction() as sess:
             self.assertIsNone(sess.get('user_id'))
 
+
+    # ===================== SECTION 4: Comment model tests =====================
+
+    # ----++++ Check that comments cannot be blank ++++----
+    def test_comment_cannot_be_blank(self):
+        kahl = User.query.filter_by(username='Khalofferson').first()
+        comment = Comment(
+            user_id=kahl.id
+            )
+        db.session.add(comment)
+        with self.assertRaises(Exception):
+            db.session.commit()
+
+    # ----++++ Check that comments exist in database after creation ++++----
+    def test_new_comment_exists_after_creation(self):
+        chris = User.query.filter_by(username='Christofferson').first()
+    
+        comment = Comment(user_id=chris.id, text='Hello World')
+        db.session.add(comment)
+        db.session.commit()
+
+        retrieved = Comment.query.get(comment.id)
+        self.assertIsNotNone(retrieved)
+
+    # ----++++ Check that comment text unchanged/not lost after creation ++++----
+    def test_comment_content_is_unchanged_or_lost_during_creation(self):
+        kahl = User.query.filter_by(username='Khalofferson').first()
+        comment = Comment(
+            user_id=kahl.id,
+            text='testing123'
+        )
+        db.session.add(comment)
+        db.session.commit()
+
+        retreived_comment = Comment.query.get(comment.id)
+        self.assertIsNotNone(retreived_comment)
+        self.assertEqual(retreived_comment.text, 'testing123')
+
+    # ----++++ Check that comments cant be submitted without user id ++++----
+    def test_comments_cant_be_submitted_without_userid(self):
+        comment = Comment(
+            text="testing456"
+        )
+        db.session.add(comment)
+        with self.assertRaises(Exception):
+            db.session.commit()
