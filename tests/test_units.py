@@ -69,7 +69,6 @@ class Testing(TestCase):
             # The total_time property should short-circuit and return min(secret_endings) = 2.5
             Score(user_id=jan.id,   task_name='volume_game',    best_time=20.0),
             Score(user_id=jan.id,   task_name='secret_ending',  best_time=3.0),
-            Score(user_id=jan.id,   task_name='secret_ending',  best_time=2.5),
 
             # Juv: simple single score. Best = 5.0
             Score(user_id=juv.id,   task_name='volume_game',    best_time=5.0),
@@ -178,9 +177,20 @@ class Testing(TestCase):
     def test_secret_task_lowers_user_total_time(self):
         jan = User.query.filter_by(username='Janofferson').first()
 
-        # Phase 1: Jan has only completed the normal task. Capture her baseline total_time.
-        db.session.add(Score(user_id=jan.id, task_name='volume_game', best_time=20.0))
+        # Phase 1: Jan has only completed the normal tasks. Capture her baseline total_time.
+        jans_scores = [
+            Score(user_id=jan.id, task_name='volume_game', best_time=20.0),
+            Score(user_id=jan.id, task_name='brightness_bug', best_time=20.0),
+            Score(user_id=jan.id, task_name='fake_signin', best_time=20.0),
+            Score(user_id=jan.id, task_name='tnc_quiz', best_time=20.0),
+            Score(user_id=jan.id, task_name='maze', best_time=20.0),
+            Score(user_id=jan.id, task_name='loading_screen', best_time=20.0),
+            Score(user_id=jan.id, task_name='human_check', best_time=20.0),
+            Score(user_id=jan.id, task_name='standard_ending', best_time=20.0)
+        ]
+        db.session.add_all(jans_scores)
         db.session.commit()
+        db.session.refresh(jan) #refresh db after every commit
         time_before_secret = jan.total_time
 
         # Phase 2: Jan discovers the secret_ending and posts a faster time.
@@ -188,6 +198,7 @@ class Testing(TestCase):
         # with the fastest secret time -> her displayed total drops.
         db.session.add(Score(user_id=jan.id, task_name='secret_ending', best_time=2.5))
         db.session.commit()
+        db.session.refresh(jan) #refresh db after every commit
         time_after_secret = jan.total_time
 
         # The "deduction" the player sees: finding the secret strictly lowers their total_time.

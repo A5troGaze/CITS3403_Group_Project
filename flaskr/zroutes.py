@@ -9,8 +9,6 @@ from flaskr.zblueprints import main
 
 
 
-#main = Blueprint('main', __name__)  -----> moved to zblueprints.py
-
 from functools import wraps
 
 def login_required(f):
