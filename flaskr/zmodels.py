@@ -84,9 +84,9 @@ class User(db.Model, SerializerMixin):
             
             if task not in best_task_times or time < best_task_times[task]:
                 best_task_times[task] = time
-        #if player skipped levels or such return 0
+        #if player skipped levels or such return -1 -> invalid -> will not be displayed on leaderboard
         if len(best_task_times) < REQUIRED_TASKS:
-            return 0.0
+            return -1.0
             
         total = sum(best_task_times.values())
         return round(total, 2)
