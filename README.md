@@ -11,7 +11,8 @@ CONTRIBUTORS:
 |--------|----------------|----------------------|
 
 
-
+## Purpose of Website
+We as a group took inspiration from all the annoying short-form developer videos on social media to create this website. This website is meant to consolidate a bunch of these different quirky apps/tasks into one location for the user to be both entertained and annoyed.
 
 
 
