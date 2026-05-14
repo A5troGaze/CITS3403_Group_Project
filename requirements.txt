@@ -8,5 +8,6 @@ flask-restful
 flask-bcrypt
 python-dotenv
 sqlalchemy-serializer
+pytest
 selenium
-pytest selenium webdriver-manager
+webdriver-manager
