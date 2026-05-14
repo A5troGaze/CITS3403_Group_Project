@@ -2,9 +2,10 @@
 from flask import current_app, request, make_response, session, render_template, redirect, url_for, flash, jsonify
 from flask_restful import Resource
 from flask_login import current_user
-from flaskr.zmodels import *
+from sqlalchemy.exc import IntegrityError
 import os
 from werkzeug.utils import secure_filename
+from flaskr.zmodels import *
 from flaskr.zblueprints import main
 
 
@@ -45,6 +46,11 @@ class Signup(Resource):
             session['username'] = user.username
 
             return make_response(user.to_dict(), 201)
+        
+        except IntegrityError:
+            db.session.rollback()
+            return make_response({'errors': 'Username already taken.'}, 422)
+
 
         except Exception as e:
             db.session.rollback() #cleanup the poisoned session -> matches the pattern of every other route in this file

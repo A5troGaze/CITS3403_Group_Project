@@ -105,3 +105,13 @@ class GameSeleniumTests(TestCase):
         time.sleep(1)
         self.assertIn("Done! Congrats you passed the level!", loader_bar.text) # check that the completion message appears
 
+    def test_sign_in_again_app_redirects(self):
+        #sign in first
+        self.login()
+        #go to signin again game page
+        self.driver.get(localHost + "signin")
+        self.driver.find_element(By.ID, "signInHeader").click()
+        self.wait.until(EC.url_changes(localHost + "signin")) # ---> wait.until has timeout of 10s returns FAIL if nothing happenss
+        #check that the redirected url no longer contains 'signin' # ---> redirected
+        self.assertNotIn("signin", self.driver.current_url)
+
