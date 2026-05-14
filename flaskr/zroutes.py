@@ -9,8 +9,6 @@ from flaskr.zblueprints import main
 
 
 
-#main = Blueprint('main', __name__)  -----> moved to zblueprints.py
-
 from functools import wraps
 
 def login_required(f):
@@ -49,7 +47,8 @@ class Signup(Resource):
             return make_response(user.to_dict(), 201)
 
         except Exception as e:
-            return make_response({'errors': 'An unexpected error occurred. Please try again.'}, 422)
+            db.session.rollback() #cleanup the poisoned session -> matches the pattern of every other route in this file
+            return make_response({'errors': str(e)}, 422)
 
 class Login(Resource):
     def post(self):
