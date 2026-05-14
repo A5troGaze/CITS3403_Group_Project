@@ -75,7 +75,7 @@ Inside your terminal (and inside the root folder), run:
 ```
 python run.py
 ```
-OR for unit testing, run:
+OR for unit and selenium testing, run:
 ```
 python runtest.py
 ```
