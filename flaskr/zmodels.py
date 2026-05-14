@@ -69,13 +69,14 @@ class User(db.Model, SerializerMixin):
 
     @property
     def total_time(self):
-        secret_times = [float(score.best_time) for score in self.scores if score.task_name == 'secret_ending']
+        secret_times = [float(score.best_time) for score in self.scores if score.task_name == 'secret_ending'] #if the user chose the secret ending the task_name == 'secret_ending'. else task_name = 'standard_ending'
         
-        if secret_times:
+        if secret_times: #if player managed to get a 'secret_ending' play on last level -> return the time from just last level and no other level -> total_time = secret_ending time
             return min(secret_times) 
             
         REQUIRED_TASKS = 8  # change this value depending on how many games we have
         
+        #if no secret ending was found: conglomerate the times for all the different levels
         best_task_times = {}
         for score in self.scores:
             time = float(score.best_time)
@@ -83,6 +84,7 @@ class User(db.Model, SerializerMixin):
             
             if task not in best_task_times or time < best_task_times[task]:
                 best_task_times[task] = time
+        #if player skipped levels or such return -1 -> invalid -> will not be displayed on leaderboard
         if len(best_task_times) < REQUIRED_TASKS:
             return 0.0
             
