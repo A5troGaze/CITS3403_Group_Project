@@ -8,7 +8,6 @@ CONTRIBUTORS:
 |24003508|Juvincia Riadi  |juvinciariadi         |
 |23788447|Kahlea Aslanis  |kahleaa               |
 |24272501|Janelle Lee     |little-jan, iroha     |
-|--------|----------------|----------------------|
 
 
 
