@@ -14,6 +14,8 @@ localHost = "http://127.0.0.1:5000/"
 
 class AuthSeleniumTests(TestCase):
 
+# =========== SETUP AND TEARDOWN METHODS ===========  
+
     def setUp(self):
         self.testApp = create_app(TestingConfig)
         self.app_context = self.testApp.app_context()
@@ -42,6 +44,8 @@ class AuthSeleniumTests(TestCase):
         db.session.remove()
         db.drop_all()
         self.app_context.pop()
+
+# =========== SIGNUP / LOGIN SELENIUM TESTS ===========  
 
     def test_signup_success(self):
         self.driver.get(localHost + "sign_up")
@@ -72,3 +76,33 @@ class AuthSeleniumTests(TestCase):
         alert = self.driver.switch_to.alert
         self.assertEqual(alert.text, "Invalid username or password!")
         alert.accept()
+
+    def test_failed_signup_username_already_exists(self):
+        #first user
+        self.driver.get(localHost + "sign_up")
+        self.driver.find_element(By.NAME, "username").send_keys("generic_username01")
+        self.driver.find_element(By.NAME, "name").send_keys("Generic User")
+        self.driver.find_element(By.NAME, "password").send_keys("generic_password01")
+        self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
+
+        #second user trying to sign up with identical username 'generic_username01
+        self.driver.get(localHost + "sign_up")
+        self.driver.find_element(By.NAME, "username").send_keys("generic_username01")
+        self.driver.find_element(By.NAME, "name").send_keys("Generic User 2")
+        self.driver.find_element(By.NAME, "password").send_keys("generic_password02")
+        self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
+
+        self.wait.until(EC.alert_is_present())
+        alert = self.driver.switch_to.alert
+        self.assertIn("Username already taken.", alert.text)
+        alert.accept()
+
+    def test_failed_signup_blank_password_cannot_be_blank(self):
+        self.driver.get(localHost + "sign_up")
+        self.driver.find_element(By.NAME, "username").send_keys("brand_new_user")
+        self.driver.find_element(By.NAME, "name").send_keys("New User")
+        #self.driver.find_element(By.NAME, "password").send_keys("") # ----> No password
+        self.driver.find_element(By.XPATH, "//button[@type='submit']").click()
+
+        #ensure that even after click the 'browser' is still on the signup page (doesnt get redirected)
+        self.assertIn("sign_up", self.driver.current_url)
