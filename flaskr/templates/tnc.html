@@ -136,6 +136,7 @@
                 <p class="lead mb-4">Please answer the following questions to verify you have actually read the terms. Failure to pass legally binds you to the consequences.</p>
 
                 <form id="legalQuiz" class="card shadow-sm border-0 p-4 mb-5">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     
                     <div class="mb-4">
                         <h5 class="fw-bold">1. According to Section 2, what type of license is granted to the user to access the Service?</h5>

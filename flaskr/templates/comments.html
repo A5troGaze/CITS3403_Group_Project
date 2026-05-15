@@ -32,6 +32,7 @@
                   <div class="card-body p-4">
                       <h4 class="mb-3">Leave a Comment</h4>
                       <form id="commentForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                           <div class="form-floating mb-3">
                               <textarea class="form-control" id="commentText" placeholder="Leave a comment here" style="height: 100px" required></textarea>
                               <label for="commentText">Just like in life, you can't retract what you say...</label>

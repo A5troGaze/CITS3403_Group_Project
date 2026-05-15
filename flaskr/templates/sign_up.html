@@ -17,6 +17,7 @@
         <br>
 
         <form id="signUpForm" style="width: 300px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="form-group">
                 <label>Full Name</label>
                 <input type="text" class="form-control" name="name" placeholder="Full Government Name" required>

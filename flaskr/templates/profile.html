@@ -18,6 +18,7 @@
     <div class="banner-wrapper w-100 overflow-hidden" style="height: 300px;">
     
     <form action="/upload_banner" method="POST" enctype="multipart/form-data" class="w-100 h-100">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         
         <label id="banner-trigger" for="banner-file-upload" class="position-relative w-100 h-100 d-block m-0" style="cursor: pointer;">
             
@@ -38,6 +39,7 @@
 
     <div class="w-100 position-relative">    
         <form action="/upload_photo" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             
             <label id="avatar-trigger" for="top-file-upload" class="position-absolute top-0 start-50 translate-middle" style="width: 150px; height: 150px; cursor: pointer; z-index: 10;">
                 
@@ -75,6 +77,7 @@
         
 
             <form id="username-edit-state" action="/update_username" method="POST" class="mt-3 d-none">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="input-group">
                     <input id="username-input" class="form-control" type="text" name="username" value="{{ user.username }}" required>
                     <button type="submit" class="btn btn-dark hover-btn">Submit</button>
@@ -93,6 +96,7 @@
             </div>
 
             <form id="name-edit-state" action="/update_name" method="POST" class="mt-3 d-none">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="input-group">
                     <input id="name-input" class="form-control" type="text" name="name" value="{{ user.name }}" required>
                     <button type="submit" class="btn btn-dark hover-btn">Submit</button>
@@ -111,6 +115,7 @@
             <h5 class="card-title">Change your password</h5>
 
             <form action="/update_password" method="POST" class="border-bottom pb-3 mb-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 
                 <div class="mb-3">
                     <label for="current-password" class="form-label small fw-bold">Current Password</label>
@@ -136,6 +141,7 @@
             <p class="small text-muted mb-3">Once you delete your account, there is no going back. Please be certain.</p>
 
             <form id="delete-account-form" action="/delete_account" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <button type="button" id="delete-btn" class="btn btn-outline-danger w-100 fw-bold transition-all">
                     Delete My Account
                 </button>
