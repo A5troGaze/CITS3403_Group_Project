@@ -1,3 +1,5 @@
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
 // ----------------------------
     // NAVIGATION GRAPH
     // ----------------------------
@@ -173,6 +175,7 @@
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
         },
         body: JSON.stringify({ 
             time: timeTakenSec,

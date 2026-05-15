@@ -43,6 +43,7 @@
 
     <script>
         const signUpForm = document.querySelector('#signUpForm');
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
         signUpForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -55,7 +56,10 @@
 
             fetch('/signup', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
                 body: JSON.stringify(formData)
             })
             .then(res => {

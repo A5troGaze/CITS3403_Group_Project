@@ -1,3 +1,4 @@
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 document.addEventListener('DOMContentLoaded', function() {
     let startTime;
     if (isLoggedIn) {
@@ -46,7 +47,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             fetch('/submit_fake_signin', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
                 body: JSON.stringify({ 
                     time: timeTakenSec,
                     task_name: 'fake_signin'

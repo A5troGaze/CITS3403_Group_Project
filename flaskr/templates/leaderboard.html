@@ -52,9 +52,18 @@
     const searchInput = document.getElementById('searchInput');
     const tableBody = document.getElementById('leaderboardBody');
 
+    function escapeHTML(str) {
+        return String(str).replace(/[&<>'"]/g, tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[tag] || tag));
+    }
+
     searchInput.addEventListener('input', function() {
       const query = this.value;
-
       fetch(`/api/search?q=${query}`)
         .then(response => response.json())
         .then(data => {
@@ -64,18 +73,19 @@
               tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Stop looking for people that don\'t exist.</td></tr>';
               return; 
           }
-
+            let allRowsHTML = '';
             data.forEach(user => {
               const highlightClass = user.is_current_user ? 'table-warning' : '';
               const row = `
-                  <tr class="${highlightClass}">
-                      <td>${user.rank}</td>
-                      <td>${user.username}</td>
-                      <td>${user.total_time}s</td>
-                  </tr>
-              `;
-              tableBody.innerHTML += row;
+                <tr class="${highlightClass}">
+                    <td>${escapeHTML(user.rank)}</td>
+                    <td>${escapeHTML(user.username)}</td>
+                    <td>${escapeHTML(user.total_time)}s</td>
+                </tr>
+            `;
+            allRowsHTML += row;
             });
+            tableBody.innerHTML = allRowsHTML;
         })
         .catch(error => console.error('Error fetching search results:', error));
     });

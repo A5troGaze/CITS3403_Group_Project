@@ -1,3 +1,4 @@
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 class VolumeSlider {
     constructor() {
         this.slider = document.getElementById('volume-slider');
@@ -293,7 +294,10 @@ class VolumeSlider {
         // --- 3. SEND TO BACKEND ---
         fetch('/submit_volume', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
             body: JSON.stringify({
                 time: timeTakenSec,
                 task_name: 'volume_game' 

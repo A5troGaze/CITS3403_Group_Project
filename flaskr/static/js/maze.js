@@ -1,3 +1,5 @@
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
 // --- 1. SETUP TIMER VARIABLE ---
             let startTime = null;
 
@@ -40,7 +42,10 @@
                     // --- 4. SEND TO BACKEND ---
                     fetch('/submit_maze', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
                         body: JSON.stringify({
                             time: timeTakenSec,
                             task_name: 'maze' 
