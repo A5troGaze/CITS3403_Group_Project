@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Leaderboard</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/cits3403_projLogoBGXround.png') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
@@ -51,9 +52,18 @@
     const searchInput = document.getElementById('searchInput');
     const tableBody = document.getElementById('leaderboardBody');
 
+    function escapeHTML(str) {
+        return String(str).replace(/[&<>'"]/g, tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[tag] || tag));
+    }
+
     searchInput.addEventListener('input', function() {
       const query = this.value;
-
       fetch(`/api/search?q=${query}`)
         .then(response => response.json())
         .then(data => {
@@ -63,18 +73,19 @@
               tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Stop looking for people that don\'t exist.</td></tr>';
               return; 
           }
-
+            let allRowsHTML = '';
             data.forEach(user => {
               const highlightClass = user.is_current_user ? 'table-warning' : '';
               const row = `
-                  <tr class="${highlightClass}">
-                      <td>${user.rank}</td>
-                      <td>${user.username}</td>
-                      <td>${user.total_time}s</td>
-                  </tr>
-              `;
-              tableBody.innerHTML += row;
+                <tr class="${highlightClass}">
+                    <td>${escapeHTML(user.rank)}</td>
+                    <td>${escapeHTML(user.username)}</td>
+                    <td>${escapeHTML(user.total_time)}s</td>
+                </tr>
+            `;
+            allRowsHTML += row;
             });
+            tableBody.innerHTML = allRowsHTML;
         })
         .catch(error => console.error('Error fetching search results:', error));
     });

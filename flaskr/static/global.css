@@ -2,22 +2,26 @@
 .typed-out {
   overflow: hidden;
   font-size: 1.6rem;
-  width: 0;
-  animation:
-    typing 1s linear infinite;
-  animation-play-state: paused;
-  animation-delay: calc(var(--scroll) * -1s);
+  white-space: nowrap;
+  width: 0; 
+  border-right: 0.15em solid black; 
+  animation: 
+    typing 2s steps(23, end) infinite alternate,
+    blink-caret 0.75s step-end infinite;
 }
 
 .text-animation {
-  display: inline-flex;
-  white-space: nowrap;
+  display: inline-block; 
 }
 
 @keyframes typing {
-  to {
-    width: 100%;
-  }
+  from { width: 0; }
+  to { width: 23ch; } 
+}
+
+@keyframes blink-caret {
+  from, to { border-color: transparent; }
+  50% { border-color: black; }
 }
 
 

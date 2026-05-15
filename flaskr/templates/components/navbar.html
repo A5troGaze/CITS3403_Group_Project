@@ -37,7 +37,11 @@
         if (logoutBtn) {
             logoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                fetch('/logout', { method: 'DELETE' })
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                fetch('/logout', { 
+                    method: 'DELETE', 
+                    headers: { 'X-CSRFToken': csrfToken } 
+                })
                     .then(res => {
                         if (res.ok) window.location.href = '/';
                         else console.error("Logout failed");

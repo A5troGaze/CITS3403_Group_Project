@@ -19,6 +19,7 @@
 //   15.  Boot
 // ─────────────────────────────────────────────
 
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
 // ── 1. State & config ────────────────────────
 
@@ -927,7 +928,10 @@ function showFinal() {
 
   fetch('/submit_human_check', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken
+    },
     body: JSON.stringify({ 
       time: timeTakenSec,
       task_name: 'human_check',

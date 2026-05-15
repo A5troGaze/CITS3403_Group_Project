@@ -11,3 +11,4 @@ sqlalchemy-serializer
 pytest
 selenium
 webdriver-manager
+Flask-WTF

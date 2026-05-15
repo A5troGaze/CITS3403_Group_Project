@@ -1,6 +1,17 @@
 const commentForm = document.getElementById('commentForm');
 const commentFeed = document.getElementById('liveCommentFeed');
 const commentInput = document.getElementById('commentText');
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+function escapeHTML(str) {
+    return str.replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        "'": '&#39;',
+        '"': '&quot;'
+    }[tag]));
+}
 
 async function loadLiveComments() {
     try {
@@ -19,12 +30,12 @@ async function loadLiveComments() {
                             <div class="w-100">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <h6 class="text-primary fw-bold mb-0">
-                                        ${comment.username}
+                                        ${escapeHTML(comment.username)} 
                                     </h6>
                                     <p class="mb-0 text-muted" style="font-size: 0.85rem;">${comment.timestamp}</p>
                                 </div>
                                 <p class="text-dark mb-0 mt-2">
-                                    ${comment.text}
+                                    ${escapeHTML(comment.text)}
                                 </p>
                             </div>
                         </div>
@@ -54,7 +65,10 @@ commentForm.addEventListener('submit', async function(event) {
     try {
         const response = await fetch('/api/add_comment', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
             body: JSON.stringify({ comment_text: freshCommentText })
         });
 

@@ -1,3 +1,5 @@
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
 document.addEventListener("DOMContentLoaded", function () {
     const loaderBar = document.getElementById("loaderBar");
 
@@ -53,7 +55,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 fetch('/submit_loading_screen', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
                     body: JSON.stringify({
                         time: timeTakenSec,
                         task_name: 'loading_screen' 

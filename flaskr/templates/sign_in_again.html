@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Sign in...</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/cits3403_projLogoBGXround.png') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -21,6 +22,7 @@
         <br>
 
         <form id="signInForm" style="max-width: 350px; width: 100%;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="form-group">
                 <label for="username">Username</label>
                 <input type="text" class="form-control" id="username" name="username" placeholder="Enter username">

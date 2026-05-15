@@ -11,6 +11,7 @@
   const brightnessControls = document.getElementById('brightnessControls');
   const brightnessUpBtn    = document.getElementById('brightnessUpBtn');
   const brightnessDownBtn  = document.getElementById('brightnessDownBtn');
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
   // ====== Constants ======
   const WIN_DISTANCE   = 500;   // metres to win
@@ -141,7 +142,10 @@
       
       fetch('/submit_brightness_bug', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
+        },
         body: JSON.stringify({ 
           time: S.finalTime,
           task_name: 'brightness_bug'

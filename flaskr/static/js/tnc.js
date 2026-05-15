@@ -1,4 +1,5 @@
 let startTime;
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
 function startTimer() {
     if (!isLoggedIn) {
@@ -34,7 +35,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             fetch('/submit_quiz', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
                 body: JSON.stringify({ 
                     time: timeTakenSec,
                     task_name: 'tnc_quiz',
