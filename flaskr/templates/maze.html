@@ -17,34 +17,42 @@
 
         <!--"mode" selection-->
         <div id="mode-overlay">
+
             <div id="mode-box">
                 <h2>Dude! That's A-Maze-ing!</h2>
                 <p>Choose your difficulty level.<br>Choose wisely...</p>
                 <button class="mode-btn hover-btn btn btn-dark" id="btn-easy">Easy</button>
                 <button class="mode-btn hover-btn btn btn-dark" id="btn-hard">Hard</button>
             </div>
+            
         </div>
 
         <!--taunt popup (taunt the user when they pick easy mode)-->
         <div id="taunt-overlay" class="display: none; flex-direction: column;">
+
             <div id="taunt-box">
                 <h3>Easy Mode? Really?</h3>
                 <p>There is no easy mode.<br><strong> Get good </strong></p>
                 <button id="taunt-ok" class="hover-btn btn btn-dark">Yes Master</button>
             </div>
+
         </div>
 
         <div class="container mt-2 d-flex flex-column align-items-center">
             <h2>Complete the Maze!</h2>
 
+            <!--Maze Canvas-->
             <div id="maze_card" class="card shadow p-3 bg-white rounded mt-2">
 
                 <canvas id="maze_canvas" class="border border-dark rounded"></canvas>
 
             </div>
 
+            <!--mobile buttons that appear if screen gets too narrow (mobile)-->
             <div id="mobile-controls" class="d-none">
+
                 <div class="d-flex flex-column align-items-center gap-2 my-3">
+
                     <button class="btn btn-dark mobile-btn" id="mob-up">▲</button>
                     <div class="d-flex gap-2">
                         <button class="btn btn-dark mobile-btn" id="mob-left">◀</button>
@@ -54,6 +62,7 @@
                     <button class="btn btn-dark mobile-btn" id="mob-down">▼</button>
 
                 </div>
+
             </div>
 
         </div>

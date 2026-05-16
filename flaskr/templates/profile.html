@@ -16,29 +16,32 @@
 
     {% include 'components/navbar.html' %}
 
+    <!-- Profile Page Banner -->
     <div class="banner-wrapper w-100 overflow-hidden" style="height: 300px;">
     
-    <form action="/upload_banner" method="POST" enctype="multipart/form-data" class="w-100 h-100">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-        
-        <label id="banner-trigger" for="banner-file-upload" class="position-relative w-100 h-100 d-block m-0" style="cursor: pointer;">
+        <form action="/upload_banner" method="POST" enctype="multipart/form-data" class="w-100 h-100">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             
-            <img src="{{ url_for('static', filename='images/' + current_user.banner_image) }}" alt="Profile Banner" class="w-100 h-100" style="object-fit: cover;">
-            
-            <div id="banner-overlay" class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style="background-color: rgba(0,0,0,0.6); opacity: 0; transition: opacity 0.3s ease;">
+            <label id="banner-trigger" for="banner-file-upload" class="position-relative w-100 h-100 d-block m-0" style="cursor: pointer;">
                 
-                <i class="bi bi-pencil text-white" style="font-size: 2.5rem;"></i>
+                <img src="{{ url_for('static', filename='images/' + current_user.banner_image) }}" alt="Profile Banner" class="w-100 h-100" style="object-fit: cover;">
+                
+                <div id="banner-overlay" class="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style="background-color: rgba(0,0,0,0.6); opacity: 0; transition: opacity 0.3s ease;">
+                    
+                    <i class="bi bi-pencil text-white" style="font-size: 2.5rem;"></i>
 
-            </div>
-            
-        </label>
+                </div>
+                
+            </label>
 
-        <input id="banner-file-upload" type="file" name="banner_pic" accept="image/png, image/jpeg" style="display: none;" required onchange="this.form.submit();">
-    </form>
+            <input id="banner-file-upload" type="file" name="banner_pic" accept="image/png, image/jpeg" style="display: none;" required onchange="this.form.submit();">
+        </form>
     
-</div>
+    </div>
 
-    <div class="w-100 position-relative">    
+    <!-- Profile Photo -->
+    <div class="w-100 position-relative">  
+
         <form action="/upload_photo" method="POST" enctype="multipart/form-data">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             
@@ -59,12 +62,15 @@
             <input id="top-file-upload" type="file" name="profile_pic" accept="image/png, image/jpeg" style="display: none;" required onchange="this.form.submit();">
         </form>
         <br><br>
+
     </div>
 
+    <!-- Welcome Text -->
     <div class="text-center mx-auto mt-5">
         <h1 class="fw-bold" id="profilewelcome" data-name="{{ user.name }}" data-username="{{ user.username }}">Edit your profile, {{ user.username }}</h1>  
     </div>
 
+    <!-- Profile Username and Name Change -->
     <div class="card mx-auto p-2 col-11 col-md-8 col-lg-5 mt-5">
         
         <div class="card-body border-bottom">
@@ -106,10 +112,13 @@
                 <p class="small text-muted mt-2">Update your name. DUH.</p>
             </form>
         </div>
+
     </div>
     <br>
 
+    <!-- Profile Deletion and Password Change -->
     <div class="card mx-auto p-2 col-11 col-md-8 col-lg-5 mt-5 border-danger">
+
         <div class="card-body">
             <h5 class="fs-3 card-title text-danger">Danger Zone</h5>
             <p class="small text-muted border-bottom pb-3 mb-3">Delete your account, change your password, etcetera whatever who cares, read the fineprint.</p>
@@ -148,11 +157,14 @@
                 </button>
             </form>
         </div>
+
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             <script>
+                //[IMPORTANT MESSAGE!: VS CODE LIKES TO COMPLAIN ABOUT THE JINJA SYNTAX HERE: PLEASE DO NOT TWEAK. JINJA RENDERS INSIDE OF HTML FILES!]
+
                 {% for category, message in messages %}
                     alert({{ message | tojson }});
                 {% endfor %}

@@ -17,48 +17,51 @@
 
 
     <div class="container mt-5">
-      <div class="row d-flex justify-content-center">
-          <div class="col-md-10 col-lg-8">
 
-            <div class="mb-5">
-                <div class="card-body p-4">
-                    <h2 class="mb-3">Welcome to the Comments Page!</h2>
-                    <p class="text-muted mb-0">Share your thoughts, feedback, advice regarding our Annoying Website project and see other people's comments!</p>
+        <div class="row d-flex justify-content-center">
+
+            <div class="col-md-10 col-lg-8">
+
+                <!-- Welcome Message -->
+                <div class="mb-5">
+                    <div class="card-body p-4">
+                        <h2 class="mb-3">Welcome to the Comments Page!</h2>
+                        <p class="text-muted mb-0">Share your thoughts, feedback, advice regarding our Annoying Website project and see other people's comments!</p>
+                    </div>
                 </div>
+
+                <!-- Add Comment Section -->
+                <div class="card shadow-sm border mb-5">
+                    <div class="card-body p-4">
+                        <h4 class="mb-3">Leave a Comment</h4>
+                        <form id="commentForm">
+                            <div class="form-floating mb-3">
+                                <textarea class="form-control" id="commentText" placeholder="Leave a comment here" style="height: 100px" required></textarea>
+                                <label for="commentText">Just like in life, you can't retract what you say...</label>
+                            </div>
+                            <button type="submit" class="btn btn-dark float-end hover-btn">Post Comment</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Live Comments Display -->
+                <div class="card shadow-sm border mb-5">
+                
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-2">
+                        <h4 class="mb-0">Recent Comments</h4>
+                    </div>
+
+                    <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                        <div id="liveCommentFeed"></div>
+                    </div>
+                    
+                </div>
+
             </div>
 
+        </div>
 
-
-              <div class="card shadow-sm border mb-5">
-                  <div class="card-body p-4">
-                      <h4 class="mb-3">Leave a Comment</h4>
-                      <form id="commentForm">
-                          <div class="form-floating mb-3">
-                              <textarea class="form-control" id="commentText" placeholder="Leave a comment here" style="height: 100px" required></textarea>
-                              <label for="commentText">Just like in life, you can't retract what you say...</label>
-                          </div>
-                          <button type="submit" class="btn btn-dark float-end hover-btn">Post Comment</button>
-                      </form>
-                  </div>
-              </div>
-
-              <div class="card shadow-sm border mb-5">
-                
-                <div class="card-header bg-white border-bottom-0 pt-4 pb-2">
-                    <h4 class="mb-0">Recent Comments</h4>
-                </div>
-
-                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
-                    
-                    <div id="liveCommentFeed">
-                        </div>
-
-                </div>
-                
-              </div> 
-              </div> 
-              </div> 
-              </div>
+    </div>
 
     {% include 'components/footer.html' %}
 

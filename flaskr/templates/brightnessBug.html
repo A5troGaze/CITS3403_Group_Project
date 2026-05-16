@@ -8,7 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='global.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='brightnessBug.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/brightnessBug.css') }}">
     <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
   </head>
 
@@ -16,7 +16,9 @@
 
     {% include 'components/navbar.html' %}
 
+    <!-- Game Explanation Modal -->
     <div class="modal fade" id="instructionsModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
           <div class="modal-header bg-dark text-white">
@@ -51,9 +53,12 @@
           </div>
         </div>
       </div>
+
     </div>
 
+    <!-- Annoying Agreement Modal -->
     <div class="modal fade" id="agreementModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
           <div class="modal-header">
@@ -85,23 +90,31 @@
           </div>
         </div>
       </div>
+
     </div>
 
+    <!-- Game Canvas/World -->
     <div id="gameWorld">
+
       <div class="scroll-stripes"></div>
       <div class="horizon-line"></div>
       <i id="bug" class="bi bi-bug bug-character"></i>
       <i id="bugGlow" class="bi bi-sun bug-glow d-none"></i>
       <div id="victoryBanner">YOU SAVED THE BUG!</div>
+      
     </div>
 
+    <!-- Progress Bar -->
     <div id="distanceWrap" class="progress" style="--bs-progress-bar-bg: #0dcaf0;">
       <div id="distanceBar" class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
     </div>
 
+    <!-- Action Warning -->
     <i id="warningIcon" class="bi bi-sun"></i>
 
+    <!-- Action Instructions, Action Countdown Bar and Brightness Overlay-->
     <div id="obstacleOverlay">
+
       <div class="position-absolute top-0 start-50 translate-middle-x mt-5 text-center">
         <i id="hintIcon" class="bi bi-arrow-down-circle overlay-hint"></i>
         <div id="hintText" class="fw-bold mt-2" style="text-shadow: 0 0 6px #000;"></div>
@@ -110,18 +123,24 @@
       <div class="progress position-absolute bottom-0 start-0 w-100" style="height: 14px; border-radius: 0;">
         <div id="countdownBar" class="progress-bar bg-warning" role="progressbar" style="width: 100%"></div>
       </div>
+
     </div>
 
+    <!-- Brightness Buttons -->
     <div id="brightnessControls" class="d-none">
+
       <button id="brightnessUpBtn" type="button" class="btn btn-dark" aria-label="Increase brightness">
         <i class="bi bi-brightness-high-fill"></i>
       </button>
       <button id="brightnessDownBtn" type="button" class="btn btn-dark" aria-label="Decrease brightness">
         <i class="bi bi-brightness-low-fill"></i>
       </button>
+
     </div>
 
+    <!-- Game Completion Modal -->
     <div class="modal fade" id="winModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header bg-dark text-white">
@@ -140,6 +159,7 @@
           </div>
         </div>
       </div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>

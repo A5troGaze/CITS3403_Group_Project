@@ -15,12 +15,16 @@
 
     {% include 'components/navbar.html' %}
     
+    
     <div class="w-50 mx-auto">
+        <!-- Title -->
         <h1 class="text-center container-fluid min-vh-100 d-flex flex-column justify-content-center align-items-center fs-1 fw-bold mb-5 pb-5">Terms and Conditions.</h1>
         <h1 class="text-center container-fluid min-vh-100 d-flex flex-column justify-content-center align-items-center fs-1 fw-bolder text-danger my-5 py-5">
             Please ensure that you have read through all the terms thoroughly.
         </h1>
         <br><br><br>
+
+        <!-- Terms and Condition (unreasonably sized) -->
         <div class="container-fluid min-vh-100 d-flex flex-column justify-content-center align-items-center my-5 py-5 small-text">
             <p class="fw-bolder">1. Acceptance of Terms:</p>
             <p>
@@ -118,6 +122,7 @@
         </div>
     </div>
 
+    <!-- Make the page unreasonably long -->
     <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
     <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
     <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
@@ -128,6 +133,8 @@
     <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
     <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
     <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+    <!-- T's & C's Quiz -->
     <div class="container py-5 pt-5 mt-5">
         
         <div class="row justify-content-center">
@@ -246,6 +253,7 @@
     </div>
 
     <script>
+        //[IMPORTANT MESSAGE!: VS CODE LIKES TO COMPLAIN ABOUT THE JINJA SYNTAX HERE: PLEASE DO NOT TWEAK. JINJA RENDERS INSIDE OF HTML FILES!]
         const isLoggedIn = {{ 'true' if session.get('user_id') else 'false' }};
     </script>
     

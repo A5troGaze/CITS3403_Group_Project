@@ -7,3 +7,5 @@ node_modules/
 flaskr/.env
 .env
 google-chrome-stable_current_amd64.deb
+.pytest_cache/
+
