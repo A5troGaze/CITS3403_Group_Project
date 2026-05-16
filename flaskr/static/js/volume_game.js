@@ -284,9 +284,9 @@ class VolumeSlider {
         const timeTakenSec = ((endTime - this.startTime) / 1000).toFixed(2);
         console.log(`Volume game beaten in ${timeTakenSec} seconds.`);
 
-        //diable the volume 'launcher' icon upon a successful run
+        //disable the volume 'launcher' icon upon a successful run
         this.icon.style.pointerEvents = 'none';
-        this.icon.style.opacity = 'o.5';
+        this.icon.style.opacity = '0.5';
 
         const winSound = document.getElementById("win-sound");
         winSound.pause();
