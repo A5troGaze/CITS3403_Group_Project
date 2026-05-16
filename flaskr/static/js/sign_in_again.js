@@ -33,14 +33,30 @@ document.addEventListener('DOMContentLoaded', function() {
         popup.style.display = "block";
     }
 
+
     const header = document.getElementById("signInHeader");
+    let headerClicked = false; //boolean to prevent double header clicks (double submission before fetch resolves)
     if (header) {
         header.addEventListener("click", function () {
+
+            if (headerClicked) { //block if header already clicked
+                return;
+            }
+            headerClicked = true;
+            header.style.opacity = "0.5";
+            header.style.cursor = "default";
             
             if (!isLoggedIn || !startTime) {
                 alert("You must be logged in to record a time!");
+                headerClicked = false; //re-enable if ^ fails
+                header.style.opacity = "1";
+                header.style.cursor = "pointer";
                 return;
             }
+
+            //header disabled directly after submission --> prevents user from double submitting before even one fetch is resolved
+            header.disabled = true;
+            header.textContent = "Redirecting..."
 
             const endTime = performance.now();
             const timeTakenSec = ((endTime - startTime) / 1000).toFixed(2);
@@ -61,18 +77,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     showAlert(`You passed the level!<br><br> <br><strong>Redirecting...</strong>`);
                     startTime = null; 
-                    
+
                     setTimeout(() => {
                         window.location.href = "/CAPTCHA"; // CHANGE THIS to your next page
                     }, 2500); 
 
                 } else {
                     alert("Error saving time: " + data.error);
+                    //re-enable header with correct content
+                    headerClicked = false;
+                    header.style.opacity = "1";
+                    header.style.cursor = "pointer";
                 }
             })
             .catch(error => {
                 console.error("Error:", error);
                 alert("Something went wrong connecting to the server.");
+                //re-enable header with correct content
+                headerClicked = false;
+                header.style.opacity = "1";
+                header.style.cursor = "pointer";
             });
         });
     }
