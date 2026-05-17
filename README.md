@@ -116,9 +116,9 @@ Answer: Reach the right-most spot 4 times in a row, then for the 5th time the do
 ### Brightness game
 WARNING: this game involves FLASHING lights \
 This game requires you to save Bob the bug from the blazing heat and horrifying night. \
-When a sun is displayed on the screen, dim your screen with your brightness keys during the confirm screen and press "confirm" or your "B" key to confirm your answer and the latter when a moon is displayed. \
-For mobile users, the buttons on the screen are there to change the display brightness for you. \
-During the late game, you will encounter the lightning icon (aka flash mode), just continuously click "continue" or "B" to pass.
+There are 2 buttons on the left side of the screen: the top is to brighten your screen and the bottom to dim. \
+When a sun is displayed on the screen, dim th screen during the confirm screen, click anywhere on the screen to confirm your answer and the latter when a moon is displayed. \
+During the late game, you will encounter the lightning icon (aka flash mode), smash the "B" key or rapidly press anywhere on the screen for mobile users to pass.
 
 ### Pop Ups game
 NOTE: There are two final resolutions for this level.
