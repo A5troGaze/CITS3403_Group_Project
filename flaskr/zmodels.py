@@ -36,6 +36,11 @@ import datetime
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 
+''' 
+User Model Table:
+    - PK = id
+    - relationship with : Score, Comment
+'''
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
@@ -67,6 +72,7 @@ class User(db.Model, SerializerMixin):
     scores = db.relationship('Score', backref='user', cascade="all, delete-orphan")
     comments = db.relationship('Comment', backref='user', cascade="all, delete-orphan")
 
+    #find best time attributed to player
     @property
     def total_time(self):
         secret_times = [float(score.best_time) for score in self.scores if score.task_name == 'secret_ending'] #if the user chose the secret ending the task_name == 'secret_ending'. else task_name = 'standard_ending'
@@ -91,6 +97,12 @@ class User(db.Model, SerializerMixin):
         total = sum(best_task_times.values())
         return round(total, 2)
 
+''' 
+Score Model Table:
+    - PK = id
+    - FK = user_id -> User(id)
+    - relationship with : User
+'''
 class Score(db.Model, SerializerMixin):
     __tablename__ = 'score'
     id = db.Column(db.Integer, primary_key=True)
@@ -98,6 +110,12 @@ class Score(db.Model, SerializerMixin):
     task_name = db.Column(db.String(50), nullable=False) 
     best_time = db.Column(db.Float, nullable=False)
 
+''' 
+Comment Model Table:
+    - PK = id
+    - FK = user_id -> User(id)
+    - relationship with : User
+'''
 class Comment(db.Model, SerializerMixin):
     __tablename__ = 'comments'
     

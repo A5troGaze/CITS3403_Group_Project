@@ -29,8 +29,8 @@ class VolumeSlider {
         this.startTime = performance.now();
 
     }
-    /* begin charge cycle */
 
+    /* begin charge cycle */
     charge() {
         if (this._lock) { return false; }
         this._lock = true;
@@ -53,6 +53,7 @@ class VolumeSlider {
         };
         setTimeout(() => cycle(), 100);
     }
+
     // release and fire based on charge
     release(charge) {
         this._charging = false;
@@ -188,10 +189,12 @@ class VolumeSlider {
         };
         animate();
     }
+
     // linear progression
     linearTween(t, b, c, d) {
         return c * t / d + b;
     }
+
     // cubic ease in progression
     easeIn(t, b, c, d) {
         t /= d;
@@ -281,6 +284,10 @@ class VolumeSlider {
         const timeTakenSec = ((endTime - this.startTime) / 1000).toFixed(2);
         console.log(`Volume game beaten in ${timeTakenSec} seconds.`);
 
+        //disable the volume 'launcher' icon upon a successful run
+        this.icon.style.pointerEvents = 'none';
+        this.icon.style.opacity = '0.5';
+
         const winSound = document.getElementById("win-sound");
         winSound.pause();
         winSound.currentTime = 0;
@@ -305,7 +312,12 @@ class VolumeSlider {
         })
         .then(response => response.json())
         .then(data => {
-            if (!data.success) console.error("Error saving time:", data.error);
+            if (!data.success) {
+                console.error("Error saving time:", data.error);
+                //re-enable upon unsuccessful fetch
+                this.icon.style.pointerEvents = 'auto';
+                this.icon.style.opacity = '1';
+            }
             
             setTimeout(() => {
                 window.location.href = "/brightness_bug"; 
@@ -313,6 +325,9 @@ class VolumeSlider {
         })
         .catch(error => {
             console.error("Fetch Error:", error);
+            //re-enable upon network error
+            this.icon.style.pointerEvents = 'auto';
+            this.icon.style.opacity = '1';
             setTimeout(() => {
                 window.location.href = "/brightness_bug"; 
             }, 2500);

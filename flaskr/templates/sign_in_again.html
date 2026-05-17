@@ -18,9 +18,11 @@
     {% include 'components/navbar.html' %}
 
     <div class="container-fluid min-vh-100 d-flex flex-column justify-content-center align-items-center">
+        <!-- Level Pass Header -->
         <h1 id="signInHeader" class="fw-bold" style="cursor: pointer;">Sign In</h1>
         <br>
 
+        <!-- False Form -->
         <form id="signInForm" style="max-width: 350px; width: 100%;">
             <div class="form-group">
                 <label for="username">Username</label>
@@ -47,6 +49,7 @@
     </div>
 
     <script>
+        //[IMPORTANT MESSAGE!: VS CODE LIKES TO COMPLAIN ABOUT THE JINJA SYNTAX HERE: PLEASE DO NOT TWEAK. JINJA RENDERS INSIDE OF HTML FILES!]
         const isLoggedIn = {{ 'true' if session.get('user_id') else 'false' }};
     </script>
     

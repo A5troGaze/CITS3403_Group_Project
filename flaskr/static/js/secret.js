@@ -65,7 +65,7 @@ const questions = [
                         // show goodbye popup then redirect
                         goodbye_overlay.style.display = "flex";
                         setTimeout(() => {
-                            window.location.href = "/"; // change to your next page
+                            window.location.href = "/ending"; // change to your ending page
                         }, 4000);
                     } else {
                         loadQuestion();

@@ -247,7 +247,7 @@ def boom():
 
 
 # ===== LEADERBOARD / COMMENT / TIMING FUNCTIONALITY ROUTES ======
-@main.route('/save_time', methods=['POST'])
+@main.route('/save_time', methods=['POST']) # Game submission route that affects leaderboard and timing functionality
 def save_time():
     user_id = session.get('user_id')
     if not user_id:
@@ -350,6 +350,7 @@ def api_get_comments():
 
 
 
+# ===== GAME SUBMISSION ROUTES ======
 # game routes
 @main.route('/submit_quiz', methods=['POST'])
 def submit_quiz():
@@ -592,6 +593,7 @@ def submit_brightness_bug():
         db.session.rollback()
         print(f"Error saving Brightness Bug data: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 
 # ====== PAGE ROUTES ======

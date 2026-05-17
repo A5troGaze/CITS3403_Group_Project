@@ -16,33 +16,41 @@
     {% include 'components/navbar.html' %}
 
     <div class="container mt-5">
-        <h2>Global Leaderboard</h2>
+      <h2>Global Leaderboard</h2>
 
-        <input 
-          type="text" 
-          id="searchInput" 
-          class="form-control mb-4" 
-          placeholder="Start typing to search players..."
-        >
-        
-        <table class="table table-striped mt-3">
-            <thead>
-                <tr>
-                    <th>Rank</th>
-                    <th>Player</th>
-                    <th>Time (Seconds)</th>
-                </tr>
-            </thead>
-            <tbody id="leaderboardBody" class="table-group-divider">
-              {% for user in users %}
-              <tr class="{% if current_user.is_authenticated and user.id == current_user.id %}table-warning{% endif %}">
-                <td>{{ user.real_rank }}</td> 
-                <td>{{ user.username }}</td>                  
-                <td>{{ user.total_time }}s</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-        </table>
+      <!-- Leadboard Search / Filter Input-->
+      <input 
+        type="text" 
+        id="searchInput" 
+        class="form-control mb-4" 
+        placeholder="Start typing to search players..."
+      >
+      
+      <!-- Leaderboard -->
+      <table class="table table-striped mt-3">
+
+        <!-- Header -->
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Player</th>
+            <th>Time (Seconds)</th>
+          </tr>
+        </thead>
+
+        <!-- Leaderboard Body -->
+        <tbody id="leaderboardBody" class="table-group-divider">
+          {% for user in users %}
+          <tr class="{% if current_user.is_authenticated and user.id == current_user.id %}table-warning{% endif %}">
+            <td>{{ user.real_rank }}</td> 
+            <td>{{ user.username }}</td>                  
+            <td>{{ user.total_time }}s</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+
+      </table>
+
     </div>
 
     <br><br><br><br><br>
